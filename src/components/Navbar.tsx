@@ -1,0 +1,241 @@
+import { useState, useEffect } from "react";
+import { Button } from "@/components/ui/button";
+import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
+import { Menu, X, ChevronDown, ArrowRight } from "lucide-react";
+import { Link, useNavigate, useLocation } from "react-router-dom";
+import { cn } from "@/lib/utils";
+
+const Navbar = () => {
+  const [isOpen, setIsOpen] = useState(false);
+  const [isScrolled, setIsScrolled] = useState(false);
+  const location = useLocation();
+  const navigate = useNavigate();
+
+  useEffect(() => {
+    const handleScroll = () => {
+      setIsScrolled(window.scrollY > 20);
+    };
+
+    window.addEventListener('scroll', handleScroll);
+    return () => window.removeEventListener('scroll', handleScroll);
+  }, []);
+
+  const navLinks = [
+    { 
+      name: "Solutions", 
+      href: "#",
+      dropdown: [
+        { name: "1HMS", href: "/solutions/1hms" },
+        { name: "1Rad", href: "/solutions/1rad" },
+        { name: "1Pharma", href: "/solutions/1pharma" },
+        { name: "1Lab", href: "/solutions/1lab" }
+      ]
+    },
+    { name: "NexEagle AI", href: "/ai" },
+    // { name: "Pricing", href: "/pricing" },
+    { name: "About", href: "/team" },
+    { name: "Contact", href: "/contact" }
+  ];
+
+  const isActive = (href: string) => {
+    if (href === "/") return location.pathname === "/";
+    return location.pathname.startsWith(href);
+  };
+
+  const handleNavigation = (href: string) => {
+    navigate(href);
+    setIsOpen(false);
+  };
+
+  return (
+    <nav className={cn(
+      "fixed top-0 z-50 w-full transition-all duration-300",
+      isScrolled 
+        ? "bg-background/80 backdrop-blur-xl border-b border-border shadow-[0_4px_30px_rgba(0,0,0,0.1)]" 
+        : "bg-transparent"
+    )}>
+      <div className="container px-6 md:px-8 lg:px-12">
+        <div className="flex h-20 items-center justify-between">
+          
+          {/* Logo */}
+          <Link to="/" className="flex items-center gap-2 sm:gap-3 md:gap-4 group relative">
+            <span className="text-xl sm:text-2xl md:text-3xl lg:text-4xl font-bold text-foreground tracking-tight">
+              <span className="text-brand-teal">N</span>exEagle
+            </span>
+          </Link>
+
+          {/* Desktop Navigation */}
+          <div className="hidden lg:flex items-center gap-2">
+            {navLinks.map((link) => (
+              <div key={link.name} className="relative group">
+                {link.dropdown ? (
+                  <button
+                    className={cn(
+                      "flex items-center gap-1 px-4 py-2 text-sm font-medium transition-all duration-200 rounded-full",
+                      isActive("/solutions")
+                        ? "text-foreground bg-secondary/10"
+                        : "text-muted-foreground hover:text-foreground hover:bg-secondary/5"
+                    )}
+                  >
+                    {link.name}
+                    <ChevronDown className="w-4 h-4 transition-transform duration-200 group-hover:rotate-180" />
+                  </button>
+                ) : (
+                  <Link
+                    to={link.href}
+                    className={cn(
+                      "relative px-4 py-2 text-sm font-medium transition-all duration-200 rounded-full",
+                      isActive(link.href)
+                        ? "text-foreground bg-secondary/10"
+                        : "text-muted-foreground hover:text-foreground hover:bg-secondary/5"
+                    )}
+                  >
+                    {link.name}
+                  </Link>
+                )}
+                
+                {/* Desktop Dropdown */}
+                {link.dropdown && (
+                  <div className="absolute top-full left-0 pt-2 opacity-0 translate-y-2 pointer-events-none group-hover:opacity-100 group-hover:translate-y-0 group-hover:pointer-events-auto transition-all duration-200 z-50">
+                    <div className="w-48 bg-background border border-border rounded-xl shadow-lg p-2 flex flex-col gap-1">
+                      {link.dropdown.map((subItem) => (
+                        <Link
+                          key={subItem.name}
+                          to={subItem.href}
+                          className="px-4 py-2 text-sm text-muted-foreground hover:text-foreground hover:bg-secondary/10 rounded-lg transition-colors"
+                        >
+                          {subItem.name}
+                        </Link>
+                      ))}
+                    </div>
+                  </div>
+                )}
+              </div>
+            ))}
+          </div>
+
+          {/* Desktop CTA */}
+          <div className="hidden lg:flex items-center gap-4">
+            <Link to="/contact" className="text-sm font-medium text-foreground hover:text-brand-teal transition-colors">
+              Talk to Sales
+            </Link>
+            
+            <Link to="/contact">
+              <Button
+                className="bg-brand-teal hover:bg-brand-teal/90 text-white rounded-full px-6 shadow-[0_0_15px_rgba(20,184,166,0.3)] hover:shadow-[0_0_25px_rgba(20,184,166,0.5)] transition-all"
+              >
+                Book Demo
+              </Button>
+            </Link>
+          </div>
+
+          {/* Mobile Menu Button */}
+          <div className="lg:hidden">
+            <Sheet open={isOpen} onOpenChange={setIsOpen}>
+              <SheetTrigger asChild>
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  className="p-2 hover:bg-secondary/10 text-foreground"
+                >
+                  {isOpen ? (
+                    <X className="h-6 w-6" />
+                  ) : (
+                    <Menu className="h-6 w-6" />
+                  )}
+                </Button>
+              </SheetTrigger>
+              <SheetContent
+                side="right"
+                className="w-full sm:w-96 bg-background border-l border-border"
+              >
+                {/* Mobile Header */}
+                <div className="flex items-center justify-between mb-8 pb-6 border-b border-border">
+                  <div className="flex items-center gap-4">
+                    <span className="text-3xl font-bold text-foreground"><span className="text-brand-teal">N</span>exEagle</span>
+                  </div>
+                </div>
+
+                {/* Mobile Navigation */}
+                <div className="flex flex-col space-y-2 mb-8">
+                  {navLinks.map((link) => (
+                    <div key={link.name}>
+                      {link.dropdown ? (
+                        <div className="flex flex-col">
+                          <div className="flex items-center justify-between px-4 py-4 text-base font-medium text-muted-foreground">
+                            <span>{link.name}</span>
+                            <ChevronDown className="w-4 h-4" />
+                          </div>
+                          <div className="flex flex-col pl-6 border-l-2 border-border ml-6 space-y-2 mt-2">
+                            {link.dropdown.map((subItem) => (
+                              <button
+                                key={subItem.name}
+                                onClick={() => handleNavigation(subItem.href)}
+                                className={cn(
+                                  "flex items-center justify-between px-4 py-3 text-sm font-medium transition-all rounded-xl group",
+                                  isActive(subItem.href)
+                                    ? "text-brand-teal bg-secondary/10"
+                                    : "text-muted-foreground hover:text-foreground hover:bg-secondary/5"
+                                )}
+                              >
+                                <span>{subItem.name}</span>
+                                <ArrowRight className={cn(
+                                  "w-3 h-3 transition-all",
+                                  isActive(subItem.href) 
+                                    ? "opacity-100 translate-x-0 text-brand-teal" 
+                                    : "opacity-0 -translate-x-2 group-hover:opacity-100 group-hover:translate-x-0"
+                                )} />
+                              </button>
+                            ))}
+                          </div>
+                        </div>
+                      ) : (
+                        <button
+                          onClick={() => handleNavigation(link.href)}
+                          className={cn(
+                            "flex items-center justify-between px-4 py-4 text-base font-medium transition-all rounded-xl group",
+                            isActive(link.href)
+                              ? "text-brand-teal bg-secondary/10"
+                              : "text-muted-foreground hover:text-foreground hover:bg-secondary/5"
+                          )}
+                        >
+                          <span>{link.name}</span>
+                          <ArrowRight className={cn(
+                            "w-4 h-4 transition-all",
+                            isActive(link.href) 
+                              ? "opacity-100 translate-x-0 text-brand-teal" 
+                              : "opacity-0 -translate-x-2 group-hover:opacity-100 group-hover:translate-x-0"
+                          )} />
+                        </button>
+                      )}
+                    </div>
+                  ))}
+                </div>
+
+                {/* Mobile CTA Buttons */}
+                <div className="space-y-3 pt-6 border-t border-border">
+                  <Button
+                    onClick={() => handleNavigation("/contact")}
+                    variant="outline"
+                    className="w-full h-12 font-semibold border-2 border-border text-foreground hover:bg-secondary/10"
+                  >
+                    Talk to Sales
+                  </Button>
+                  
+                  <Button
+                    onClick={() => handleNavigation("/contact")}
+                    className="w-full h-12 bg-brand-teal hover:bg-brand-teal/90 text-white font-semibold"
+                  >
+                    Book Demo
+                  </Button>
+                </div>
+              </SheetContent>
+            </Sheet>
+          </div>
+        </div>
+      </div>
+    </nav>
+  );
+};
+
+export default Navbar;
