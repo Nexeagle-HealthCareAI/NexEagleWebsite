@@ -148,16 +148,16 @@ const Hero = () => {
         </svg>
       </div>
 
-      <div className="container relative z-10 px-4 sm:px-6 md:px-8 lg:px-12 py-8 sm:py-12 grid lg:grid-cols-2 gap-12 items-center">
+      <div className="container mx-auto relative z-10 px-4 sm:px-6 md:px-8 lg:px-12 py-8 sm:py-12 grid lg:grid-cols-[43%_57%] gap-8 lg:gap-12 items-center">
 
         {/* Left Column - Content */}
         <div className={`space-y-8 transition-all duration-1000 ${mounted ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-8'}`}>
 
-          <h1 className="text-4xl sm:text-5xl md:text-6xl lg:text-7xl font-bold tracking-tight text-foreground leading-[1.2] !mt-2">
+          <h1 className="text-3xl sm:text-5xl md:text-6xl lg:text-7xl font-bold tracking-tight text-foreground leading-[1.2] !mt-2">
             <span className="block font-bold text-slate-900 dark:text-white">
               The Future of Healthcare.
             </span>
-            <div className="h-[48px] sm:h-[60px] md:h-[72px] lg:h-[84px] flex items-center relative mt-2">
+            <div className="h-[40px] sm:h-[60px] md:h-[72px] lg:h-[84px] flex items-center relative mt-2">
               <AnimatePresence mode="wait">
                 {heroIndex < 4 ? (
                   <motion.span
@@ -192,7 +192,7 @@ const Hero = () => {
                         )}
                       </AnimatePresence>
                       <span className="text-transparent bg-clip-text bg-gradient-to-r from-brand-teal via-brand-sky to-brand-iris font-black">
-                        Powered by NexEagle.
+                        Powered by NEXEAGLE.
                       </span>
                     </div>
                   </motion.div>
@@ -219,7 +219,7 @@ const Hero = () => {
         </div>
 
         {/* Right Column - Connected Ecosystem Animation */}
-        <div className={`relative w-full transition-all duration-1000 delay-300 ${mounted ? 'opacity-100 scale-100' : 'opacity-0 scale-95'}`}>
+        <div className={`relative w-full transition-all duration-1000 delay-300 ${mounted ? 'opacity-100 scale-100' : 'opacity-0 scale-95'} lg:ml-auto lg:max-w-2xl`}>
           <ConnectedEcosystem />
         </div>
       </div>

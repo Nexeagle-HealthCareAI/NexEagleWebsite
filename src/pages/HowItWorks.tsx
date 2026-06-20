@@ -2,10 +2,33 @@ import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
 import { Button } from "@/components/ui/button";
 import { Link } from "react-router-dom";
+import SEO from "@/components/SEO";
 
 const HowItWorks = () => {
+  const structuredData = {
+    "@context": "https://schema.org",
+    "@graph": [
+      {
+        "@type": "WebPage",
+        "@id": "https://nexeagle.com/how-it-works#webpage",
+        "url": "https://nexeagle.com/how-it-works",
+        "name": "How It Works - Fast Onboarding & Deployment | NexEagle",
+        "description": "Learn how easy it is to go live with NexEagle's clinic and hospital management tools. In under 24 hours, we set up your OPD, train your staff, and configure your automated billing.",
+        "isPartOf": {
+          "@id": "https://nexeagle.com/#website"
+        }
+      }
+    ]
+  };
+
   return (
-    <div className="min-h-screen bg-gradient-to-br from-white via-tech-cyan/5 to-white">
+    <div className="min-h-screen bg-gradient-to-br from-white via-tech-cyan/5 to-white font-sans">
+      <SEO 
+        title="How It Works - Fast Onboarding & Onboarding Guide"
+        description="Learn how easy it is to go live with NexEagle's clinic and hospital management tools. In under 24 hours, we set up your OPD, train your staff, and configure your automated billing."
+        keywords="hospital software onboarding, clinic ERP deployment, NexEagle setup, go live clinical software"
+        structuredData={structuredData}
+      />
       <Navbar />
       <main className="section-shell py-16 lg:py-20">
         <div className="max-w-4xl mx-auto text-center space-y-4">

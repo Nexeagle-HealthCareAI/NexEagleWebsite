@@ -22,7 +22,7 @@ const SEO = ({
   structuredData
 }: SEOProps) => {
   const siteUrl = 'https://nexeagle.com';
-  const fullTitle = `${title} | NexEagle`;
+  const fullTitle = `${title} | NEXEAGLE`;
   const canonical = canonicalUrl || `${siteUrl}${window.location.pathname}`;
 
   return (
@@ -42,7 +42,7 @@ const SEO = ({
       <meta property="og:image" content={`${siteUrl}${ogImage}`} />
       <meta property="og:image:width" content="1200" />
       <meta property="og:image:height" content="630" />
-      <meta property="og:site_name" content="NexEagle" />
+      <meta property="og:site_name" content="NEXEAGLE" />
 
       {/* Twitter */}
       <meta name="twitter:card" content="summary_large_image" />
@@ -53,7 +53,7 @@ const SEO = ({
       <meta name="twitter:site" content="@nexeagle" />
 
       {/* Additional Meta Tags */}
-      <meta name="author" content="NexEagle" />
+      <meta name="author" content="NEXEAGLE" />
       <meta name="language" content="English" />
       <meta name="revisit-after" content="7 days" />
       <meta name="distribution" content="global" />

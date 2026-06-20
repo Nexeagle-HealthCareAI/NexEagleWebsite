@@ -1,158 +1,211 @@
-import { Mail, Phone, Linkedin, MapPin, ArrowRight } from "lucide-react";
+import { Mail, Phone, Linkedin, MapPin, ArrowRight, Sparkles } from "lucide-react";
 import { Link } from "react-router-dom";
-import { Button } from "./ui/button";
+import { Logo } from "./Logo";
 
 const Footer = () => {
   const currentYear = new Date().getFullYear();
 
-  const productLinks = [
-    { name: "1HMS", href: "/products#1hms", desc: "Hospital Management" },
-    { name: "1Rad", href: "/products#1rad", desc: "Radiology Platform" },
-    { name: "1Lab", href: "/products#1lab", desc: "Lab Workflow" },
-    { name: "1Pharma", href: "/products#1pharma", desc: "Pharmacy System" },
+  const solutionLinks = [
+    { name: "1HMS (Hospital)", href: "/solutions/1hms" },
+    { name: "1Rad (Radiology & PACS)", href: "/solutions/1rad" },
+    { name: "1Lab (Laboratory)", href: "/solutions/1lab" },
+    { name: "1Pharma (Pharmacy)", href: "/solutions/1pharma" },
+    { name: "NexEagle AI (Virtual Assistant)", href: "/ai" },
   ];
 
-  const serviceLinks = [
-    { name: "Product Strategy", href: "/services#strategy" },
-    { name: "Product Design", href: "/services#design" },
-    { name: "Full-Stack Development", href: "/services#development" },
-    { name: "AI Integration", href: "/services#ai" },
-    { name: "System Architecture", href: "/services#architecture" },
-    { name: "Digital Transformation", href: "/services#transformation" },
+  const platformLinks = [
+    { name: "Why NexEagle", href: "/team" },
+    { name: "How It Works", href: "/team" },
+    { name: "Platform Overview", href: "/contact" },
+  ];
+
+  const resourceLinks = [
+    { name: "FAQs & Support", href: "/faqs" },
+    { name: "Privacy Policy", href: "/privacy" },
+    { name: "Terms of Service", href: "/terms" },
+    { name: "System Security", href: "/security" },
   ];
 
   const companyLinks = [
-    { name: "About Us", href: "/team" },
-    { name: "Contact", href: "/contact" },
+    { name: "Team", href: "/team" },
     { name: "Careers", href: "/careers" },
-    { name: "Blog", href: "/blog" },
+    { name: "Contact", href: "/contact" },
   ];
 
   return (
-    <footer className="relative bg-background text-foreground overflow-hidden border-t border-border pt-10">
-      
-      {/* Pulse Line Container */}
+    <footer className="relative bg-slate-950 text-slate-200 overflow-hidden border-t border-slate-900">
+      {/* Background Decorative Glows */}
+      <div className="absolute -top-40 -left-40 w-96 h-96 bg-brand-teal/5 rounded-full blur-[100px] pointer-events-none"></div>
+      <div className="absolute -bottom-40 -right-40 w-96 h-96 bg-brand-sky/10 rounded-full blur-[100px] pointer-events-none"></div>
+
+      {/* Pulse Line at top border */}
       <div className="absolute top-0 inset-x-0 flex justify-center">
-        <div className="h-px w-full max-w-5xl bg-gradient-to-r from-transparent via-brand-teal to-transparent opacity-50"></div>
-        <div className="absolute top-0 h-[2px] w-1/4 bg-brand-sky blur-sm animate-[pulse_3s_ease-in-out_infinite]"></div>
+        <div className="h-px w-full max-w-7xl bg-gradient-to-r from-transparent via-brand-teal/40 to-transparent"></div>
+        <div className="absolute top-0 h-[2px] w-1/3 bg-brand-sky blur-sm animate-[pulse_4s_ease-in-out_infinite]"></div>
       </div>
-      
-      <div className="container relative px-6 md:px-8 lg:px-12">
-        
-        {/* Main Footer Content */}
-        <div className="py-16 md:py-20">
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-12 gap-12 lg:gap-8 mb-16">
-            
-            {/* Brand */}
-            <div className="lg:col-span-4">
-              <Link to="/" className="inline-flex items-center gap-3 mb-6 group">
-                <span className="text-3xl font-bold text-foreground tracking-tight"><span className="text-brand-teal">N</span>exEagle</span>
-              </Link>
-              <p className="text-foreground font-medium mb-4 leading-relaxed text-lg">
-                India's First AI-Enabled<br/>Hospital Management Software
+
+      <div className="container relative z-10 px-4 sm:px-6 md:px-8 lg:px-12 mx-auto">
+        {/* Top Section: CTA Card */}
+        <div className="pt-16 pb-12 border-b border-slate-900">
+          <div className="relative p-8 md:p-10 rounded-3xl bg-slate-900/40 border border-slate-800/80 overflow-hidden flex flex-col md:flex-row items-center justify-between gap-6">
+            <div className="space-y-2 text-center md:text-left">
+              <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-brand-teal/10 border border-brand-teal/20 text-brand-sky text-xs font-semibold uppercase tracking-wider">
+                <Sparkles className="w-3 h-3 text-brand-sky" />
+                <span>Next-Gen Healthcare</span>
+              </span>
+              <h3 className="text-2xl md:text-3xl font-bold tracking-tight text-white">
+                Transform Your Clinical Operations
+              </h3>
+              <p className="text-slate-400 text-sm max-w-xl">
+                Ready to deploy an intelligent, voice-enabled, and connected ecosystem in your facility? Let's build it together.
               </p>
-              
-              {/* Social */}
-              <div className="flex gap-4 mt-8">
-                <a
-                  href="https://linkedin.com/company/nexeagle"
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="relative group p-3 rounded-full bg-card border border-border hover:border-brand-teal transition-all duration-300"
-                >
-                  <Linkedin className="w-5 h-5 text-muted-foreground group-hover:text-brand-teal transition-colors relative z-10" />
-                  <div className="absolute inset-0 bg-brand-teal/20 rounded-full blur-md opacity-0 group-hover:opacity-100 transition-opacity"></div>
-                </a>
-              </div>
             </div>
-
-            {/* Products */}
-            <div className="lg:col-span-3">
-              <h3 className="text-sm font-bold mb-6 text-foreground">Solutions</h3>
-              <ul className="space-y-4">
-                {productLinks.map((link) => (
-                  <li key={link.name}>
-                    <Link
-                      to={link.href}
-                      className="text-muted-foreground hover:text-brand-teal transition-colors text-sm"
-                    >
-                      {link.desc}
-                    </Link>
-                  </li>
-                ))}
-              </ul>
-            </div>
-
-            {/* Resources */}
-            <div className="lg:col-span-3">
-              <h3 className="text-sm font-bold mb-6 text-foreground">Resources</h3>
-              <ul className="space-y-4">
-                {serviceLinks.map((link) => (
-                  <li key={link.name}>
-                    <Link
-                      to={link.href}
-                      className="text-muted-foreground hover:text-brand-teal transition-colors text-sm"
-                    >
-                      {link.name}
-                    </Link>
-                  </li>
-                ))}
-              </ul>
-            </div>
-
-            {/* Company */}
-            <div className="lg:col-span-2">
-              <h3 className="text-sm font-bold mb-6 text-foreground">Company</h3>
-              <ul className="space-y-4">
-                {companyLinks.map((link) => (
-                  <li key={link.name}>
-                    <Link
-                      to={link.href}
-                      className="text-muted-foreground hover:text-brand-teal transition-colors text-sm"
-                    >
-                      {link.name}
-                    </Link>
-                  </li>
-                ))}
-              </ul>
-            </div>
-
+            <Link to="/contact" className="shrink-0 w-full md:w-auto">
+              <button className="w-full inline-flex items-center justify-center gap-2 px-6 py-3.5 rounded-xl bg-gradient-to-r from-brand-teal to-brand-sky hover:opacity-95 text-white font-bold text-sm sm:text-base shadow-lg shadow-brand-teal/15 hover:shadow-xl transition-all duration-300 group hover:-translate-y-0.5">
+                Request a Demo
+                <ArrowRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
+              </button>
+            </Link>
           </div>
+        </div>
 
-          {/* Contact Info */}
-          <div className="border-t border-border pt-12 mb-12">
-            <div className="grid md:grid-cols-3 gap-6">
-              <div className="flex items-center gap-3 text-muted-foreground text-sm">
-                <Phone className="w-4 h-4 text-brand-teal" />
-                +91 8074906808
-              </div>
-              <div className="flex items-center gap-3 text-muted-foreground text-sm">
-                <Mail className="w-4 h-4 text-brand-teal" />
-                info@nexeagle.com
-              </div>
-              <div className="flex items-center gap-3 text-muted-foreground text-sm">
-                <MapPin className="w-4 h-4 text-brand-teal" />
-                Kolkata, India
-              </div>
-            </div>
-          </div>
-
-          {/* Bottom Bar */}
-          <div className="border-t border-border pt-8 flex flex-col md:flex-row justify-between items-center gap-4">
-            <p className="text-sm text-muted-foreground">
-              © {currentYear} NexEagle. All rights reserved.
+        {/* Middle Section: Links Grid */}
+        <div className="py-16 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-12 gap-10 md:gap-12">
+          {/* Brand Info */}
+          <div className="lg:col-span-4 space-y-6">
+            <Link to="/" className="inline-flex items-center group">
+              <Logo textSize="text-2xl sm:text-3xl" textColor="text-white" />
+            </Link>
+            <p className="text-slate-400 text-sm leading-relaxed max-w-sm">
+              We build intelligent, connected, and AI-enabled software systems for healthcare and modern operations. Built on robust architecture, designed for maximum efficiency.
             </p>
-            <div className="flex gap-6 text-sm">
-              <Link to="/privacy" className="text-muted-foreground hover:text-foreground transition-colors">
-                Privacy Policy
-              </Link>
-              <Link to="/terms" className="text-muted-foreground hover:text-foreground transition-colors">
-                Terms of Service
-              </Link>
-              <Link to="/security" className="text-muted-foreground hover:text-foreground transition-colors">
-                Security
-              </Link>
+            <div className="flex gap-4">
+              <a
+                href="https://linkedin.com/company/nexeagle"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="relative group p-3 rounded-full bg-slate-900 border border-slate-800 hover:border-brand-teal transition-all duration-300"
+              >
+                <Linkedin className="w-4 h-4 text-slate-400 group-hover:text-brand-teal transition-colors relative z-10" />
+                <div className="absolute inset-0 bg-brand-teal/10 rounded-full blur-md opacity-0 group-hover:opacity-100 transition-opacity"></div>
+              </a>
             </div>
+          </div>
+
+          {/* Solutions Column */}
+          <div className="lg:col-span-2.5">
+            <h4 className="text-xs font-black uppercase tracking-widest text-slate-400 mb-6">
+              Solutions
+            </h4>
+            <ul className="space-y-4">
+              {solutionLinks.map((link) => (
+                <li key={link.name}>
+                  <Link
+                    to={link.href}
+                    className="text-slate-400 hover:text-brand-teal transition-colors text-sm font-medium"
+                  >
+                    {link.name}
+                  </Link>
+                </li>
+              ))}
+            </ul>
+          </div>
+
+          {/* Platform Column */}
+          <div className="lg:col-span-2">
+            <h4 className="text-xs font-black uppercase tracking-widest text-slate-400 mb-6">
+              Platform
+            </h4>
+            <ul className="space-y-4">
+              {platformLinks.map((link) => (
+                <li key={link.name}>
+                  <Link
+                    to={link.href}
+                    className="text-slate-400 hover:text-brand-teal transition-colors text-sm font-medium"
+                  >
+                    {link.name}
+                  </Link>
+                </li>
+              ))}
+            </ul>
+          </div>
+
+          {/* Resources Column */}
+          <div className="lg:col-span-2">
+            <h4 className="text-xs font-black uppercase tracking-widest text-slate-400 mb-6">
+              Resources
+            </h4>
+            <ul className="space-y-4">
+              {resourceLinks.map((link) => (
+                <li key={link.name}>
+                  <Link
+                    to={link.href}
+                    className="text-slate-400 hover:text-brand-teal transition-colors text-sm font-medium"
+                  >
+                    {link.name}
+                  </Link>
+                </li>
+              ))}
+            </ul>
+          </div>
+
+          {/* Company Column */}
+          <div className="lg:col-span-1.5">
+            <h4 className="text-xs font-black uppercase tracking-widest text-slate-400 mb-6">
+              Company
+            </h4>
+            <ul className="space-y-4">
+              {companyLinks.map((link) => (
+                <li key={link.name}>
+                  <Link
+                    to={link.href}
+                    className="text-slate-400 hover:text-brand-teal transition-colors text-sm font-medium"
+                  >
+                    {link.name}
+                  </Link>
+                </li>
+              ))}
+            </ul>
+          </div>
+        </div>
+
+        {/* Contact Info Block */}
+        <div className="border-t border-slate-900 py-10">
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+            <div className="flex items-center gap-3.5 p-4 rounded-2xl bg-slate-800/60 border border-slate-700/60 text-white text-sm font-bold transition-all duration-300 hover:border-brand-teal/50 hover:bg-slate-800/80 shadow-md">
+              <div className="w-8 h-8 rounded-lg bg-brand-teal/20 flex items-center justify-center text-brand-sky shrink-0">
+                <Phone className="w-4 h-4" />
+              </div>
+              <span className="text-white font-bold">+91 8074906808</span>
+            </div>
+            <div className="flex items-center gap-3.5 p-4 rounded-2xl bg-slate-800/60 border border-slate-700/60 text-white text-sm font-bold transition-all duration-300 hover:border-brand-teal/50 hover:bg-slate-800/80 shadow-md">
+              <div className="w-8 h-8 rounded-lg bg-brand-teal/20 flex items-center justify-center text-brand-sky shrink-0">
+                <Mail className="w-4 h-4" />
+              </div>
+              <span className="text-white font-bold">info@nexeagle.com</span>
+            </div>
+            <div className="flex items-center gap-3.5 p-4 rounded-2xl bg-slate-800/60 border border-slate-700/60 text-white text-sm font-bold transition-all duration-300 hover:border-brand-teal/50 hover:bg-slate-800/80 shadow-md">
+              <div className="w-8 h-8 rounded-lg bg-brand-teal/20 flex items-center justify-center text-brand-sky shrink-0">
+                <MapPin className="w-4 h-4" />
+              </div>
+              <span className="text-white font-bold">Kolkata, India</span>
+            </div>
+          </div>
+        </div>
+
+        {/* Bottom copyright and legal */}
+        <div className="border-t border-slate-900 py-8 flex flex-col sm:flex-row justify-between items-center gap-4 text-xs text-slate-500 font-medium">
+          <p>© {currentYear} NEXEAGLE. All rights reserved.</p>
+          <div className="flex gap-6">
+            <Link to="/privacy" className="hover:text-slate-300 transition-colors">
+              Privacy Policy
+            </Link>
+            <Link to="/terms" className="hover:text-slate-300 transition-colors">
+              Terms of Service
+            </Link>
+            <Link to="/security" className="hover:text-slate-300 transition-colors">
+              Security Standards
+            </Link>
           </div>
         </div>
       </div>

@@ -95,7 +95,7 @@ export const PlatformShowcase = () => {
             </h2>
             
             <p className="text-base sm:text-lg text-slate-600 font-light leading-relaxed">
-              Explore how NexEagle's central operations board naturally reflows across viewports, bringing scheduling, queue state, and billing together in one real-time command center.
+              Explore how NEXEAGLE's central operations board naturally reflows across viewports, bringing scheduling, queue state, and billing together in one real-time command center.
             </p>
           </div>
 
@@ -200,7 +200,7 @@ export const PlatformShowcase = () => {
                           N
                         </div>
                         <div className="flex flex-col">
-                          <span className="font-extrabold text-xs text-white tracking-wider">NexEagle</span>
+                          <span className="font-extrabold text-xs text-white tracking-wider">NEXEAGLE</span>
                           <span className="text-[9px] text-brand-sky font-semibold tracking-widest uppercase">1RAD OS</span>
                         </div>
                       </div>

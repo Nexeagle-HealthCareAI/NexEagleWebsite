@@ -1,7 +1,7 @@
 import { useEffect } from "react";
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
-import LiveChat from "@/components/LiveChat";
+import DeferredLiveChat from "@/components/DeferredLiveChat";
 import ProductsHero from "@/components/products/ProductsHero";
 import EcosystemOverview from "@/components/products/EcosystemOverview";
 import ProductDetails from "@/components/products/ProductDetails";
@@ -108,7 +108,7 @@ const Products = () => {
       </main>
       
       <Footer />
-      <LiveChat />
+      <DeferredLiveChat />
     </div>
   );
 };

@@ -597,7 +597,7 @@ export const HealthcareChallenges = () => {
         </svg>
       </div>
 
-      <div className="container relative z-10 px-4 sm:px-6 md:px-8 lg:px-12">
+      <div className="container mx-auto relative z-10 px-4 sm:px-6 md:px-8 lg:px-12">
         <div className="max-w-5xl mx-auto">
           {/* APPLE/LINEAR STYLE ANIMATED TITLE SECTION */}
           <div className="text-center space-y-6 mb-16 relative">
@@ -691,7 +691,7 @@ export const HealthcareChallenges = () => {
                   <div className="flex flex-col sm:flex-row items-center justify-center gap-4 pt-2">
                     <a 
                       href="#challenges-story"
-                      className="w-full sm:w-auto inline-flex items-center justify-center gap-2 px-6 py-3.5 rounded-2xl bg-slate-900 hover:bg-slate-800 text-white font-bold text-sm sm:text-base shadow-lg shadow-slate-950/10 hover:shadow-xl transition-all duration-300 group hover:-translate-y-0.5"
+                      className="w-full sm:w-auto inline-flex items-center justify-center gap-2 px-6 py-3.5 rounded-2xl bg-brand-teal hover:bg-brand-teal/90 text-white font-bold text-sm sm:text-base shadow-lg shadow-brand-teal/15 hover:shadow-xl transition-all duration-300 group hover:-translate-y-0.5"
                     >
                       <span>See How NexEagle Connects Healthcare Operations</span>
                       <ChevronRight className="w-4 h-4 sm:w-5 sm:h-5 text-white/80 group-hover:translate-x-1 transition-transform" />
@@ -719,11 +719,11 @@ export const HealthcareChallenges = () => {
                 transition={{ duration: 0.9, delay: 1.2, ease: [0.16, 1, 0.3, 1] as const }}
                 className="pt-16 border-t border-slate-100"
               >
-                <div className="text-center mb-8">
-                  <h3 className="text-xl sm:text-2xl font-bold text-slate-800 tracking-tight">
+                <div className="text-center mb-8 w-full flex flex-col items-center justify-center">
+                  <h3 className="text-xl sm:text-2xl font-bold text-slate-800 tracking-tight text-center w-full">
                     Struggles Healthcare Leaders Face Every Day
                   </h3>
-                  <p className="text-xs sm:text-sm text-slate-400 font-light mt-1">
+                  <p className="text-xs sm:text-sm text-slate-400 font-light mt-1 text-center mx-auto block w-full">
                     Select a stakeholder below to explore their operational questions and NexEagle insights.
                   </p>
                 </div>
@@ -855,7 +855,7 @@ export const HealthcareChallenges = () => {
                               >
                                 <a 
                                   href="#ecosystem"
-                                  className="inline-flex items-center justify-center gap-2 px-6 py-3.5 sm:px-8 sm:py-4 rounded-2xl bg-slate-900 hover:bg-slate-800 text-white font-bold text-sm sm:text-base shadow-lg shadow-slate-950/10 hover:shadow-xl transition-all duration-300 group hover:-translate-y-0.5"
+                                  className="inline-flex items-center justify-center gap-2 px-6 py-3.5 sm:px-8 sm:py-4 rounded-2xl bg-brand-teal hover:bg-brand-teal/90 text-white font-bold text-sm sm:text-base shadow-lg shadow-brand-teal/15 hover:shadow-xl transition-all duration-300 group hover:-translate-y-0.5"
                                 >
                                   <span>See How NexEagle Connects Healthcare Workflows</span>
                                   <ChevronRight className="w-4 h-4 sm:w-5 sm:h-5 text-white/80 group-hover:translate-x-1 transition-transform" />

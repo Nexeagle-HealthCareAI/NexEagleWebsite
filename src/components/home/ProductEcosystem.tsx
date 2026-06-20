@@ -1,5 +1,5 @@
 import React from "react";
-// import { Link } from "react-router-dom";
+import { Link } from "react-router-dom";
 // import { motion, AnimatePresence } from "framer-motion";
 import { 
   ArrowRight, Building2, Stethoscope, Pill, FlaskConical, Scan
@@ -95,7 +95,7 @@ const ProductEcosystem = () => {
 
   return (
     <section id="ecosystem" className="py-16 md:py-24 bg-background relative overflow-hidden">
-      <div className="container relative z-10 px-4 sm:px-6 md:px-8 lg:px-12">
+      <div className="container mx-auto relative z-10 px-4 sm:px-6 md:px-8 lg:px-12">
         <div className="max-w-6xl mx-auto">
           
           {/* Header */}
@@ -112,7 +112,7 @@ const ProductEcosystem = () => {
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4 md:gap-6">
             
             {/* 1HMS - Large Card */}
-            <div className="md:col-span-2 group relative p-8 rounded-[2rem] bg-card border border-border overflow-hidden hover:border-brand-teal/50 transition-all duration-500">
+            <Link to="/solutions/1hms" className="md:col-span-3 group relative p-8 rounded-[2rem] bg-card border border-border overflow-hidden hover:border-brand-teal/50 transition-all duration-500 cursor-pointer block">
               <div className="absolute inset-0 bg-gradient-to-br from-brand-teal/5 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
               
               <div className="relative z-10 h-full flex flex-col justify-between">
@@ -121,7 +121,7 @@ const ProductEcosystem = () => {
                     <Building2 className="w-8 h-8" />
                   </div>
                   <h3 className="text-2xl font-bold mb-2 text-foreground">1HMS (Hospital)</h3>
-                  <p className="text-muted-foreground max-w-md">Complete ecosystem for multi-specialty hospitals including patient records, appointments, and billing.</p>
+                  <p className="text-muted-foreground max-w-2xl">Complete ecosystem for multi-specialty hospitals including patient records, appointments, and billing.</p>
                 </div>
                 
                 <div className="mt-8 flex justify-end">
@@ -130,31 +130,10 @@ const ProductEcosystem = () => {
                   </div>
                 </div>
               </div>
-            </div>
-
-            {/* Clinic Setup - Small Card */}
-            <div className="group relative p-8 rounded-[2rem] bg-card border border-border overflow-hidden hover:border-brand-sky/50 transition-all duration-500">
-              <div className="absolute inset-0 bg-gradient-to-br from-brand-sky/5 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
-              
-              <div className="relative z-10 h-full flex flex-col justify-between">
-                <div>
-                  <div className="w-12 h-12 rounded-xl bg-brand-sky/10 text-brand-sky flex items-center justify-center mb-6">
-                    <Stethoscope className="w-6 h-6" />
-                  </div>
-                  <h3 className="text-xl font-bold mb-2 text-foreground">Clinic</h3>
-                  <p className="text-sm text-muted-foreground">Streamlined system for private clinics</p>
-                </div>
-                
-                <div className="mt-8 flex justify-end">
-                  <div className="w-10 h-10 rounded-full bg-secondary/10 flex items-center justify-center text-secondary group-hover:bg-brand-sky group-hover:text-white transition-all duration-300 transform group-hover:translate-x-2">
-                    <ArrowRight className="w-4 h-4" />
-                  </div>
-                </div>
-              </div>
-            </div>
+            </Link>
 
             {/* 1Pharma - Small Card */}
-            <div className="group relative p-8 rounded-[2rem] bg-card border border-border overflow-hidden hover:border-brand-iris/50 transition-all duration-500">
+            <Link to="/solutions/1pharma" className="group relative p-8 rounded-[2rem] bg-card border border-border overflow-hidden hover:border-brand-iris/50 transition-all duration-500 cursor-pointer block">
               <div className="absolute inset-0 bg-gradient-to-br from-brand-iris/5 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
               
               <div className="relative z-10 h-full flex flex-col justify-between">
@@ -172,10 +151,10 @@ const ProductEcosystem = () => {
                   </div>
                 </div>
               </div>
-            </div>
+            </Link>
 
             {/* 1Lab - Small Card */}
-            <div className="group relative p-8 rounded-[2rem] bg-card border border-border overflow-hidden hover:border-brand-teal/50 transition-all duration-500">
+            <Link to="/solutions/1lab" className="group relative p-8 rounded-[2rem] bg-card border border-border overflow-hidden hover:border-brand-teal/50 transition-all duration-500 cursor-pointer block">
               <div className="absolute inset-0 bg-gradient-to-br from-brand-teal/5 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
               
               <div className="relative z-10 h-full flex flex-col justify-between">
@@ -193,10 +172,10 @@ const ProductEcosystem = () => {
                   </div>
                 </div>
               </div>
-            </div>
+            </Link>
 
             {/* 1Rad - Small Card */}
-            <div className="group relative p-8 rounded-[2rem] bg-card border border-border overflow-hidden hover:border-brand-sky/50 transition-all duration-500">
+            <Link to="/solutions/1rad" className="group relative p-8 rounded-[2rem] bg-card border border-border overflow-hidden hover:border-brand-sky/50 transition-all duration-500 cursor-pointer block">
               <div className="absolute inset-0 bg-gradient-to-br from-brand-sky/5 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
               
               <div className="relative z-10 h-full flex flex-col justify-between">
@@ -214,7 +193,7 @@ const ProductEcosystem = () => {
                   </div>
                 </div>
               </div>
-            </div>
+            </Link>
 
           </div>
 

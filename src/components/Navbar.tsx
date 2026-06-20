@@ -4,6 +4,7 @@ import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
 import { Menu, X, ChevronDown, ArrowRight } from "lucide-react";
 import { Link, useNavigate, useLocation } from "react-router-dom";
 import { cn } from "@/lib/utils";
+import { Logo } from "./Logo";
 
 const Navbar = () => {
   const [isOpen, setIsOpen] = useState(false);
@@ -31,9 +32,9 @@ const Navbar = () => {
         { name: "1Lab", href: "/solutions/1lab" }
       ]
     },
-    { name: "NexEagle AI", href: "/ai" },
+    { name: "NEXEAGLE AI", href: "/ai" },
     // { name: "Pricing", href: "/pricing" },
-    { name: "About", href: "/team" },
+    { name: "Team", href: "/team" },
     { name: "Contact", href: "/contact" }
   ];
 
@@ -54,14 +55,12 @@ const Navbar = () => {
         ? "bg-background/80 backdrop-blur-xl border-b border-border shadow-[0_4px_30px_rgba(0,0,0,0.1)]" 
         : "bg-transparent"
     )}>
-      <div className="container px-6 md:px-8 lg:px-12">
+      <div className="container mx-auto px-6 md:px-8 lg:px-12">
         <div className="flex h-20 items-center justify-between">
           
           {/* Logo */}
-          <Link to="/" className="flex items-center gap-2 sm:gap-3 md:gap-4 group relative">
-            <span className="text-xl sm:text-2xl md:text-3xl lg:text-4xl font-bold text-foreground tracking-tight">
-              <span className="text-brand-teal">N</span>exEagle
-            </span>
+          <Link to="/" className="flex items-center group relative">
+            <Logo textSize="text-xl sm:text-2xl md:text-3xl lg:text-4xl" />
           </Link>
 
           {/* Desktop Navigation */}
@@ -152,7 +151,7 @@ const Navbar = () => {
                 {/* Mobile Header */}
                 <div className="flex items-center justify-between mb-8 pb-6 border-b border-border">
                   <div className="flex items-center gap-4">
-                    <span className="text-3xl font-bold text-foreground"><span className="text-brand-teal">N</span>exEagle</span>
+                    <Logo textSize="text-2xl" />
                   </div>
                 </div>
 

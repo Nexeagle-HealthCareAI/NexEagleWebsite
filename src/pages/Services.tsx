@@ -1,7 +1,7 @@
 import { useEffect } from "react";
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
-import LiveChat from "@/components/LiveChat";
+import DeferredLiveChat from "@/components/DeferredLiveChat";
 import SEO from "@/components/SEO";
 import ServicesHero from "@/components/services/ServicesHero";
 import ServicesOverview from "@/components/services/ServicesOverview";
@@ -111,7 +111,7 @@ const Services = () => {
       </main>
       
       <Footer />
-      <LiveChat />
+      <DeferredLiveChat />
     </div>
   );
 };

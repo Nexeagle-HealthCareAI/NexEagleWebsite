@@ -1,116 +1,73 @@
+import React from "react";
+
 const MissionVision = () => {
+  const values = [
+    {
+      title: "Clinician Empathy",
+      desc: "We build with deep respect for doctor-patient time. Every second saved on manual EMR data entry is returned directly to patient care."
+    },
+    {
+      title: "Highest Integrity",
+      desc: "Healthcare systems demand absolute reliability. Secure databases, user compliance, and patient data safety are built into our core foundation."
+    },
+    {
+      title: "Execution Speed",
+      desc: "Fast iteration, responsive support, and instant deployments. We deliver product setups in 48 hours and continuously refine on user feedback."
+    },
+    {
+      title: "Unified Ecosystem",
+      desc: "We think in systems, not features. Every clinical module (1HMS, 1Rad, 1Lab, 1Pharma) works in harmony to form a single source of truth."
+    }
+  ];
+
   return (
-    <section className="py-24 md:py-32 bg-slate-50">
-      <div className="container px-6 md:px-8 lg:px-12">
-        <div className="max-w-6xl mx-auto">
+    <section className="py-24 md:py-32 bg-slate-50 relative overflow-hidden select-none border-y border-slate-200/50">
+      
+      {/* Glow Effects */}
+      <div className="absolute top-1/4 left-1/4 w-[500px] h-[500px] bg-brand-teal/5 rounded-full blur-[120px] pointer-events-none z-0"></div>
+      
+      <div className="container relative z-10 px-6 md:px-8 lg:px-12 max-w-6xl mx-auto">
+        <div className="grid grid-cols-1 lg:grid-cols-12 gap-16 items-start">
           
-          {/* Header */}
-          <div className="text-center space-y-6 mb-16">
-            <p className="text-sm font-semibold uppercase tracking-wider text-teal-600">Why Choose Us</p>
+          {/* Left Column: Vision & Mission (5 cols) */}
+          <div className="lg:col-span-5 space-y-10 text-left">
+            <div className="space-y-4">
+              <h2 className="text-4xl md:text-5xl font-black text-slate-900 tracking-tight leading-tight">
+                Value & Vision.
+              </h2>
+            </div>
             
-            <h2 className="text-4xl md:text-5xl font-bold text-slate-900 leading-tight">
-              What makes us different.
-            </h2>
-            
-            <p className="text-xl text-slate-600 max-w-3xl mx-auto">
-              We're not just coders. We're your software partner who understands your business.
-            </p>
+            <div className="space-y-8">
+              <div className="space-y-2 relative overflow-hidden">
+                <div className="font-extrabold text-slate-900 text-lg md:text-xl">
+                  Our Vision
+                </div>
+                <p className="text-sm md:text-base text-slate-600 leading-relaxed font-normal">
+                  To build the clinical OS that connects medical providers, diagnostic networks, and AI assistants—eliminating clinician fatigue and maximizing patient outcomes.
+                </p>
+              </div>
+
+              <div className="space-y-2 relative overflow-hidden">
+                <div className="font-extrabold text-slate-900 text-lg md:text-xl">
+                  Our Mission
+                </div>
+                <p className="text-sm md:text-base text-slate-600 leading-relaxed font-normal">
+                  Empowering clinicians with real-time dictation reports, unified records, and intelligent checklists to deliver high-quality, mistake-free care.
+                </p>
+              </div>
+            </div>
           </div>
 
-          <div className="grid lg:grid-cols-3 gap-8">
-            
-            {/* Differentiator 1 */}
-            <div className="p-8 rounded-2xl bg-white border border-slate-200 hover:shadow-xl transition-shadow">
-              <div className="w-12 h-12 rounded-xl bg-teal-100 flex items-center justify-center mb-6">
-                <span className="text-2xl">🎯</span>
+          {/* Right Column: Core Values Grid (7 cols) - Pure Text Blocks */}
+          <div className="lg:col-span-7 grid grid-cols-1 sm:grid-cols-2 gap-x-10 gap-y-12 pt-2">
+            {values.map((val, idx) => (
+              <div key={idx} className="space-y-2.5">
+                <h3 className="text-lg md:text-xl font-extrabold text-slate-900">{val.title}</h3>
+                <p className="text-sm md:text-base text-slate-600 leading-relaxed font-normal">
+                  {val.desc}
+                </p>
               </div>
-              
-              <h3 className="text-xl font-bold text-slate-900 mb-3">We Understand Your Business</h3>
-              
-              <p className="text-slate-600 leading-relaxed">
-                We don't just write code. We take time to understand your business, your problems, 
-                and what you actually need. Then we build software that solves those problems.
-              </p>
-            </div>
-
-            {/* Differentiator 2 */}
-            <div className="p-8 rounded-2xl bg-white border border-slate-200 hover:shadow-xl transition-shadow">
-              <div className="w-12 h-12 rounded-xl bg-teal-100 flex items-center justify-center mb-6">
-                <span className="text-2xl">🏥</span>
-              </div>
-              
-              <h3 className="text-xl font-bold text-slate-900 mb-3">Healthcare Expertise</h3>
-              
-              <p className="text-slate-600 leading-relaxed">
-                We've built healthcare products used by real hospitals. We understand medical workflows, 
-                compliance, and what works in clinical settings. This expertise helps all our projects.
-              </p>
-            </div>
-
-            {/* Differentiator 3 */}
-            <div className="p-8 rounded-2xl bg-white border border-slate-200 hover:shadow-xl transition-shadow">
-              <div className="w-12 h-12 rounded-xl bg-teal-100 flex items-center justify-center mb-6">
-                <span className="text-2xl">👨‍🏫</span>
-              </div>
-              
-              <h3 className="text-xl font-bold text-slate-900 mb-3">We Train Your Team</h3>
-              
-              <p className="text-slate-600 leading-relaxed">
-                We don't just deliver software and disappear. We train your staff until they become experts. 
-                We're available 24/7 for support. We're your long-term partner.
-              </p>
-            </div>
-
-            {/* Differentiator 4 */}
-            <div className="p-8 rounded-2xl bg-white border border-slate-200 hover:shadow-xl transition-shadow">
-              <div className="w-12 h-12 rounded-xl bg-teal-100 flex items-center justify-center mb-6">
-                <span className="text-2xl">⚡</span>
-              </div>
-              
-              <h3 className="text-xl font-bold text-slate-900 mb-3">Fast & Reliable</h3>
-              
-              <p className="text-slate-600 leading-relaxed">
-                Our healthcare products set up in 48 hours. Our custom software projects deliver on time. 
-                We move fast without cutting corners.
-              </p>
-            </div>
-
-            {/* Differentiator 5 */}
-            <div className="p-8 rounded-2xl bg-white border border-slate-200 hover:shadow-xl transition-shadow">
-              <div className="w-12 h-12 rounded-xl bg-teal-100 flex items-center justify-center mb-6">
-                <span className="text-2xl">🔧</span>
-              </div>
-              
-              <h3 className="text-xl font-bold text-slate-900 mb-3">Built to Last</h3>
-              
-              <p className="text-slate-600 leading-relaxed">
-                We build software that's maintainable, scalable, and secure. Clean code. Good architecture. 
-                Software that works today and grows with your business.
-              </p>
-            </div>
-
-            {/* Differentiator 6 */}
-            <div className="p-8 rounded-2xl bg-white border border-slate-200 hover:shadow-xl transition-shadow">
-              <div className="w-12 h-12 rounded-xl bg-teal-100 flex items-center justify-center mb-6">
-                <span className="text-2xl">💬</span>
-              </div>
-              
-              <h3 className="text-xl font-bold text-slate-900 mb-3">Clear Communication</h3>
-              
-              <p className="text-slate-600 leading-relaxed">
-                No technical jargon. No surprises. We explain things in plain language. You always know 
-                what's happening with your project.
-              </p>
-            </div>
-
-          </div>
-
-          {/* Belief Statement */}
-          <div className="mt-16 p-10 rounded-3xl bg-gradient-to-br from-teal-600 to-teal-700 text-center">
-            <blockquote className="text-2xl md:text-3xl font-light text-white leading-relaxed">
-              "We build software based on what you need.<br />
-              Not what we want to sell you."
-            </blockquote>
+            ))}
           </div>
 
         </div>

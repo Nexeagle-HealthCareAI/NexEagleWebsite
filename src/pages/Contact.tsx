@@ -1,12 +1,12 @@
 import { useState } from "react";
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
-import LiveChat from "@/components/LiveChat";
+import DeferredLiveChat from "@/components/DeferredLiveChat";
 import SEO from "@/components/SEO";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
-import { Mail, Phone, MapPin, Clock, Send, Check, Calendar, MessageSquare, Sparkles, ArrowRight } from "lucide-react";
+import { Mail, Phone, MapPin, Clock, Send, Check, Calendar, MessageSquare, ArrowRight } from "lucide-react";
 
 const Contact = () => {
   const [formData, setFormData] = useState({
@@ -74,33 +74,6 @@ const Contact = () => {
     }
   };
 
-  const contactMethods = [
-    {
-      icon: Mail,
-      title: "Email Us",
-      primary: "info@nexeagle.com",
-      secondary: "sales@nexeagle.com",
-      description: "Get a response within 24 hours",
-      color: "blue"
-    },
-    {
-      icon: Phone,
-      title: "Call Us",
-      primary: "+91 8074906808",
-      secondary: "Mon-Fri, 9AM-6PM IST",
-      description: "Speak with our team",
-      color: "green"
-    },
-    {
-      icon: MapPin,
-      title: "Visit Us",
-      primary: "Kolkata, India",
-      secondary: "By appointment only",
-      description: "Meet us in person",
-      color: "purple"
-    }
-  ];
-
   const structuredData = {
     "@context": "https://schema.org",
     "@type": "ContactPage",
@@ -129,317 +102,253 @@ const Contact = () => {
       />
       <Navbar />
       
-      {/* Hero Section - Mobile optimized */}
-      <section className="pt-24 sm:pt-28 md:pt-32 pb-12 sm:pb-16 md:pb-20 bg-gradient-to-b from-slate-50 to-white">
-        <div className="container px-4 sm:px-6 md:px-8 lg:px-12">
-          <div className="max-w-4xl mx-auto text-center">
-            <div className="inline-flex items-center gap-2 px-3 sm:px-4 py-1.5 sm:py-2 rounded-full bg-blue-100 text-blue-700 text-xs sm:text-sm font-semibold mb-4 sm:mb-6">
-              <Sparkles className="w-3 h-3 sm:w-4 sm:h-4 flex-shrink-0" />
-              <span>Let's Talk</span>
-            </div>
-            <h1 className="text-3xl sm:text-4xl md:text-5xl lg:text-6xl font-bold text-slate-900 mb-4 sm:mb-6 px-4 sm:px-0">
-              Get in Touch
-            </h1>
-            <p className="text-base sm:text-lg md:text-xl text-slate-600 leading-relaxed px-4 sm:px-0">
-              Whether you need a healthcare solution or a product engineering partner, we're here to help you succeed.
-            </p>
-          </div>
+      {/* Hero Section */}
+      <section className="relative overflow-hidden pt-32 pb-16 bg-gradient-to-b from-teal-50/20 via-white to-white select-none">
+        <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[600px] h-[600px] bg-brand-teal/5 pointer-events-none rounded-full blur-[140px] z-0"></div>
+        
+        <div className="container relative z-10 px-6 md:px-8 lg:px-12 max-w-5xl mx-auto text-center space-y-6">
+          <h1 className="text-4xl md:text-5xl lg:text-6xl font-black text-slate-900 tracking-tight leading-tight">
+            Get in Touch.
+          </h1>
+          <p className="text-lg md:text-xl text-slate-600 max-w-2xl mx-auto font-light leading-relaxed">
+            Whether you need a unified clinical system or a product engineering partner, we're here to help you deploy and scale.
+          </p>
         </div>
       </section>
 
-      {/* Contact Methods - Premium Cards - Mobile optimized */}
-      <section className="py-12 sm:py-16 bg-gradient-to-b from-white to-slate-50">
-        <div className="container px-4 sm:px-6 md:px-8 lg:px-12">
-          <div className="max-w-6xl mx-auto">
-            <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4 sm:gap-6 md:gap-8">
-              {contactMethods.map((method, index) => (
-                <a
-                  key={index}
-                  href={
-                    method.icon === Mail
-                      ? `mailto:${method.primary}`
-                      : method.icon === Phone
-                      ? `tel:${method.primary}`
-                      : undefined
-                  }
-                  className="group relative overflow-hidden"
-                >
-                  {/* Card Container */}
-                  <div className="relative p-6 sm:p-8 rounded-2xl sm:rounded-3xl bg-white border-2 border-slate-200 hover:border-blue-500 shadow-lg hover:shadow-2xl transition-all duration-300 h-full">
-                    
-                    {/* Gradient Overlay on Hover */}
-                    <div className="absolute inset-0 bg-gradient-to-br from-blue-50/0 to-blue-100/0 group-hover:from-blue-50/50 group-hover:to-blue-100/30 rounded-2xl sm:rounded-3xl transition-all duration-300" />
-                    
-                    {/* Content */}
-                    <div className="relative z-10">
-                      {/* Icon with Glow Effect */}
-                      <div className="relative mb-4 sm:mb-6">
-                        <div className="absolute inset-0 bg-blue-500/20 blur-2xl rounded-full opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
-                        <div className="relative w-14 h-14 sm:w-16 sm:h-16 rounded-xl sm:rounded-2xl bg-gradient-to-br from-blue-600 to-blue-700 flex items-center justify-center shadow-lg shadow-blue-600/25 group-hover:scale-110 group-hover:rotate-3 transition-all duration-300">
-                          <method.icon className="w-7 h-7 sm:w-8 sm:h-8 text-white" />
-                        </div>
-                      </div>
-                      
-                      {/* Title */}
-                      <h3 className="text-lg sm:text-xl font-bold text-slate-900 mb-3 sm:mb-4 group-hover:text-blue-600 transition-colors">
-                        {method.title}
-                      </h3>
-                      
-                      {/* Primary Info */}
-                      <p className="text-base sm:text-lg font-bold text-slate-900 mb-2 break-all">
-                        {method.primary}
-                      </p>
-                      
-                      {/* Secondary Info */}
-                      <p className="text-xs sm:text-sm font-medium text-slate-600 mb-3 sm:mb-4">
-                        {method.secondary}
-                      </p>
-                      
-                      {/* Description with Arrow */}
-                      <div className="flex items-center gap-2 text-xs sm:text-sm font-semibold text-blue-600 group-hover:gap-3 transition-all">
-                        <span>{method.description}</span>
-                        <ArrowRight className="w-3 h-3 sm:w-4 sm:h-4 group-hover:translate-x-1 transition-transform flex-shrink-0" />
-                      </div>
-                    </div>
-                    
-                    {/* Decorative Corner Element */}
-                    <div className="absolute top-0 right-0 w-24 h-24 sm:w-32 sm:h-32 bg-gradient-to-br from-blue-500/5 to-transparent rounded-bl-full opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
-                  </div>
-                </a>
-              ))}
+      {/* Main Grid Content */}
+      <section className="container px-6 md:px-8 lg:px-12 max-w-5xl mx-auto pb-24">
+        <div className="grid grid-cols-1 lg:grid-cols-12 gap-12 lg:gap-16">
+          
+          {/* Contact Form Container (7 Cols) */}
+          <div className="lg:col-span-7 space-y-8">
+            <div className="space-y-3">
+              <h2 className="text-2xl md:text-3xl font-black text-slate-900 tracking-tight">
+                Send us a message.
+              </h2>
+              <p className="text-slate-500 text-sm md:text-base leading-relaxed">
+                Fill out the form below. Our clinical onboarding advisers or engineering team will get back to you within 24 hours.
+              </p>
             </div>
-          </div>
-        </div>
-      </section>
 
-      {/* Main Contact Form Section - Mobile optimized */}
-      <section className="py-12 sm:py-16 md:py-20 bg-white">
-        <div className="container px-4 sm:px-6 md:px-8 lg:px-12">
-          <div className="max-w-5xl mx-auto">
-            <div className="grid lg:grid-cols-2 gap-8 sm:gap-10 md:gap-12">
-              
-              {/* Contact Form */}
-              <div>
-                <h2 className="text-2xl sm:text-3xl font-bold text-slate-900 mb-3 sm:mb-4">
-                  Send us a message
-                </h2>
-                <p className="text-base sm:text-lg text-slate-600 mb-6 sm:mb-8">
-                  Fill out the form and we'll get back to you within 24 hours.
+            {isSubmitted ? (
+              <div className="text-center py-16 px-6 bg-slate-50 rounded-3xl border border-brand-teal/20 space-y-4 select-none">
+                <div className="w-14 h-14 bg-teal-50 border border-brand-teal/20 rounded-2xl flex items-center justify-center mx-auto">
+                  <Check className="w-7 h-7 text-brand-teal" />
+                </div>
+                <h3 className="text-2xl font-black text-slate-900">Message Sent!</h3>
+                <p className="text-slate-500 text-sm md:text-base">
+                  Thank you for reaching out. We will review your details and contact you shortly.
                 </p>
-
-                {isSubmitted ? (
-                  <div className="text-center py-12 px-6 bg-green-50 rounded-2xl border-2 border-green-200">
-                    <div className="w-16 h-16 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-4">
-                      <Check className="w-8 h-8 text-green-600" />
-                    </div>
-                    <h3 className="text-2xl font-bold text-slate-900 mb-2">Message Sent!</h3>
-                    <p className="text-slate-600">We'll get back to you within 24 hours.</p>
-                  </div>
-                ) : (
-                  <form onSubmit={handleSubmit} className="space-y-6">
-                    {submitError && (
-                      <div className="rounded-xl border-2 border-red-200 bg-red-50 text-red-700 px-4 py-3 text-sm">
-                        {submitError}
-                      </div>
-                    )}
-
-                    <div className="grid md:grid-cols-2 gap-4">
-                      <div>
-                        <label htmlFor="firstName" className="block text-sm font-semibold text-slate-900 mb-2">
-                          Name *
-                        </label>
-                        <Input 
-                          id="firstName" 
-                          name="firstName"
-                          value={formData.firstName}
-                          onChange={handleInputChange}
-                          placeholder="John Doe" 
-                          required
-                          className="h-12 border-2 border-slate-200 focus:border-blue-500"
-                        />
-                      </div>
-                      <div>
-                        <label htmlFor="email" className="block text-sm font-semibold text-slate-900 mb-2">
-                          Email *
-                        </label>
-                        <Input 
-                          id="email" 
-                          name="email"
-                          type="email" 
-                          value={formData.email}
-                          onChange={handleInputChange}
-                          placeholder="john@company.com" 
-                          required
-                          className="h-12 border-2 border-slate-200 focus:border-blue-500"
-                        />
-                      </div>
-                    </div>
-
-                    <div className="grid md:grid-cols-2 gap-4">
-                      <div>
-                        <label htmlFor="phone" className="block text-sm font-semibold text-slate-900 mb-2">
-                          Phone *
-                        </label>
-                        <Input 
-                          id="phone" 
-                          name="phone"
-                          type="tel" 
-                          value={formData.phone}
-                          onChange={handleInputChange}
-                          placeholder="+91 98765 43210" 
-                          required
-                          className="h-12 border-2 border-slate-200 focus:border-blue-500"
-                        />
-                      </div>
-                      <div>
-                        <label htmlFor="company" className="block text-sm font-semibold text-slate-900 mb-2">
-                          Company
-                        </label>
-                        <Input 
-                          id="company" 
-                          name="company"
-                          value={formData.company}
-                          onChange={handleInputChange}
-                          placeholder="Your company name" 
-                          className="h-12 border-2 border-slate-200 focus:border-blue-500"
-                        />
-                      </div>
-                    </div>
-                    
-                    <div>
-                      <label htmlFor="message" className="block text-sm font-semibold text-slate-900 mb-2">
-                        Message *
-                      </label>
-                      <Textarea 
-                        id="message" 
-                        name="message"
-                        value={formData.message}
-                        onChange={handleInputChange}
-                        placeholder="Tell us about your project or question..."
-                        rows={6}
-                        required
-                        className="border-2 border-slate-200 focus:border-blue-500 resize-none"
-                      />
-                    </div>
-                    
-                    <Button 
-                      type="submit" 
-                      className="w-full h-12 bg-slate-900 hover:bg-slate-800 text-white font-semibold text-base shadow-xl"
-                      disabled={isSubmitting}
-                    >
-                      {isSubmitting ? (
-                        <>
-                          <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white mr-2"></div>
-                          Sending...
-                        </>
-                      ) : (
-                        <>
-                          <span className="text-white">Send Message</span>
-                          <Send className="ml-2 h-4 w-4 text-white" />
-                        </>
-                      )}
-                    </Button>
-
-                    <p className="text-sm text-slate-500 text-center">
-                      By submitting this form, you agree to our{" "}
-                      <a href="/privacy" className="text-blue-600 hover:text-blue-700 font-medium">
-                        Privacy Policy
-                      </a>
-                    </p>
-                  </form>
-                )}
               </div>
-
-              {/* Right Side Info */}
-              <div className="space-y-8">
-                {/* Office Hours */}
-                <div className="p-8 rounded-2xl bg-gradient-to-br from-blue-50 to-white border-2 border-blue-100">
-                  <div className="flex items-center gap-3 mb-6">
-                    <div className="w-12 h-12 rounded-xl bg-blue-600 flex items-center justify-center">
-                      <Clock className="w-6 h-6 text-white" />
-                    </div>
-                    <h3 className="text-xl font-bold text-slate-900">Office Hours</h3>
+            ) : (
+              <form onSubmit={handleSubmit} className="space-y-6">
+                {submitError && (
+                  <div className="rounded-2xl border border-red-200 bg-red-50 text-red-700 px-5 py-4 text-xs md:text-sm font-medium">
+                    {submitError}
                   </div>
-                  <div className="space-y-3">
-                    <div className="flex justify-between items-center">
-                      <span className="text-slate-600 font-medium">Monday - Friday</span>
-                      <span className="font-bold text-slate-900">9:00 AM - 6:00 PM</span>
-                    </div>
-                    <div className="flex justify-between items-center">
-                      <span className="text-slate-600 font-medium">Saturday</span>
-                      <span className="font-bold text-slate-900">10:00 AM - 4:00 PM</span>
-                    </div>
-                    <div className="flex justify-between items-center">
-                      <span className="text-slate-600 font-medium">Sunday</span>
-                      <span className="font-bold text-slate-900">Closed</span>
-                    </div>
-                  </div>
-                  <div className="mt-6 pt-6 border-t-2 border-blue-200">
-                    <p className="text-sm text-slate-700">
-                      <span className="font-bold text-slate-900">Emergency Support:</span> Available 24/7 for Enterprise customers
-                    </p>
-                  </div>
-                </div>
+                )}
 
-                {/* Quick Actions */}
-                <div className="p-8 rounded-2xl bg-gradient-to-br from-slate-50 to-white border-2 border-slate-200">
-                  <h3 className="text-xl font-bold text-slate-900 mb-6">Quick Actions</h3>
-                  <div className="space-y-4">
-                    <a
-                      href="mailto:info@nexeagle.com"
-                      className="flex items-center gap-4 p-4 rounded-xl bg-white border-2 border-slate-200 hover:border-blue-500 hover:shadow-md transition-all group"
-                    >
-                      <div className="w-10 h-10 rounded-lg bg-blue-100 flex items-center justify-center group-hover:bg-blue-600 transition-colors">
-                        <Calendar className="w-5 h-5 text-blue-600 group-hover:text-white transition-colors" />
-                      </div>
-                      <div>
-                        <p className="font-semibold text-slate-900">Schedule a Demo</p>
-                        <p className="text-sm text-slate-600">See our products in action</p>
-                      </div>
-                    </a>
-
-                    <a
-                      href="mailto:sales@nexeagle.com"
-                      className="flex items-center gap-4 p-4 rounded-xl bg-white border-2 border-slate-200 hover:border-blue-500 hover:shadow-md transition-all group"
-                    >
-                      <div className="w-10 h-10 rounded-lg bg-green-100 flex items-center justify-center group-hover:bg-green-600 transition-colors">
-                        <MessageSquare className="w-5 h-5 text-green-600 group-hover:text-white transition-colors" />
-                      </div>
-                      <div>
-                        <p className="font-semibold text-slate-900">Talk to Sales</p>
-                        <p className="text-sm text-slate-600">Discuss pricing and plans</p>
-                      </div>
-                    </a>
-                  </div>
-                </div>
-
-                {/* Office Location */}
-                <div className="p-8 rounded-2xl bg-gradient-to-br from-slate-50 to-white border-2 border-slate-200">
-                  <div className="flex items-center gap-3 mb-4">
-                    <div className="w-12 h-12 rounded-xl bg-slate-900 flex items-center justify-center">
-                      <MapPin className="w-6 h-6 text-white" />
-                    </div>
-                    <h3 className="text-xl font-bold text-slate-900">Our Office</h3>
+                <div className="grid md:grid-cols-2 gap-4">
+                  <div className="space-y-2">
+                    <label htmlFor="firstName" className="block text-xs font-bold text-slate-700 uppercase tracking-wider">
+                      Name *
+                    </label>
+                    <Input 
+                      id="firstName" 
+                      name="firstName"
+                      value={formData.firstName}
+                      onChange={handleInputChange}
+                      placeholder="John Doe" 
+                      required
+                      className="h-12 border border-slate-200 focus:border-brand-teal/40 focus:ring-brand-teal/20 rounded-xl"
+                    />
                   </div>
                   <div className="space-y-2">
-                    <p className="font-bold text-slate-900">NexEagle</p>
-                    <p className="text-slate-600 leading-relaxed">
-                      Kolkata, West Bengal<br />
-                      India
-                    </p>
-                    <p className="text-sm text-slate-500 mt-4 pt-4 border-t-2 border-slate-200">
-                      <span className="font-semibold text-slate-900">Note:</span> Visits by appointment only
-                    </p>
+                    <label htmlFor="email" className="block text-xs font-bold text-slate-700 uppercase tracking-wider">
+                      Email *
+                    </label>
+                    <Input 
+                      id="email" 
+                      name="email"
+                      type="email" 
+                      value={formData.email}
+                      onChange={handleInputChange}
+                      placeholder="john@company.com" 
+                      required
+                      className="h-12 border border-slate-200 focus:border-brand-teal/40 focus:ring-brand-teal/20 rounded-xl"
+                    />
                   </div>
                 </div>
+
+                <div className="grid md:grid-cols-2 gap-4">
+                  <div className="space-y-2">
+                    <label htmlFor="phone" className="block text-xs font-bold text-slate-700 uppercase tracking-wider">
+                      Phone *
+                    </label>
+                    <Input 
+                      id="phone" 
+                      name="phone"
+                      type="tel" 
+                      value={formData.phone}
+                      onChange={handleInputChange}
+                      placeholder="+91 98765 43210" 
+                      required
+                      className="h-12 border border-slate-200 focus:border-brand-teal/40 focus:ring-brand-teal/20 rounded-xl"
+                    />
+                  </div>
+                  <div className="space-y-2">
+                    <label htmlFor="company" className="block text-xs font-bold text-slate-700 uppercase tracking-wider">
+                      Company / Hospital
+                    </label>
+                    <Input 
+                      id="company" 
+                      name="company"
+                      value={formData.company}
+                      onChange={handleInputChange}
+                      placeholder="Care Hospital" 
+                      className="h-12 border border-slate-200 focus:border-brand-teal/40 focus:ring-brand-teal/20 rounded-xl"
+                    />
+                  </div>
+                </div>
+                
+                <div className="space-y-2">
+                  <label htmlFor="message" className="block text-xs font-bold text-slate-700 uppercase tracking-wider">
+                    Message *
+                  </label>
+                  <Textarea 
+                    id="message" 
+                    name="message"
+                    value={formData.message}
+                    onChange={handleInputChange}
+                    placeholder="Describe your workflows, scaling issues, or requested products..."
+                    rows={6}
+                    required
+                    className="border border-slate-200 focus:border-brand-teal/40 focus:ring-brand-teal/20 rounded-xl resize-none"
+                  />
+                </div>
+                
+                <Button 
+                  type="submit" 
+                  className="w-full h-12 bg-slate-900 hover:bg-slate-800 text-white font-semibold text-base rounded-full shadow-md transition-all duration-300"
+                  disabled={isSubmitting}
+                >
+                  {isSubmitting ? (
+                    <>
+                      <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white mr-2"></div>
+                      Sending...
+                    </>
+                  ) : (
+                    <>
+                      <span className="text-white">Send Message</span>
+                      <Send className="ml-2 h-4 w-4 text-white" />
+                    </>
+                  )}
+                </Button>
+
+                <p className="text-xs text-slate-400 text-center select-none">
+                  By submitting this form, you agree to our{" "}
+                  <a href="/privacy" className="text-brand-teal hover:underline font-medium">
+                    Privacy Policy
+                  </a>
+                </p>
+              </form>
+            )}
+          </div>
+          
+          {/* Info Panels Container (5 Cols) */}
+          <div className="lg:col-span-5 space-y-8 select-none">
+            
+            {/* Quick Actions Card */}
+            <div className="p-8 rounded-3xl border border-slate-200/80 bg-slate-50 space-y-6">
+              <h3 className="text-xl font-bold text-slate-900">Quick Actions</h3>
+              <div className="space-y-4">
+                <a
+                  href="mailto:info@nexeagle.com"
+                  className="flex items-center gap-4 p-4 rounded-2xl bg-white border border-slate-200 hover:border-brand-teal/40 hover:shadow-[0_8px_20px_rgba(20,184,166,0.03)] transition-all group"
+                >
+                  <div className="w-10 h-10 rounded-xl bg-teal-50 border border-brand-teal/10 flex items-center justify-center shrink-0">
+                    <Calendar className="w-5 h-5 text-brand-teal" />
+                  </div>
+                  <div className="min-w-0 flex-1">
+                    <p className="font-bold text-slate-900 text-sm group-hover:text-brand-teal transition-colors">Schedule a Demo</p>
+                    <p className="text-xs text-slate-500 truncate">See 1HMS & 1Rad PACS in action</p>
+                  </div>
+                  <ArrowRight className="w-4 h-4 text-slate-400 group-hover:translate-x-1 transition-transform shrink-0" />
+                </a>
+
+                <a
+                  href="mailto:sales@nexeagle.com"
+                  className="flex items-center gap-4 p-4 rounded-2xl bg-white border border-slate-200 hover:border-brand-teal/40 hover:shadow-[0_8px_20px_rgba(20,184,166,0.03)] transition-all group"
+                >
+                  <div className="w-10 h-10 rounded-xl bg-teal-50 border border-brand-teal/10 flex items-center justify-center shrink-0">
+                    <MessageSquare className="w-5 h-5 text-brand-teal" />
+                  </div>
+                  <div className="min-w-0 flex-1">
+                    <p className="font-bold text-slate-900 text-sm group-hover:text-brand-teal transition-colors">Talk to Sales</p>
+                    <p className="text-xs text-slate-500 truncate">Discuss custom pricing & plans</p>
+                  </div>
+                  <ArrowRight className="w-4 h-4 text-slate-400 group-hover:translate-x-1 transition-transform shrink-0" />
+                </a>
               </div>
             </div>
+
+            {/* Office Hours Panel */}
+            <div className="p-8 rounded-3xl border border-slate-200/80 bg-white space-y-6">
+              <div className="flex items-center gap-3.5">
+                <div className="w-10 h-10 rounded-xl bg-slate-50 border border-slate-200 flex items-center justify-center">
+                  <Clock className="w-5 h-5 text-slate-700" />
+                </div>
+                <h3 className="text-lg font-bold text-slate-900">Office Hours</h3>
+              </div>
+              <div className="space-y-3 text-sm">
+                <div className="flex justify-between items-center pb-2 border-b border-slate-100">
+                  <span className="text-slate-500 font-medium">Monday - Friday</span>
+                  <span className="font-bold text-slate-900">9:00 AM - 6:00 PM</span>
+                </div>
+                <div className="flex justify-between items-center pb-2 border-b border-slate-100">
+                  <span className="text-slate-500 font-medium">Saturday</span>
+                  <span className="font-bold text-slate-900">10:00 AM - 4:00 PM</span>
+                </div>
+                <div className="flex justify-between items-center">
+                  <span className="text-slate-500 font-medium">Sunday</span>
+                  <span className="font-bold text-slate-900">Closed</span>
+                </div>
+              </div>
+              <div className="pt-4 border-t border-slate-100">
+                <p className="text-xs text-slate-500 leading-relaxed">
+                  <strong>Emergency Support:</strong> Technical support channels are available 24/7 for clinical enterprise tier installations.
+                </p>
+              </div>
+            </div>
+
+            {/* Office Location Panel */}
+            <div className="p-8 rounded-3xl border border-slate-200/80 bg-white space-y-6">
+              <div className="flex items-center gap-3.5">
+                <div className="w-10 h-10 rounded-xl bg-slate-50 border border-slate-200 flex items-center justify-center">
+                  <MapPin className="w-5 h-5 text-slate-700" />
+                </div>
+                <h3 className="text-lg font-bold text-slate-900">Our Office</h3>
+              </div>
+              <div className="space-y-2 text-sm leading-relaxed text-slate-600">
+                <p className="font-bold text-slate-950">NexEagle</p>
+                <p>
+                  Kolkata, West Bengal<br />
+                  India
+                </p>
+                <p className="text-xs text-slate-400 pt-4 border-t border-slate-100">
+                  Note: Client visits by appointment only.
+                </p>
+              </div>
+            </div>
+
           </div>
+
         </div>
       </section>
 
       <Footer />
-      <LiveChat />
+      <DeferredLiveChat />
     </div>
   );
 };

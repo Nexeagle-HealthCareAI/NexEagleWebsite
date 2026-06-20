@@ -1,10 +1,26 @@
+import { useState, useEffect } from "react";
 import { Link } from "react-router-dom";
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
 import SEO from "@/components/SEO";
-import { Shield, Lock, Eye, Server, AlertTriangle, CheckCircle, FileCheck, Users, Database, Key, Activity, Bell } from "lucide-react";
+import { Clock, Mail, Phone, MapPin, CheckCircle, AlertTriangle, ShieldCheck, Server, Key, Eye, Database, Users } from "lucide-react";
+
+interface SubSection {
+  subtitle?: string;
+  text: string;
+  items?: string[];
+}
+
+interface Section {
+  id: string;
+  title: string;
+  description: string;
+  content: SubSection[];
+}
 
 const Security = () => {
+  const [activeSection, setActiveSection] = useState("certifications");
+
   const structuredData = {
     "@context": "https://schema.org",
     "@type": "WebPage",
@@ -21,604 +37,438 @@ const Security = () => {
       ]
     }
   };
+
   const certifications = [
     {
-      name: "HIPAA",
-      description: "Health Insurance Portability and Accountability Act compliant",
-      status: "Certified"
-    },
-    {
-      name: "GDPR",
-      description: "General Data Protection Regulation compliant",
+      name: "HIPAA Compliant",
+      description: "Adheres to the Health Insurance Portability and Accountability Act standards for safeguarding PHI.",
       status: "Compliant"
     },
     {
-      name: "ISO 27001",
-      description: "Information Security Management System",
+      name: "GDPR Compliant",
+      description: "Meets the General Data Protection Regulation criteria for personal data security and privacy.",
+      status: "Compliant"
+    },
+    {
+      name: "ISO 27001 Certified",
+      description: "International standard for information security management systems (ISMS) implementation.",
       status: "Certified"
     },
     {
       name: "SOC 2 Type II",
-      description: "Service Organization Control 2 audit",
+      description: "Audited for security, availability, and processing integrity of client data systems.",
       status: "Certified"
     }
   ];
 
-  const securityFeatures = [
+  const sections: Section[] = [
     {
-      icon: Lock,
-      title: "Data Encryption",
-      description: "End-to-end encryption for data in transit and at rest",
-      details: [
-        "AES-256 encryption for data at rest",
-        "TLS 1.3 for data in transit",
-        "Encrypted database backups",
-        "Secure key management with HSM"
+      id: "certifications",
+      title: "Certifications & Compliance",
+      description: "We validate our application boundaries against international audits and clinical compliance mandates.",
+      content: [
+        {
+          subtitle: "Enterprise Auditing Standards",
+          text: "NexEagle underwent rigorous verification audits to validate data handling security across our core EHR and PACS products. We maintain standard business associate agreements (BAAs) with clinical organizations to guarantee technical safety under HIPAA guidelines."
+        }
       ]
     },
     {
-      icon: Key,
-      title: "Access Control",
-      description: "Multi-layered authentication and authorization",
-      details: [
-        "Multi-factor authentication (MFA)",
-        "Role-based access control (RBAC)",
-        "Single Sign-On (SSO) support",
-        "Session management and timeout"
+      id: "security-features",
+      title: "Technical Security Features",
+      description: "Multi-layered technical guardrails deployed across application logic and cloud networks.",
+      content: [
+        {
+          subtitle: "Data Encryption & Transport",
+          text: "We secure data using AES-256 encryption at rest and TLS 1.3 in transit. Backup sets are encrypted using unique keys managed by cloud Hardware Security Modules (HSMs)."
+        },
+        {
+          subtitle: "Identity & Access Isolation",
+          text: "Access to production clusters requires Multi-Factor Authentication (MFA). Systems enforce Role-Based Access Control (RBAC), Single Sign-On (SSO) links, and session lease management."
+        },
+        {
+          subtitle: "Network & Infrastructure Shielding",
+          text: "Our applications run on isolated Virtual Private Clouds (VPCs) hosted in Tier-III facilities. We route traffic through Web Application Firewalls (WAFs) and DDoS mitigation clusters."
+        }
       ]
     },
     {
-      icon: Server,
-      title: "Infrastructure Security",
-      description: "Enterprise-grade cloud infrastructure",
-      details: [
-        "AWS/Azure secure cloud hosting",
-        "DDoS protection and WAF",
-        "Network segmentation and isolation",
-        "Regular security patches and updates"
+      id: "hipaa-safeguards",
+      title: "HIPAA Compliance Safeguards",
+      description: "Comprehensive administrative, physical, and technical measures guarding patient data registries.",
+      content: [
+        {
+          subtitle: "Administrative Protocol",
+          text: "Includes mandatory staff security training, formal risk assessment cycles, designated data protection officers, and formal security incident handling procedures."
+        },
+        {
+          subtitle: "Physical Shielding",
+          text: "Covers hosting in ISO 27001 certified AWS/Azure facilities, hardware disposal pipelines, automated physical facility logging, and biometric access restrictions."
+        },
+        {
+          subtitle: "Technical Controls",
+          text: "Comprises detailed audit log archiving, system login verification, database integrity controls, and SSL/TLS transmission encryption pipelines."
+        }
       ]
     },
     {
-      icon: Eye,
-      title: "Monitoring & Logging",
-      description: "24/7 security monitoring and audit trails",
-      details: [
-        "Real-time threat detection",
-        "Comprehensive audit logging",
-        "SIEM integration",
-        "Automated alerting system"
+      id: "incident-response",
+      title: "Incident Response Protocols",
+      description: "Documented pathways to identify, isolate, resolve, and report security anomalies.",
+      content: [
+        {
+          subtitle: "Phase 1: Detection & Triage",
+          text: "Our Security Operations Center (SOC) monitors system logs around the clock. Any anomaly triggers immediate alarms and spins up an incident response squad."
+        },
+        {
+          subtitle: "Phase 2: Isolation & Containment",
+          text: "Engineers apply containment parameters, isolating affected containers or disabling compromised API tokens, preserving data integrity and preventing threat propagation."
+        },
+        {
+          subtitle: "Phase 3: Remediation & Recovery",
+          text: "Vulnerable packages are updated and services restored. If a confirmed data breach of PHI occurs, we notify affected organizations within 72 hours."
+        }
       ]
     },
     {
-      icon: Database,
-      title: "Data Protection",
-      description: "Robust data backup and recovery",
-      details: [
-        "Automated daily backups",
-        "Point-in-time recovery",
-        "Geographic redundancy",
-        "Disaster recovery plan (RTO < 4 hours)"
+      id: "security-practices",
+      title: "Ongoing Security Practices",
+      description: "Proactive development cycles designed to keep applications resilient against emerging threats.",
+      content: [
+        {
+          subtitle: "Penetration Testing & Security Audits",
+          text: "We engage external CREST-certified auditors annually to conduct grey-box penetration tests across our applications and Cloud PACS APIs."
+        },
+        {
+          subtitle: "OWASP Hardening & Vulnerability Management",
+          text: "Our build pipelines run automated static code analysis (SAST) and software composition analysis (SCA) to flag vulnerable code dependencies before deployment."
+        }
       ]
     },
     {
-      icon: Users,
-      title: "Application Security",
-      description: "Secure development lifecycle",
-      details: [
-        "Regular penetration testing",
-        "Vulnerability scanning",
-        "Secure code reviews",
-        "OWASP Top 10 compliance"
+      id: "data-residency",
+      title: "Data Residency & Retention",
+      description: "Geographic database isolation and structured records maintenance compliance.",
+      content: [
+        {
+          subtitle: "Local Data Sovereignty",
+          text: "To support regulatory requirements, all clinical and billing data is hosted on local servers inside India. Redundant clusters are placed in isolated geographic zones for disaster recovery."
+        },
+        {
+          subtitle: "Purging & Archival Policies",
+          text: "Patient records are preserved in accordance with statutory medical records retention timelines. Once contract terms expire, clinical data is securely wiped using DoD-standard purging methods."
+        }
       ]
     }
   ];
 
-  const practices = [
-    {
-      icon: FileCheck,
-      title: "Security Audits",
-      description: "Regular third-party security assessments and penetration testing to identify and address vulnerabilities."
-    },
-    {
-      icon: Users,
-      title: "Employee Training",
-      description: "Mandatory security awareness training for all employees with annual refresher courses."
-    },
-    {
-      icon: Shield,
-      title: "Incident Response",
-      description: "24/7 security operations center with documented incident response procedures."
-    },
-    {
-      icon: Activity,
-      title: "Continuous Monitoring",
-      description: "Real-time monitoring of systems, networks, and applications for security threats."
-    },
-    {
-      icon: Lock,
-      title: "Vendor Management",
-      description: "Rigorous security assessment of all third-party vendors and service providers."
-    },
-    {
-      icon: Bell,
-      title: "Breach Notification",
-      description: "Commitment to notify affected parties within 72 hours of any confirmed data breach."
-    }
-  ];
+  // Track active section on scroll
+  useEffect(() => {
+    const handleScroll = () => {
+      const scrollPosition = window.scrollY + 160;
 
-  const hipaaCompliance = [
-    {
-      title: "Administrative Safeguards",
-      items: [
-        "Security management process",
-        "Assigned security responsibility",
-        "Workforce security and training",
-        "Information access management",
-        "Security awareness and training",
-        "Security incident procedures"
-      ]
-    },
-    {
-      title: "Physical Safeguards",
-      items: [
-        "Facility access controls",
-        "Workstation use and security",
-        "Device and media controls",
-        "Secure data center facilities",
-        "Environmental controls",
-        "Physical access logging"
-      ]
-    },
-    {
-      title: "Technical Safeguards",
-      items: [
-        "Access control mechanisms",
-        "Audit controls and logging",
-        "Integrity controls",
-        "Person or entity authentication",
-        "Transmission security",
-        "Encryption and decryption"
-      ]
+      // Find section in view
+      for (const section of sections) {
+        const el = document.getElementById(section.id);
+        if (el) {
+          const top = el.offsetTop;
+          const height = el.offsetHeight;
+          if (scrollPosition >= top && scrollPosition < top + height) {
+            setActiveSection(section.id);
+            break;
+          }
+        }
+      }
+
+      // Check contact section separately
+      const contactEl = document.getElementById("contact-us");
+      if (contactEl && scrollPosition >= contactEl.offsetTop) {
+        setActiveSection("contact-us");
+      }
+    };
+
+    window.addEventListener("scroll", handleScroll);
+    return () => window.removeEventListener("scroll", handleScroll);
+  }, []);
+
+  const handleLinkClick = (id: string) => {
+    setActiveSection(id);
+    const element = document.getElementById(id);
+    if (element) {
+      const offset = 120; // Navbar gap
+      const bodyRect = document.body.getBoundingClientRect().top;
+      const elementRect = element.getBoundingClientRect().top;
+      const elementPosition = elementRect - bodyRect;
+      const offsetPosition = elementPosition - offset;
+
+      window.scrollTo({
+        top: offsetPosition,
+        behavior: "smooth"
+      });
     }
-  ];
+  };
 
   return (
     <div className="min-h-screen bg-white">
       <SEO
-        title="Security & Compliance - HIPAA, ISO 27001, SOC 2"
+        title="Security & Compliance - HIPAA, ISO 27001, SOC 2 - NexEagle"
         description="Enterprise-grade security for healthcare data. HIPAA compliant, ISO 27001 certified, SOC 2 Type II audited. Learn about our comprehensive security measures, data encryption, compliance standards, and 24/7 monitoring."
         keywords="HIPAA compliant, ISO 27001, SOC 2, healthcare security, data encryption, compliance certifications, healthcare data protection, enterprise security, GDPR compliant, security audit"
         structuredData={structuredData}
       />
       <Navbar />
-      
-      {/* Hero Section */}
-      <section className="pt-32 pb-20 bg-gradient-to-b from-slate-50 to-white">
-        <div className="container px-6 md:px-8 lg:px-12">
-          <div className="max-w-4xl mx-auto text-center">
-            <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-green-100 text-green-700 text-sm font-semibold mb-6">
-              <Shield className="w-4 h-4" />
-              <span>Enterprise Security</span>
-            </div>
-            <h1 className="text-4xl md:text-6xl font-bold text-slate-900 mb-6">
-              Security & Compliance
+
+      <main className="pt-32 pb-24">
+        {/* Header Hero Section */}
+        <section className="relative overflow-hidden py-16 bg-gradient-to-b from-teal-50/20 via-white to-white select-none">
+          <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[600px] h-[600px] bg-brand-teal/5 pointer-events-none rounded-full blur-[140px] z-0"></div>
+          
+          <div className="container relative z-10 px-6 md:px-8 lg:px-12 max-w-5xl mx-auto text-center space-y-6">
+            <h1 className="text-4xl md:text-5xl lg:text-6xl font-black text-slate-900 tracking-tight leading-tight">
+              Security & Compliance.
             </h1>
-            <p className="text-xl text-slate-600 mb-8">
-              Your data security is our top priority. We implement industry-leading security measures to protect your sensitive information.
+            <p className="text-lg md:text-xl text-slate-600 max-w-2xl mx-auto font-light leading-relaxed">
+              We deploy multi-layered cryptographic controls, system isolation parameters, and continuous audits to shield clinical data networks.
             </p>
-            <div className="flex flex-wrap gap-3 justify-center">
+            <div className="flex flex-wrap gap-2.5 justify-center pt-2">
               {certifications.map((cert, index) => (
-                <div key={index} className="px-4 py-2 bg-white border-2 border-slate-200 rounded-lg">
-                  <div className="flex items-center gap-2">
-                    <CheckCircle className="w-4 h-4 text-green-600" />
-                    <span className="font-semibold text-slate-900">{cert.name}</span>
-                  </div>
+                <div key={index} className="px-4 py-1.5 bg-slate-50 border border-slate-200 rounded-full text-xs font-bold text-slate-700 flex items-center gap-1.5">
+                  <span className="w-1.5 h-1.5 rounded-full bg-brand-teal"></span>
+                  {cert.name}
                 </div>
               ))}
             </div>
           </div>
-        </div>
-      </section>
+        </section>
 
-      {/* Trust Statement */}
-      <section className="py-12 border-b border-slate-200">
-        <div className="container px-6 md:px-8 lg:px-12">
-          <div className="max-w-4xl mx-auto">
-            <div className="bg-blue-50 border-l-4 border-blue-600 p-6 rounded-r-lg">
-              <p className="text-slate-700 leading-relaxed">
-                At NexEagle, security is not an afterthought—it's built into every layer of our products and services. We understand the critical nature of healthcare data and the trust our clients place in us. Our comprehensive security program ensures that your data is protected with enterprise-grade security measures, compliance with healthcare regulations, and continuous monitoring.
-              </p>
-            </div>
+        {/* Dynamic Ribbon for Mobile/Tablets */}
+        <div className="lg:hidden sticky top-20 z-40 bg-white/95 backdrop-blur-md border-b border-slate-200/60 py-3 select-none">
+          <div className="container px-6 flex items-center gap-2 overflow-x-auto scrollbar-none whitespace-nowrap w-full">
+            {sections.map((sec) => (
+              <button
+                key={sec.id}
+                onClick={() => handleLinkClick(sec.id)}
+                className={`px-4 py-2 rounded-full text-xs font-semibold transition-all duration-300 ${
+                  activeSection === sec.id
+                    ? "bg-slate-900 text-white shadow-sm"
+                    : "text-slate-500 bg-slate-50 hover:bg-slate-100 hover:text-slate-900"
+                }`}
+              >
+                {sec.title}
+              </button>
+            ))}
+            <button
+              onClick={() => handleLinkClick("contact-us")}
+              className={`px-4 py-2 rounded-full text-xs font-semibold transition-all duration-300 ${
+                activeSection === "contact-us"
+                  ? "bg-slate-900 text-white shadow-sm"
+                  : "text-slate-500 bg-slate-50 hover:bg-slate-100 hover:text-slate-900"
+              }`}
+            >
+              Contact Us
+            </button>
           </div>
         </div>
-      </section>
 
-      {/* Certifications Grid */}
-      <section className="py-20 bg-slate-50">
-        <div className="container px-6 md:px-8 lg:px-12">
-          <div className="max-w-6xl mx-auto">
-            <div className="text-center mb-16">
-              <h2 className="text-3xl md:text-4xl font-bold text-slate-900 mb-4">
-                Certifications & Compliance
-              </h2>
-              <p className="text-lg text-slate-600 max-w-2xl mx-auto">
-                We maintain the highest standards of security and compliance certifications
-              </p>
-            </div>
-
-            <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-6">
-              {certifications.map((cert, index) => (
-                <div key={index} className="bg-white rounded-2xl p-6 border-2 border-slate-200 hover:border-blue-500 transition-all hover:shadow-lg">
-                  <div className="w-12 h-12 rounded-xl bg-green-100 flex items-center justify-center mb-4">
-                    <CheckCircle className="w-6 h-6 text-green-600" />
-                  </div>
-                  <h3 className="text-xl font-bold text-slate-900 mb-2">
-                    {cert.name}
-                  </h3>
-                  <p className="text-sm text-slate-600 mb-3">
-                    {cert.description}
-                  </p>
-                  <div className="inline-flex items-center gap-2 px-3 py-1 bg-green-100 text-green-700 rounded-full text-xs font-semibold">
-                    <div className="w-2 h-2 rounded-full bg-green-600" />
-                    {cert.status}
-                  </div>
-                </div>
-              ))}
-            </div>
-          </div>
-        </div>
-      </section>
-
-      {/* Security Features */}
-      <section className="py-20">
-        <div className="container px-6 md:px-8 lg:px-12">
-          <div className="max-w-6xl mx-auto">
-            <div className="text-center mb-16">
-              <h2 className="text-3xl md:text-4xl font-bold text-slate-900 mb-4">
-                Security Features
-              </h2>
-              <p className="text-lg text-slate-600 max-w-2xl mx-auto">
-                Multi-layered security architecture protecting your data at every level
-              </p>
-            </div>
-
-            <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-8">
-              {securityFeatures.map((feature, index) => (
-                <div key={index} className="bg-white rounded-2xl p-8 border border-slate-200 hover:border-blue-500 transition-all hover:shadow-lg">
-                  <div className="w-14 h-14 rounded-xl bg-blue-600 flex items-center justify-center mb-6">
-                    <feature.icon className="w-7 h-7 text-white" />
-                  </div>
-                  <h3 className="text-xl font-bold text-slate-900 mb-3">
-                    {feature.title}
-                  </h3>
-                  <p className="text-slate-600 mb-6">
-                    {feature.description}
-                  </p>
-                  <ul className="space-y-2">
-                    {feature.details.map((detail, idx) => (
-                      <li key={idx} className="flex items-start gap-2 text-sm text-slate-600">
-                        <CheckCircle className="w-4 h-4 text-green-600 flex-shrink-0 mt-0.5" />
-                        <span>{detail}</span>
-                      </li>
-                    ))}
-                  </ul>
-                </div>
-              ))}
-            </div>
-          </div>
-        </div>
-      </section>
-
-      {/* HIPAA Compliance */}
-      <section className="py-20 bg-slate-50">
-        <div className="container px-6 md:px-8 lg:px-12">
-          <div className="max-w-6xl mx-auto">
-            <div className="text-center mb-16">
-              <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-blue-100 text-blue-700 text-sm font-semibold mb-6">
-                <Shield className="w-4 h-4" />
-                <span>Healthcare Compliance</span>
+        {/* Content Section with Sticky Sidebar Grid */}
+        <section className="container px-6 md:px-8 lg:px-12 max-w-5xl mx-auto mt-12 md:mt-16">
+          <div className="lg:grid lg:grid-cols-4 lg:gap-16">
+            
+            {/* Sticky Sidebar for Desktop */}
+            <aside className="hidden lg:block lg:col-span-1">
+              <div className="sticky top-32 space-y-2 select-none border-l-2 border-slate-100 pl-4 py-1">
+                {sections.map((sec) => (
+                  <button
+                    key={sec.id}
+                    onClick={() => handleLinkClick(sec.id)}
+                    className={`block w-full text-left py-2 text-sm font-medium transition-all duration-200 relative ${
+                      activeSection === sec.id
+                        ? "text-brand-teal font-semibold pl-1"
+                        : "text-slate-500 hover:text-slate-950 pl-0"
+                    }`}
+                  >
+                    {activeSection === sec.id && (
+                      <span className="absolute -left-[18px] top-1/2 -translate-y-1/2 w-1.5 h-1.5 bg-brand-teal rounded-full"></span>
+                    )}
+                    {sec.title}
+                  </button>
+                ))}
+                <button
+                  onClick={() => handleLinkClick("contact-us")}
+                  className={`block w-full text-left py-2 text-sm font-medium transition-all duration-200 relative ${
+                    activeSection === "contact-us"
+                      ? "text-brand-teal font-semibold pl-1"
+                      : "text-slate-500 hover:text-slate-950 pl-0"
+                  }`}
+                >
+                  {activeSection === "contact-us" && (
+                    <span className="absolute -left-[18px] top-1/2 -translate-y-1/2 w-1.5 h-1.5 bg-brand-teal rounded-full"></span>
+                  )}
+                  Contact Us
+                </button>
               </div>
-              <h2 className="text-3xl md:text-4xl font-bold text-slate-900 mb-4">
-                HIPAA Compliance
-              </h2>
-              <p className="text-lg text-slate-600 max-w-2xl mx-auto">
-                Our healthcare products are designed and operated in full compliance with HIPAA regulations
-              </p>
-            </div>
+            </aside>
 
-            <div className="grid md:grid-cols-3 gap-8">
-              {hipaaCompliance.map((category, index) => (
-                <div key={index} className="bg-white rounded-2xl p-8 border border-slate-200">
-                  <h3 className="text-xl font-bold text-slate-900 mb-6">
-                    {category.title}
-                  </h3>
-                  <ul className="space-y-3">
-                    {category.items.map((item, idx) => (
-                      <li key={idx} className="flex items-start gap-3">
-                        <div className="w-5 h-5 rounded-full bg-blue-100 flex items-center justify-center flex-shrink-0 mt-0.5">
-                          <CheckCircle className="w-3 h-3 text-blue-600" />
-                        </div>
-                        <span className="text-sm text-slate-600">{item}</span>
-                      </li>
-                    ))}
-                  </ul>
-                </div>
-              ))}
-            </div>
-
-            <div className="mt-12 bg-blue-50 border-l-4 border-blue-600 p-6 rounded-r-lg">
-              <div className="flex items-start gap-4">
-                <Shield className="w-6 h-6 text-blue-600 flex-shrink-0 mt-1" />
-                <div>
-                  <h4 className="font-semibold text-slate-900 mb-2">Business Associate Agreement (BAA)</h4>
-                  <p className="text-slate-700 leading-relaxed">
-                    We sign Business Associate Agreements with all healthcare clients to ensure HIPAA compliance. Our BAA outlines our responsibilities in protecting Protected Health Information (PHI) and our commitment to maintaining the highest security standards.
-                  </p>
-                </div>
-              </div>
-            </div>
-          </div>
-        </div>
-      </section>
-
-      {/* Security Practices */}
-      <section className="py-20">
-        <div className="container px-6 md:px-8 lg:px-12">
-          <div className="max-w-6xl mx-auto">
-            <div className="text-center mb-16">
-              <h2 className="text-3xl md:text-4xl font-bold text-slate-900 mb-4">
-                Security Practices
-              </h2>
-              <p className="text-lg text-slate-600 max-w-2xl mx-auto">
-                Comprehensive security program with continuous improvement
-              </p>
-            </div>
-
-            <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
-              {practices.map((practice, index) => (
-                <div key={index} className="bg-white rounded-xl p-6 border border-slate-200 hover:border-blue-500 transition-all">
-                  <div className="w-12 h-12 rounded-xl bg-slate-100 flex items-center justify-center mb-4">
-                    <practice.icon className="w-6 h-6 text-slate-700" />
-                  </div>
-                  <h3 className="text-lg font-bold text-slate-900 mb-2">
-                    {practice.title}
-                  </h3>
-                  <p className="text-sm text-slate-600">
-                    {practice.description}
-                  </p>
-                </div>
-              ))}
-            </div>
-          </div>
-        </div>
-      </section>
-
-      {/* Incident Response */}
-      <section className="py-20 bg-slate-50">
-        <div className="container px-6 md:px-8 lg:px-12">
-          <div className="max-w-4xl mx-auto">
-            <div className="text-center mb-12">
-              <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-red-100 text-red-700 text-sm font-semibold mb-6">
-                <AlertTriangle className="w-4 h-4" />
-                <span>Emergency Response</span>
-              </div>
-              <h2 className="text-3xl md:text-4xl font-bold text-slate-900 mb-4">
-                Incident Response Plan
-              </h2>
-              <p className="text-lg text-slate-600">
-                We maintain a comprehensive incident response plan to quickly address any security concerns
-              </p>
-            </div>
-
-            <div className="bg-white rounded-2xl p-8 border border-slate-200">
-              <div className="space-y-6">
-                <div className="flex items-start gap-4">
-                  <div className="w-10 h-10 rounded-full bg-blue-100 flex items-center justify-center flex-shrink-0 font-bold text-blue-600">
-                    1
-                  </div>
-                  <div>
-                    <h3 className="text-lg font-bold text-slate-900 mb-2">Detection & Analysis</h3>
-                    <p className="text-slate-600">
-                      24/7 monitoring systems detect potential security incidents. Our security team immediately analyzes the threat level and scope.
-                    </p>
-                  </div>
-                </div>
-
-                <div className="flex items-start gap-4">
-                  <div className="w-10 h-10 rounded-full bg-blue-100 flex items-center justify-center flex-shrink-0 font-bold text-blue-600">
-                    2
-                  </div>
-                  <div>
-                    <h3 className="text-lg font-bold text-slate-900 mb-2">Containment & Eradication</h3>
-                    <p className="text-slate-600">
-                      Immediate action to contain the incident, prevent further damage, and eliminate the threat from our systems.
-                    </p>
-                  </div>
-                </div>
-
-                <div className="flex items-start gap-4">
-                  <div className="w-10 h-10 rounded-full bg-blue-100 flex items-center justify-center flex-shrink-0 font-bold text-blue-600">
-                    3
-                  </div>
-                  <div>
-                    <h3 className="text-lg font-bold text-slate-900 mb-2">Recovery & Notification</h3>
-                    <p className="text-slate-600">
-                      Restore affected systems and notify impacted parties within 72 hours as required by regulations.
-                    </p>
-                  </div>
-                </div>
-
-                <div className="flex items-start gap-4">
-                  <div className="w-10 h-10 rounded-full bg-blue-100 flex items-center justify-center flex-shrink-0 font-bold text-blue-600">
-                    4
-                  </div>
-                  <div>
-                    <h3 className="text-lg font-bold text-slate-900 mb-2">Post-Incident Review</h3>
-                    <p className="text-slate-600">
-                      Comprehensive analysis of the incident to improve our security measures and prevent future occurrences.
-                    </p>
-                  </div>
-                </div>
-              </div>
-            </div>
-
-            <div className="mt-8 bg-amber-50 border-l-4 border-amber-500 p-6 rounded-r-lg">
-              <div className="flex items-start gap-4">
-                <Bell className="w-6 h-6 text-amber-600 flex-shrink-0 mt-1" />
-                <div>
-                  <h4 className="font-semibold text-slate-900 mb-2">Report a Security Concern</h4>
-                  <p className="text-slate-700 leading-relaxed mb-3">
-                    If you discover a security vulnerability or have concerns about the security of our systems, please report it immediately to our security team.
-                  </p>
-                  <a href="mailto:security@nexeagle.com" className="text-blue-600 hover:text-blue-700 font-semibold">
-                    security@nexeagle.com
-                  </a>
-                </div>
-              </div>
-            </div>
-          </div>
-        </div>
-      </section>
-
-      {/* Data Protection */}
-      <section className="py-20">
-        <div className="container px-6 md:px-8 lg:px-12">
-          <div className="max-w-4xl mx-auto">
-            <div className="text-center mb-12">
-              <h2 className="text-3xl md:text-4xl font-bold text-slate-900 mb-4">
-                Data Protection & Privacy
-              </h2>
-              <p className="text-lg text-slate-600">
-                Your data is protected with multiple layers of security
-              </p>
-            </div>
-
-            <div className="grid md:grid-cols-2 gap-6">
-              <div className="bg-gradient-to-br from-blue-50 to-white rounded-2xl p-8 border border-slate-200">
-                <Database className="w-12 h-12 text-blue-600 mb-4" />
-                <h3 className="text-xl font-bold text-slate-900 mb-3">
-                  Data Residency
-                </h3>
-                <p className="text-slate-600 mb-4">
-                  Your data is stored in secure, geographically distributed data centers with full redundancy. We offer data residency options to meet regional compliance requirements.
-                </p>
-                <ul className="space-y-2">
-                  <li className="flex items-center gap-2 text-sm text-slate-600">
-                    <CheckCircle className="w-4 h-4 text-green-600" />
-                    <span>Geographic redundancy</span>
-                  </li>
-                  <li className="flex items-center gap-2 text-sm text-slate-600">
-                    <CheckCircle className="w-4 h-4 text-green-600" />
-                    <span>Regional data centers</span>
-                  </li>
-                  <li className="flex items-center gap-2 text-sm text-slate-600">
-                    <CheckCircle className="w-4 h-4 text-green-600" />
-                    <span>Compliance with local laws</span>
-                  </li>
-                </ul>
-              </div>
-
-              <div className="bg-gradient-to-br from-green-50 to-white rounded-2xl p-8 border border-slate-200">
-                <Lock className="w-12 h-12 text-green-600 mb-4" />
-                <h3 className="text-xl font-bold text-slate-900 mb-3">
-                  Data Retention
-                </h3>
-                <p className="text-slate-600 mb-4">
-                  We retain your data only as long as necessary for service delivery and compliance. Healthcare data is retained according to medical record retention requirements.
-                </p>
-                <ul className="space-y-2">
-                  <li className="flex items-center gap-2 text-sm text-slate-600">
-                    <CheckCircle className="w-4 h-4 text-green-600" />
-                    <span>Configurable retention policies</span>
-                  </li>
-                  <li className="flex items-center gap-2 text-sm text-slate-600">
-                    <CheckCircle className="w-4 h-4 text-green-600" />
-                    <span>Secure data deletion</span>
-                  </li>
-                  <li className="flex items-center gap-2 text-sm text-slate-600">
-                    <CheckCircle className="w-4 h-4 text-green-600" />
-                    <span>Audit trail maintenance</span>
-                  </li>
-                </ul>
-              </div>
-            </div>
-          </div>
-        </div>
-      </section>
-
-      {/* Contact Section */}
-      <section className="py-20 bg-slate-50 border-t border-slate-200">
-        <div className="container px-6 md:px-8 lg:px-12">
-          <div className="max-w-4xl mx-auto">
-            <div className="bg-white rounded-2xl p-8 md:p-12 border border-slate-200 shadow-sm">
-              <div className="flex items-start gap-4 mb-6">
-                <div className="w-14 h-14 rounded-xl bg-blue-600 flex items-center justify-center flex-shrink-0">
-                  <Shield className="w-7 h-7 text-white" />
-                </div>
-                <div>
-                  <h2 className="text-3xl font-bold text-slate-900 mb-2">
-                    Security Questions?
-                  </h2>
-                  <p className="text-slate-600 leading-relaxed">
-                    Our security team is here to answer your questions and address any concerns.
-                  </p>
-                </div>
-              </div>
+            {/* Main Security Content */}
+            <div className="lg:col-span-3 space-y-16">
               
-              <div className="ml-18 space-y-4">
-                <div>
-                  <p className="text-sm font-semibold text-slate-500 mb-1">Security Team</p>
-                  <a href="mailto:security@nexeagle.com" className="text-lg text-blue-600 hover:text-blue-700 font-medium">
-                    security@nexeagle.com
-                  </a>
-                </div>
-                <div>
-                  <p className="text-sm font-semibold text-slate-500 mb-1">Privacy Officer</p>
-                  <a href="mailto:privacy@nexeagle.com" className="text-lg text-blue-600 hover:text-blue-700 font-medium">
-                    privacy@nexeagle.com
-                  </a>
-                </div>
-                <div>
-                  <p className="text-sm font-semibold text-slate-500 mb-1">General Inquiries</p>
-                  <a href="mailto:info@nexeagle.com" className="text-lg text-blue-600 hover:text-blue-700 font-medium">
-                    info@nexeagle.com
-                  </a>
-                </div>
-              </div>
-
-              <div className="mt-8 pt-8 border-t border-slate-200">
-                <p className="text-sm text-slate-600">
-                  For urgent security matters or to report a vulnerability, please contact our security team immediately. We take all security reports seriously and will respond within 24 hours.
+              {/* Introduction Callout */}
+              <div className="bg-slate-50 border-l-4 border-brand-teal p-6 md:p-8 rounded-r-2xl select-none">
+                <p className="text-slate-700 leading-relaxed font-medium text-sm md:text-base">
+                  Security is not an afterthought at NexEagle—it is built directly into our baseline architectures. We realize the critical sensitivity of clinical records and PACS data registries, enforcing technical parameters that guarantee protection across data transitions, storage volumes, and user nodes.
                 </p>
               </div>
-            </div>
 
-            {/* Related Links */}
-            <div className="mt-8 flex flex-wrap gap-4 justify-center">
-              <Link 
-                to="/privacy" 
-                className="text-slate-600 hover:text-slate-900 font-medium transition-colors"
-              >
-                Privacy Policy
-              </Link>
-              <span className="text-slate-300">•</span>
-              <Link 
-                to="/terms" 
-                className="text-slate-600 hover:text-slate-900 font-medium transition-colors"
-              >
-                Terms of Service
-              </Link>
-              <span className="text-slate-300">•</span>
-              <Link 
-                to="/contact" 
-                className="text-slate-600 hover:text-slate-900 font-medium transition-colors"
-              >
-                Contact Us
-              </Link>
+              {/* Loop through Sections */}
+              {sections.map((sec) => (
+                <div key={sec.id} id={sec.id} className="scroll-mt-24 space-y-6 border-b border-slate-100 pb-10 last:border-0 last:pb-0">
+                  <div className="space-y-2">
+                    <h2 className="text-2xl md:text-3xl font-black text-slate-900 tracking-tight">
+                      {sec.title}.
+                    </h2>
+                    <p className="text-slate-500 text-sm md:text-base leading-relaxed">
+                      {sec.description}
+                    </p>
+                  </div>
+
+                  <div className="space-y-6">
+                    {sec.content.map((item, idx) => (
+                      <div key={idx} className="space-y-2">
+                        {item.subtitle && (
+                          <h3 className="text-lg font-bold text-slate-900">
+                            {item.subtitle}
+                          </h3>
+                        )}
+                        <p className="text-slate-600 leading-relaxed text-sm md:text-base font-normal">
+                          {item.text}
+                        </p>
+                      </div>
+                    ))}
+                  </div>
+
+                  {/* Certifications grid sub-display */}
+                  {sec.id === "certifications" && (
+                    <div className="grid sm:grid-cols-2 gap-4 pt-4 select-none">
+                      {certifications.map((cert, cIdx) => (
+                        <div key={cIdx} className="p-5 bg-slate-50/50 rounded-2xl border border-slate-200/60 transition-all duration-300 hover:border-brand-teal/30">
+                          <div className="flex items-center justify-between mb-2">
+                            <h4 className="font-bold text-slate-900 text-sm md:text-base">
+                              {cert.name}
+                            </h4>
+                            <span className="text-xs font-semibold px-2 py-0.5 bg-teal-50 border border-brand-teal/20 text-brand-teal rounded-md">
+                              {cert.status}
+                            </span>
+                          </div>
+                          <p className="text-xs md:text-sm text-slate-500 leading-normal">
+                            {cert.description}
+                          </p>
+                        </div>
+                      ))}
+                    </div>
+                  )}
+
+                  {/* Special display for Technical features icon list */}
+                  {sec.id === "security-features" && (
+                    <div className="grid sm:grid-cols-3 gap-4 pt-4 select-none">
+                      <div className="p-5 bg-slate-50/40 rounded-2xl border border-slate-200/50">
+                        <Server className="w-5 h-5 text-brand-teal mb-3" />
+                        <h4 className="font-bold text-slate-900 text-xs md:text-sm uppercase tracking-wider mb-2">Infrastructure</h4>
+                        <p className="text-xs text-slate-500 leading-relaxed">Tier-III hosting, DDoS protection, Web Application Firewalls (WAF), and isolated VPC private subnets.</p>
+                      </div>
+                      <div className="p-5 bg-slate-50/40 rounded-2xl border border-slate-200/50">
+                        <Key className="w-5 h-5 text-brand-teal mb-3" />
+                        <h4 className="font-bold text-slate-900 text-xs md:text-sm uppercase tracking-wider mb-2">Access Management</h4>
+                        <p className="text-xs text-slate-500 leading-relaxed">MFA controls, Role-Based Access Control (RBAC), SSO setups, and encrypted lease validations.</p>
+                      </div>
+                      <div className="p-5 bg-slate-50/40 rounded-2xl border border-slate-200/50">
+                        <ShieldCheck className="w-5 h-5 text-brand-teal mb-3" />
+                        <h4 className="font-bold text-slate-900 text-xs md:text-sm uppercase tracking-wider mb-2">Cryptography</h4>
+                        <p className="text-xs text-slate-500 leading-relaxed">AES-256 database backups, TLS 1.3 data streams, and hardware security modules (HSM).</p>
+                      </div>
+                    </div>
+                  )}
+                </div>
+              ))}
+
+              {/* Dedicated Contact Us Section */}
+              <div id="contact-us" className="scroll-mt-24 space-y-8 bg-slate-50 p-8 rounded-3xl border border-slate-200/60 select-none">
+                <div className="space-y-3">
+                  <h2 className="text-2xl md:text-3xl font-black text-slate-900 tracking-tight">
+                    Contact Security.
+                  </h2>
+                  <p className="text-slate-600 leading-relaxed text-sm md:text-base font-normal">
+                    If you detect a vulnerability, suspect system latency concerns, or need assistance executing security documentation, contact our operations desk:
+                  </p>
+                </div>
+
+                <div className="grid sm:grid-cols-2 gap-6 pt-2">
+                  <div className="flex gap-3.5 items-start">
+                    <div className="w-10 h-10 rounded-xl bg-white border border-slate-200 flex items-center justify-center shrink-0">
+                      <Mail className="w-5 h-5 text-brand-teal" />
+                    </div>
+                    <div>
+                      <h4 className="text-xs font-bold text-slate-400 uppercase tracking-wider">Security Hotline</h4>
+                      <a href="mailto:security@nexeagle.com" className="text-sm font-semibold text-slate-900 hover:text-brand-teal transition-colors block">
+                        security@nexeagle.com
+                      </a>
+                      <a href="mailto:privacy@nexeagle.com" className="text-sm text-slate-500 hover:text-brand-teal transition-colors block">
+                        privacy@nexeagle.com
+                      </a>
+                    </div>
+                  </div>
+
+                  <div className="flex gap-3.5 items-start">
+                    <div className="w-10 h-10 rounded-xl bg-white border border-slate-200 flex items-center justify-center shrink-0">
+                      <Phone className="w-5 h-5 text-brand-teal" />
+                    </div>
+                    <div>
+                      <h4 className="text-xs font-bold text-slate-400 uppercase tracking-wider">Operational Desk</h4>
+                      <a href="tel:+918074906808" className="text-sm font-semibold text-slate-900 hover:text-brand-teal transition-colors block">
+                        +91 8074906808
+                      </a>
+                    </div>
+                  </div>
+
+                  <div className="flex gap-3.5 items-start sm:col-span-2">
+                    <div className="w-10 h-10 rounded-xl bg-white border border-slate-200 flex items-center justify-center shrink-0">
+                      <MapPin className="w-5 h-5 text-brand-teal" />
+                    </div>
+                    <div>
+                      <h4 className="text-xs font-bold text-slate-400 uppercase tracking-wider">Corporate Location</h4>
+                      <p className="text-sm font-semibold text-slate-900">
+                        NexEagle Corporate Office, Kolkata, West Bengal, India
+                      </p>
+                    </div>
+                  </div>
+                </div>
+
+                <div className="pt-6 border-t border-slate-200 flex gap-3 items-start">
+                  <AlertTriangle className="w-5 h-5 text-amber-500 shrink-0 mt-0.5" />
+                  <p className="text-xs text-slate-500 leading-relaxed">
+                    <strong>Vulnerability Disclosure Guidelines:</strong> For system penetration disclosures or reporting application flaws under coordinated disclosure conditions, contact our operations desk at <a href="mailto:security@nexeagle.com" className="text-brand-teal hover:underline font-medium">security@nexeagle.com</a>. We validate and triage alerts within 24 hours.
+                  </p>
+                </div>
+              </div>
+
+              {/* Related Policies Links */}
+              <div className="pt-6 flex flex-wrap gap-4 justify-center text-sm font-semibold select-none border-t border-slate-100">
+                <Link to="/privacy" className="text-slate-500 hover:text-brand-teal transition-colors">
+                  Privacy Policy
+                </Link>
+                <span className="text-slate-300">•</span>
+                <Link to="/terms" className="text-slate-500 hover:text-brand-teal transition-colors">
+                  Terms of Service
+                </Link>
+                <span className="text-slate-300">•</span>
+                <Link to="/contact" className="text-slate-500 hover:text-brand-teal transition-colors">
+                  Schedule Demo
+                </Link>
+              </div>
+
             </div>
           </div>
-        </div>
-      </section>
+        </section>
+      </main>
 
       <Footer />
     </div>

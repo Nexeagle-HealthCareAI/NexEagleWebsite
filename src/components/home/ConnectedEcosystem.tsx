@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import {
-  Users, Bot, FlaskConical, Scan, Pill, Receipt, ShieldCheck,
+  Users, Bot, FlaskConical, Scan, Pill, Receipt, ShieldCheck, Mic,
 } from "lucide-react";
 
 interface ModuleConfig {
@@ -20,23 +20,23 @@ interface ModuleConfig {
 const modules: ModuleConfig[] = [
   {
     id: "patient",
-    title: "Patient Management",
+    title: "1HMS",
     icon: Users,
     color: "from-teal-500 to-emerald-400",
     glowColor: "rgba(20, 184, 166, 0.4)",
-    features: ["Registration", "Appointments"],
+    features: ["OPD", "IPD"],
     events: ["New Patient Registered", "Appointment Confirmed"],
     x: 15,
     y: 16,
   },
   {
     id: "ai",
-    title: "AI Documentation",
-    icon: Bot,
+    title: "NexEagle AI",
+    icon: Mic,
     color: "from-sky-500 to-blue-600",
     glowColor: "rgba(56, 189, 248, 0.4)",
-    features: ["Voice Scribe", "SOAP Notes"],
-    events: ["Clinical Note Generated", "AI Summary Created"],
+    features: ["Virtual Assistant", "Smart Operations"],
+    events: ["Voice Note Transcribed", "EMR Updated via Voice"],
     x: 85,
     y: 16,
   },
@@ -57,7 +57,7 @@ const modules: ModuleConfig[] = [
     icon: Scan,
     color: "from-teal-500 to-cyan-500",
     glowColor: "rgba(20, 184, 166, 0.4)",
-    features: ["PACS", "DICOM Viewer"],
+    features: ["Cloud PACS", "DICOM Viewer", "Reporting"],
     events: ["Scan Uploaded", "Radiology Report Ready"],
     x: 85,
     y: 50,

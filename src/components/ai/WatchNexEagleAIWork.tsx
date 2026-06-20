@@ -594,7 +594,7 @@ export const WatchNexEagleAIWork = () => {
                       initial={{ opacity: 0, y: 15 }}
                       animate={{ opacity: 1, y: 0 }}
                       transition={{ duration: 0.7, delay: 0.2 }}
-                      className="text-2xl sm:text-3xl font-black text-rose-500 tracking-tight uppercase"
+                      className="text-2xl sm:text-3xl font-black text-brand-sky tracking-tight uppercase"
                     >
                       NexEagle AI Doesn't Sit Beside Your Workflow.
                     </motion.h3>

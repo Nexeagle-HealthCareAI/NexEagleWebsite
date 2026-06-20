@@ -206,7 +206,7 @@ const Careers = () => {
         type: "Full-time",
         experience: "5+ years",
         skills: ["Clinical Practice", "Healthcare Workflows", "Training", "Advisory"],
-        description: "Guide product development and train healthcare professionals on NexEagle solutions.",
+        description: "Guide product development and train healthcare professionals on NEXEAGLE solutions.",
         requirements: [
           "MBBS or equivalent medical degree",
           "5+ years clinical practice",
@@ -350,7 +350,7 @@ const Careers = () => {
     // Open email client with pre-filled subject
     const job = Object.values(jobs).flat().find(j => j.id === jobId);
     const subject = `Application for ${job?.title} position`;
-    const body = `Hi NexEagle Team,\n\nI'm interested in the ${job?.title} position. Please find my resume attached.\n\nBest regards,`;
+    const body = `Hi NEXEAGLE Team,\n\nI'm interested in the ${job?.title} position. Please find my resume attached.\n\nBest regards,`;
     
     window.location.href = `mailto:careers@nexeagle.com?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}`;
   };

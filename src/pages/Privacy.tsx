@@ -1,17 +1,30 @@
+import { useState, useEffect } from "react";
 import { Link } from "react-router-dom";
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
 import SEO from "@/components/SEO";
-import { Shield, Lock, Eye, FileText, Mail, Clock } from "lucide-react";
+import { Clock, Mail, Phone, MapPin, ShieldAlert } from "lucide-react";
+
+interface SubSection {
+  subtitle: string;
+  text: string;
+}
+
+interface Section {
+  id: string;
+  title: string;
+  content: SubSection[];
+}
 
 const Privacy = () => {
   const lastUpdated = "April 19, 2026";
+  const [activeSection, setActiveSection] = useState("information-we-collect");
 
   const structuredData = {
     "@context": "https://schema.org",
     "@type": "WebPage",
     "name": "Privacy Policy",
-    "description": "NexEagle Privacy Policy - Learn how we protect your data in compliance with HIPAA, GDPR, and other regulations",
+    "description": "NexEagle Privacy Policy - Learn how we protect your data in compliance with HIPAA, GDPR, ISO 27001, and other regulations",
     "publisher": {
       "@type": "Organization",
       "name": "NexEagle"
@@ -19,84 +32,144 @@ const Privacy = () => {
     "dateModified": lastUpdated
   };
 
-  const sections = [
+  const sections: Section[] = [
     {
-      icon: FileText,
+      id: "information-we-collect",
       title: "Information We Collect",
       content: [
         {
           subtitle: "Information You Provide",
-          text: "When you use our services, contact us, or create an account, we collect information such as your name, email address, phone number, company name, and any other information you choose to provide."
+          text: "When you use our services, contact us, or create an account, we collect personal information such as your name, email address, phone number, company name, professional credentials, and any other details you choose to provide."
         },
         {
           subtitle: "Automatically Collected Information",
-          text: "We automatically collect certain information about your device, including IP address, browser type, operating system, referring URLs, and information about your usage of our services through cookies and similar technologies."
+          text: "We automatically collect certain information about your device and browser, including IP addresses, operating system types, browser configurations, referring URLs, and telemetry regarding your interaction with our services via cookies and web beacons."
         },
         {
-          subtitle: "Healthcare Data",
-          text: "For our healthcare products (1HMS, 1Rad, 1Lab, 1Pharma), we process protected health information (PHI) in accordance with HIPAA regulations and applicable healthcare privacy laws. This data is handled with the highest security standards."
+          subtitle: "Healthcare Data & PHI",
+          text: "For our core clinical products (such as 1HMS and 1Rad PACS), we process protected health information (PHI) strictly as a business associate in full alignment with HIPAA regulations, NABH guidelines, and local healthcare privacy legislation. This data is segregated and shielded with enterprise-grade encryption."
         }
       ]
     },
     {
-      icon: Eye,
-      title: "How We Use Your Information",
+      id: "how-we-use-information",
+      title: "How We Use Information",
       content: [
         {
-          subtitle: "Service Delivery",
-          text: "We use your information to provide, maintain, and improve our products and services, process transactions, and provide customer support."
+          subtitle: "Service Provision",
+          text: "We process your information to deliver, support, and optimize our medical management systems, process transactions, and handle customer service tickets."
         },
         {
-          subtitle: "Communication",
-          text: "We may use your contact information to send you technical notices, updates, security alerts, and administrative messages about our services."
+          subtitle: "Administrative Communication",
+          text: "We use your contact coordinates to transmit technical alerts, security warnings, deployment schedules, and administrative notifications related to your active workspaces."
         },
         {
-          subtitle: "Product Development",
-          text: "We analyze usage patterns to improve our products, develop new features, and enhance user experience. All analytics are performed on aggregated, anonymized data."
+          subtitle: "Aggregated Analytics",
+          text: "We analyze system metrics to diagnose bottlenecks, design updates, and measure overall usability. All performance analytics are processed using strictly anonymized and aggregated datasets."
         },
         {
-          subtitle: "Legal Compliance",
-          text: "We may use your information to comply with legal obligations, enforce our terms of service, and protect the rights and safety of NexEagle and our users."
+          subtitle: "Regulatory Compliance",
+          text: "We process personal data where required to satisfy tax laws, cooperate with statutory authorities, enforce agreements, or protect the safety and security of patients and clinicians."
         }
       ]
     },
     {
-      icon: Lock,
+      id: "data-security",
       title: "Data Security",
       content: [
         {
-          subtitle: "Security Measures",
-          text: "We implement industry-standard security measures including encryption at rest and in transit (AES-256, TLS 1.3), regular security audits, access controls, and continuous monitoring to protect your data."
+          subtitle: "Encryption & Hardening",
+          text: "We enforce end-to-end data encryption using TLS 1.3 for data in transit and AES-256 for data at rest. Access to production environments is limited via role-based access control (RBAC), multi-factor authentication, and strict virtual private cloud (VPC) segregation."
         },
         {
-          subtitle: "Compliance Standards",
-          text: "Our systems are designed to comply with HIPAA, GDPR, ISO 27001, and SOC 2 Type II standards. We undergo regular third-party security assessments and maintain comprehensive security documentation."
+          subtitle: "Industry Standards",
+          text: "Our software infrastructure is engineered to adhere to HIPAA, GDPR, ISO 27001, and SOC 2 Type II controls. We conduct external vulnerability assessments and code audits on a regular annual schedule."
         },
         {
-          subtitle: "Data Breach Protocol",
-          text: "In the unlikely event of a data breach, we will notify affected users within 72 hours and take immediate action to secure systems and prevent further unauthorized access."
+          subtitle: "Incident Management",
+          text: "In the event of a verified security incident or potential breach of data integrity, we will notify affected administrators and regulatory bodies within 72 hours, taking immediate remediation steps to isolate the vector."
         }
       ]
     },
     {
-      icon: Shield,
-      title: "Data Sharing and Disclosure",
+      id: "data-sharing",
+      title: "Data Sharing & Disclosure",
       content: [
         {
-          subtitle: "Service Providers",
-          text: "We may share your information with trusted third-party service providers who assist us in operating our services, such as cloud hosting providers, payment processors, and analytics services. All providers are bound by strict confidentiality agreements."
+          subtitle: "Sub-processors & Vendors",
+          text: "We share necessary information only with vetted third-party vendors (such as AWS cloud hosting services). All vendors are subject to rigorous Business Associate Agreements (BAAs) and confidentiality constraints."
         },
         {
-          subtitle: "Business Transfers",
-          text: "If NexEagle is involved in a merger, acquisition, or sale of assets, your information may be transferred. We will provide notice before your information is transferred and becomes subject to a different privacy policy."
+          subtitle: "Corporate Transactions",
+          text: "If NexEagle is involved in a corporate restructuring, merger, or asset sale, clinical and user information may be transferred. We will provide prominent notice on this page before data transfers occur."
         },
         {
-          subtitle: "Legal Requirements",
-          text: "We may disclose your information if required by law, court order, or governmental request, or when we believe disclosure is necessary to protect our rights, your safety, or the safety of others."
+          subtitle: "No Commercial Selling",
+          text: "We do not sell, lease, rent, or trade your personal information or patient databases to third parties for marketing or profiling purposes."
+        }
+      ]
+    },
+    {
+      id: "your-rights",
+      title: "Your Rights",
+      content: [
+        {
+          subtitle: "Access & Portability",
+          text: "You hold the right to request a structured export of the personal information we process. Healthcare data can be extracted in standard HL7 and FHIR structures to prevent vendor lock-in."
         },
         {
-          subtitle: "No Sale of Data",
-          text: "We do not sell, rent, or trade your personal information to third parties for marketing purposes."
+          subtitle: "Correction & Deletion",
+          text: "You can request corrections to inaccurate personal records or request deletion of data files, subject to statutory records-retention requirements imposed by medical councils or tax authorities."
+        }
+      ]
+    },
+    {
+      id: "cookies",
+      title: "Cookies & Tracking",
+      content: [
+        {
+          subtitle: "Cookie Preferences",
+          text: "We use essential cookies to maintain user sessions and security context. You can configure your browser to block cookies; however, disabling them may impair the usability of certain portal dashboards."
+        }
+      ]
+    },
+    {
+      id: "data-retention",
+      title: "Data Retention",
+      content: [
+        {
+          subtitle: "Retention Timeline",
+          text: "We retain account profile details for as long as your organization maintains an active contract. Patient clinical histories are preserved in accordance with institutional guidelines and statutory medical storage laws."
+        }
+      ]
+    },
+    {
+      id: "international-transfers",
+      title: "International Data Transfers",
+      content: [
+        {
+          subtitle: "Cross-Border Protocols",
+          text: "Your information is primarily stored on secured servers located within India. In cases where cross-border transfers are necessary, we implement standard contractual clauses to guarantee equal protection."
+        }
+      ]
+    },
+    {
+      id: "childrens-privacy",
+      title: "Children's Privacy",
+      content: [
+        {
+          subtitle: "Age Thresholds",
+          text: "Our enterprise services are not intended for individuals under 18. If a parent or guardian discovers that a minor has submitted personal profile details, contact us and we will delete the data immediately."
+        }
+      ]
+    },
+    {
+      id: "changes",
+      title: "Changes to This Policy",
+      content: [
+        {
+          subtitle: "Amendments",
+          text: "We may revise this policy to reflect regulatory changes. We will notify you of modifications by publishing the new terms on this page and updating the modification date above."
         }
       ]
     }
@@ -105,346 +178,291 @@ const Privacy = () => {
   const rights = [
     {
       title: "Access",
-      description: "Request a copy of the personal information we hold about you"
+      description: "Request a copy of the personal profile information we store."
     },
     {
       title: "Correction",
-      description: "Request correction of inaccurate or incomplete information"
+      description: "Request changes to outdated or inaccurate information."
     },
     {
       title: "Deletion",
-      description: "Request deletion of your personal information, subject to legal obligations"
+      description: "Request erasure of accounts, subject to records retention laws."
     },
     {
-      title: "Portability",
-      description: "Request transfer of your data to another service provider"
-    },
-    {
-      title: "Opt-Out",
-      description: "Opt out of marketing communications at any time"
-    },
-    {
-      title: "Restriction",
-      description: "Request restriction of processing of your personal information"
+      title: "FHIR Export",
+      description: "Extract clinical data in standard interoperable formats."
     }
   ];
+
+  // Track active section on scroll
+  useEffect(() => {
+    const handleScroll = () => {
+      const scrollPosition = window.scrollY + 160;
+
+      // Find section currently in view
+      for (const section of sections) {
+        const el = document.getElementById(section.id);
+        if (el) {
+          const top = el.offsetTop;
+          const height = el.offsetHeight;
+          if (scrollPosition >= top && scrollPosition < top + height) {
+            setActiveSection(section.id);
+            break;
+          }
+        }
+      }
+
+      // Check contact section separately
+      const contactEl = document.getElementById("contact-us");
+      if (contactEl && scrollPosition >= contactEl.offsetTop) {
+        setActiveSection("contact-us");
+      }
+    };
+
+    window.addEventListener("scroll", handleScroll);
+    return () => window.removeEventListener("scroll", handleScroll);
+  }, []);
+
+  const handleLinkClick = (id: string) => {
+    setActiveSection(id);
+    const element = document.getElementById(id);
+    if (element) {
+      const offset = 120; // Navbar gap
+      const bodyRect = document.body.getBoundingClientRect().top;
+      const elementRect = element.getBoundingClientRect().top;
+      const elementPosition = elementRect - bodyRect;
+      const offsetPosition = elementPosition - offset;
+
+      window.scrollTo({
+        top: offsetPosition,
+        behavior: "smooth"
+      });
+    }
+  };
 
   return (
     <div className="min-h-screen bg-white">
       <SEO
-        title="Privacy Policy"
+        title="Privacy Policy - NexEagle"
         description="NexEagle Privacy Policy. Learn how we collect, use, and protect your information in compliance with HIPAA, GDPR, ISO 27001, and other data protection regulations."
         keywords="privacy policy, data protection, HIPAA compliance, GDPR, data privacy, healthcare data security, personal information protection"
         structuredData={structuredData}
       />
       <Navbar />
-      
-      {/* Hero Section */}
-      <section className="pt-32 pb-20 bg-gradient-to-b from-slate-50 to-white">
-        <div className="container px-6 md:px-8 lg:px-12">
-          <div className="max-w-4xl mx-auto text-center">
-            <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-blue-100 text-blue-700 text-sm font-semibold mb-6">
-              <Shield className="w-4 h-4" />
-              <span>Legal</span>
-            </div>
-            <h1 className="text-4xl md:text-6xl font-bold text-slate-900 mb-6">
-              Privacy Policy
+
+      <main className="pt-32 pb-24">
+        {/* Header Hero Section */}
+        <section className="relative overflow-hidden py-16 bg-gradient-to-b from-teal-50/20 via-white to-white select-none">
+          <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[600px] h-[600px] bg-brand-teal/5 pointer-events-none rounded-full blur-[140px] z-0"></div>
+          
+          <div className="container relative z-10 px-6 md:px-8 lg:px-12 max-w-5xl mx-auto text-center space-y-6">
+            <h1 className="text-4xl md:text-5xl lg:text-6xl font-black text-slate-900 tracking-tight leading-tight">
+              Privacy Policy.
             </h1>
-            <p className="text-xl text-slate-600 mb-8">
-              Your privacy is important to us. This policy explains how we collect, use, and protect your information.
+            <p className="text-lg md:text-xl text-slate-600 max-w-2xl mx-auto font-light leading-relaxed">
+              We process data with extreme care, ensuring full transparency, user control, and compliance with healthcare guidelines.
             </p>
-            <div className="flex items-center justify-center gap-2 text-sm text-slate-500">
-              <Clock className="w-4 h-4" />
+            <div className="flex items-center justify-center gap-2 text-sm text-slate-500 font-medium">
+              <Clock className="w-4 h-4 text-slate-400" />
               <span>Last updated: {lastUpdated}</span>
             </div>
           </div>
-        </div>
-      </section>
+        </section>
 
-      {/* Introduction */}
-      <section className="py-12 border-b border-slate-200">
-        <div className="container px-6 md:px-8 lg:px-12">
-          <div className="max-w-4xl mx-auto">
-            <div className="bg-blue-50 border-l-4 border-blue-600 p-6 rounded-r-lg">
-              <p className="text-slate-700 leading-relaxed">
-                NexEagle ("we," "our," or "us") is committed to protecting your privacy. This Privacy Policy explains how we collect, use, disclose, and safeguard your information when you use our healthcare products (1HMS, 1Rad, 1Lab, 1Pharma) and product engineering services. By using our services, you agree to the collection and use of information in accordance with this policy.
-              </p>
-            </div>
-          </div>
-        </div>
-      </section>
-
-      {/* Main Content Sections */}
-      <section className="py-20">
-        <div className="container px-6 md:px-8 lg:px-12">
-          <div className="max-w-4xl mx-auto space-y-16">
-            {sections.map((section, index) => (
-              <div key={index} className="scroll-mt-24" id={section.title.toLowerCase().replace(/\s+/g, '-')}>
-                <div className="flex items-start gap-4 mb-8">
-                  <div className="w-12 h-12 rounded-xl bg-blue-600 flex items-center justify-center flex-shrink-0">
-                    <section.icon className="w-6 h-6 text-white" />
-                  </div>
-                  <div>
-                    <h2 className="text-3xl font-bold text-slate-900 mb-2">
-                      {section.title}
-                    </h2>
-                  </div>
-                </div>
-                
-                <div className="space-y-6 ml-16">
-                  {section.content.map((item, idx) => (
-                    <div key={idx}>
-                      <h3 className="text-xl font-semibold text-slate-900 mb-3">
-                        {item.subtitle}
-                      </h3>
-                      <p className="text-slate-600 leading-relaxed">
-                        {item.text}
-                      </p>
-                    </div>
-                  ))}
-                </div>
-              </div>
+        {/* Dynamic Ribbon for Mobile/Tablets */}
+        <div className="lg:hidden sticky top-20 z-40 bg-white/95 backdrop-blur-md border-b border-slate-200/60 py-3 select-none">
+          <div className="container px-6 flex items-center gap-2 overflow-x-auto scrollbar-none whitespace-nowrap w-full">
+            {sections.map((sec) => (
+              <button
+                key={sec.id}
+                onClick={() => handleLinkClick(sec.id)}
+                className={`px-4 py-2 rounded-full text-xs font-semibold transition-all duration-300 ${
+                  activeSection === sec.id
+                    ? "bg-slate-900 text-white shadow-sm"
+                    : "text-slate-500 bg-slate-50 hover:bg-slate-100 hover:text-slate-900"
+                }`}
+              >
+                {sec.title}
+              </button>
             ))}
+            <button
+              onClick={() => handleLinkClick("contact-us")}
+              className={`px-4 py-2 rounded-full text-xs font-semibold transition-all duration-300 ${
+                activeSection === "contact-us"
+                  ? "bg-slate-900 text-white shadow-sm"
+                  : "text-slate-500 bg-slate-50 hover:bg-slate-100 hover:text-slate-900"
+              }`}
+            >
+              Contact Us
+            </button>
+          </div>
+        </div>
 
-            {/* Your Rights Section */}
-            <div className="scroll-mt-24" id="your-rights">
-              <div className="flex items-start gap-4 mb-8">
-                <div className="w-12 h-12 rounded-xl bg-blue-600 flex items-center justify-center flex-shrink-0">
-                  <FileText className="w-6 h-6 text-white" />
-                </div>
-                <div>
-                  <h2 className="text-3xl font-bold text-slate-900 mb-2">
-                    Your Rights
-                  </h2>
-                </div>
+        {/* Content Section with Sticky Sidebar Grid */}
+        <section className="container px-6 md:px-8 lg:px-12 max-w-5xl mx-auto mt-12 md:mt-16">
+          <div className="lg:grid lg:grid-cols-4 lg:gap-16">
+            
+            {/* Sticky Sidebar for Desktop */}
+            <aside className="hidden lg:block lg:col-span-1">
+              <div className="sticky top-32 space-y-2 select-none border-l-2 border-slate-100 pl-4 py-1">
+                {sections.map((sec) => (
+                  <button
+                    key={sec.id}
+                    onClick={() => handleLinkClick(sec.id)}
+                    className={`block w-full text-left py-2 text-sm font-medium transition-all duration-200 relative ${
+                      activeSection === sec.id
+                        ? "text-brand-teal font-semibold pl-1"
+                        : "text-slate-500 hover:text-slate-950 pl-0"
+                    }`}
+                  >
+                    {activeSection === sec.id && (
+                      <span className="absolute -left-[18px] top-1/2 -translate-y-1/2 w-1.5 h-1.5 bg-brand-teal rounded-full"></span>
+                    )}
+                    {sec.title}
+                  </button>
+                ))}
+                <button
+                  onClick={() => handleLinkClick("contact-us")}
+                  className={`block w-full text-left py-2 text-sm font-medium transition-all duration-200 relative ${
+                    activeSection === "contact-us"
+                      ? "text-brand-teal font-semibold pl-1"
+                      : "text-slate-500 hover:text-slate-950 pl-0"
+                  }`}
+                >
+                  {activeSection === "contact-us" && (
+                    <span className="absolute -left-[18px] top-1/2 -translate-y-1/2 w-1.5 h-1.5 bg-brand-teal rounded-full"></span>
+                  )}
+                  Contact Us
+                </button>
               </div>
+            </aside>
+
+            {/* Main Policy Content */}
+            <div className="lg:col-span-3 space-y-16">
               
-              <div className="ml-16">
-                <p className="text-slate-600 leading-relaxed mb-8">
-                  Depending on your location, you may have certain rights regarding your personal information:
+              {/* Introduction Callout */}
+              <div className="bg-slate-50 border-l-4 border-brand-teal p-6 md:p-8 rounded-r-2xl select-none">
+                <p className="text-slate-700 leading-relaxed font-medium text-sm md:text-base">
+                  NexEagle ("we," "our," or "us") is dedicated to protecting your privacy. This Privacy Policy details the policies, pipelines, and practices we use to secure personal profile datasets and clinical records processed across our primary healthcare systems (1HMS, 1Rad) and product engineering collaborations.
                 </p>
-                <div className="grid md:grid-cols-2 gap-4">
-                  {rights.map((right, index) => (
-                    <div key={index} className="p-6 bg-slate-50 rounded-xl border border-slate-200">
-                      <h3 className="text-lg font-semibold text-slate-900 mb-2">
-                        {right.title}
-                      </h3>
-                      <p className="text-sm text-slate-600">
-                        {right.description}
+              </div>
+
+              {/* Loop through Sections */}
+              {sections.map((sec) => (
+                <div key={sec.id} id={sec.id} className="scroll-mt-24 space-y-6 border-b border-slate-100 pb-10 last:border-0 last:pb-0">
+                  <h2 className="text-2xl md:text-3xl font-black text-slate-900 tracking-tight">
+                    {sec.title}.
+                  </h2>
+                  <div className="space-y-6">
+                    {sec.content.map((item, idx) => (
+                      <div key={idx} className="space-y-2">
+                        <h3 className="text-lg font-bold text-slate-900">
+                          {item.subtitle}
+                        </h3>
+                        <p className="text-slate-600 leading-relaxed text-sm md:text-base font-normal">
+                          {item.text}
+                        </p>
+                      </div>
+                    ))}
+                  </div>
+
+                  {/* Special display for Rights grids inside the Your Rights section */}
+                  {sec.id === "your-rights" && (
+                    <div className="grid sm:grid-cols-2 gap-4 pt-4 select-none">
+                      {rights.map((right, rIdx) => (
+                        <div key={rIdx} className="p-5 bg-slate-50/50 rounded-2xl border border-slate-150 transition-all duration-300 hover:border-brand-teal/30">
+                          <h4 className="font-bold text-slate-900 mb-1 text-sm md:text-base">
+                            {right.title}
+                          </h4>
+                          <p className="text-xs md:text-sm text-slate-500 leading-normal">
+                            {right.description}
+                          </p>
+                        </div>
+                      ))}
+                    </div>
+                  )}
+                </div>
+              ))}
+
+              {/* Dedicated Contact Us Section */}
+              <div id="contact-us" className="scroll-mt-24 space-y-8 bg-slate-50 p-8 rounded-3xl border border-slate-200/60 select-none">
+                <div className="space-y-3">
+                  <h2 className="text-2xl md:text-3xl font-black text-slate-900 tracking-tight">
+                    Contact Us.
+                  </h2>
+                  <p className="text-slate-600 leading-relaxed text-sm md:text-base font-normal">
+                    If you have questions about this Privacy Policy, want to report a vulnerability, or wish to exercise data rights, reach our compliance team:
+                  </p>
+                </div>
+
+                <div className="grid sm:grid-cols-2 gap-6 pt-2">
+                  <div className="flex gap-3.5 items-start">
+                    <div className="w-10 h-10 rounded-xl bg-white border border-slate-200 flex items-center justify-center shrink-0">
+                      <Mail className="w-5 h-5 text-brand-teal" />
+                    </div>
+                    <div>
+                      <h4 className="text-xs font-bold text-slate-400 uppercase tracking-wider">Email Contacts</h4>
+                      <a href="mailto:privacy@nexeagle.com" className="text-sm font-semibold text-slate-900 hover:text-brand-teal transition-colors block">
+                        privacy@nexeagle.com
+                      </a>
+                      <a href="mailto:info@nexeagle.com" className="text-sm text-slate-500 hover:text-brand-teal transition-colors block">
+                        info@nexeagle.com
+                      </a>
+                    </div>
+                  </div>
+
+                  <div className="flex gap-3.5 items-start">
+                    <div className="w-10 h-10 rounded-xl bg-white border border-slate-200 flex items-center justify-center shrink-0">
+                      <Phone className="w-5 h-5 text-brand-teal" />
+                    </div>
+                    <div>
+                      <h4 className="text-xs font-bold text-slate-400 uppercase tracking-wider">Direct Phone</h4>
+                      <a href="tel:+918074906808" className="text-sm font-semibold text-slate-900 hover:text-brand-teal transition-colors block">
+                        +91 8074906808
+                      </a>
+                    </div>
+                  </div>
+
+                  <div className="flex gap-3.5 items-start sm:col-span-2">
+                    <div className="w-10 h-10 rounded-xl bg-white border border-slate-200 flex items-center justify-center shrink-0">
+                      <MapPin className="w-5 h-5 text-brand-teal" />
+                    </div>
+                    <div>
+                      <h4 className="text-xs font-bold text-slate-400 uppercase tracking-wider">Postal Location</h4>
+                      <p className="text-sm font-semibold text-slate-900">
+                        NexEagle Corporate Office, Kolkata, West Bengal, India
                       </p>
                     </div>
-                  ))}
+                  </div>
                 </div>
-                <p className="text-slate-600 leading-relaxed mt-6">
-                  To exercise any of these rights, please contact us at{" "}
-                  <a href="mailto:privacy@nexeagle.com" className="text-blue-600 hover:text-blue-700 font-medium">
-                    privacy@nexeagle.com
-                  </a>
-                </p>
-              </div>
-            </div>
 
-            {/* Cookies Section */}
-            <div className="scroll-mt-24" id="cookies">
-              <div className="flex items-start gap-4 mb-8">
-                <div className="w-12 h-12 rounded-xl bg-blue-600 flex items-center justify-center flex-shrink-0">
-                  <Eye className="w-6 h-6 text-white" />
-                </div>
-                <div>
-                  <h2 className="text-3xl font-bold text-slate-900 mb-2">
-                    Cookies and Tracking
-                  </h2>
-                </div>
-              </div>
-              
-              <div className="ml-16 space-y-4">
-                <p className="text-slate-600 leading-relaxed">
-                  We use cookies and similar tracking technologies to track activity on our services and hold certain information. You can instruct your browser to refuse all cookies or to indicate when a cookie is being sent. However, if you do not accept cookies, you may not be able to use some portions of our services.
-                </p>
-                <p className="text-slate-600 leading-relaxed">
-                  Types of cookies we use:
-                </p>
-                <ul className="list-disc list-inside space-y-2 text-slate-600">
-                  <li><strong>Essential Cookies:</strong> Required for the operation of our services</li>
-                  <li><strong>Analytics Cookies:</strong> Help us understand how visitors interact with our services</li>
-                  <li><strong>Preference Cookies:</strong> Remember your settings and preferences</li>
-                  <li><strong>Marketing Cookies:</strong> Track your activity to deliver relevant advertisements (with your consent)</li>
-                </ul>
-              </div>
-            </div>
-
-            {/* Data Retention */}
-            <div className="scroll-mt-24" id="data-retention">
-              <div className="flex items-start gap-4 mb-8">
-                <div className="w-12 h-12 rounded-xl bg-blue-600 flex items-center justify-center flex-shrink-0">
-                  <Clock className="w-6 h-6 text-white" />
-                </div>
-                <div>
-                  <h2 className="text-3xl font-bold text-slate-900 mb-2">
-                    Data Retention
-                  </h2>
-                </div>
-              </div>
-              
-              <div className="ml-16 space-y-4">
-                <p className="text-slate-600 leading-relaxed">
-                  We retain your personal information only for as long as necessary to fulfill the purposes outlined in this Privacy Policy, unless a longer retention period is required or permitted by law. Healthcare data is retained in accordance with applicable medical record retention laws and HIPAA requirements.
-                </p>
-                <p className="text-slate-600 leading-relaxed">
-                  When we no longer need your information, we will securely delete or anonymize it in accordance with our data retention policy and applicable regulations.
-                </p>
-              </div>
-            </div>
-
-            {/* International Transfers */}
-            <div className="scroll-mt-24" id="international-transfers">
-              <div className="flex items-start gap-4 mb-8">
-                <div className="w-12 h-12 rounded-xl bg-blue-600 flex items-center justify-center flex-shrink-0">
-                  <Shield className="w-6 h-6 text-white" />
-                </div>
-                <div>
-                  <h2 className="text-3xl font-bold text-slate-900 mb-2">
-                    International Data Transfers
-                  </h2>
-                </div>
-              </div>
-              
-              <div className="ml-16 space-y-4">
-                <p className="text-slate-600 leading-relaxed">
-                  Your information may be transferred to and maintained on servers located outside of your country where data protection laws may differ. We ensure that all international transfers comply with applicable data protection laws and implement appropriate safeguards such as Standard Contractual Clauses.
-                </p>
-              </div>
-            </div>
-
-            {/* Children's Privacy */}
-            <div className="scroll-mt-24" id="childrens-privacy">
-              <div className="flex items-start gap-4 mb-8">
-                <div className="w-12 h-12 rounded-xl bg-blue-600 flex items-center justify-center flex-shrink-0">
-                  <Shield className="w-6 h-6 text-white" />
-                </div>
-                <div>
-                  <h2 className="text-3xl font-bold text-slate-900 mb-2">
-                    Children's Privacy
-                  </h2>
-                </div>
-              </div>
-              
-              <div className="ml-16 space-y-4">
-                <p className="text-slate-600 leading-relaxed">
-                  Our services are not directed to individuals under the age of 18. We do not knowingly collect personal information from children. If you are a parent or guardian and believe your child has provided us with personal information, please contact us, and we will delete such information.
-                </p>
-              </div>
-            </div>
-
-            {/* Changes to Policy */}
-            <div className="scroll-mt-24" id="changes">
-              <div className="flex items-start gap-4 mb-8">
-                <div className="w-12 h-12 rounded-xl bg-blue-600 flex items-center justify-center flex-shrink-0">
-                  <FileText className="w-6 h-6 text-white" />
-                </div>
-                <div>
-                  <h2 className="text-3xl font-bold text-slate-900 mb-2">
-                    Changes to This Policy
-                  </h2>
-                </div>
-              </div>
-              
-              <div className="ml-16 space-y-4">
-                <p className="text-slate-600 leading-relaxed">
-                  We may update this Privacy Policy from time to time. We will notify you of any changes by posting the new Privacy Policy on this page and updating the "Last updated" date. For material changes, we will provide prominent notice or obtain consent as required by law.
-                </p>
-                <p className="text-slate-600 leading-relaxed">
-                  We encourage you to review this Privacy Policy periodically for any changes.
-                </p>
-              </div>
-            </div>
-          </div>
-        </div>
-      </section>
-
-      {/* Contact Section */}
-      <section className="py-20 bg-slate-50 border-t border-slate-200">
-        <div className="container px-6 md:px-8 lg:px-12">
-          <div className="max-w-4xl mx-auto">
-            <div className="bg-white rounded-2xl p-8 md:p-12 border border-slate-200 shadow-sm">
-              <div className="flex items-start gap-4 mb-6">
-                <div className="w-14 h-14 rounded-xl bg-blue-600 flex items-center justify-center flex-shrink-0">
-                  <Mail className="w-7 h-7 text-white" />
-                </div>
-                <div>
-                  <h2 className="text-3xl font-bold text-slate-900 mb-2">
-                    Contact Us
-                  </h2>
-                  <p className="text-slate-600 leading-relaxed">
-                    If you have any questions about this Privacy Policy or our data practices, please contact us:
-                  </p>
-                </div>
-              </div>
-              
-              <div className="ml-18 space-y-4">
-                <div>
-                  <p className="text-sm font-semibold text-slate-500 mb-1">Email</p>
-                  <a href="mailto:privacy@nexeagle.com" className="text-lg text-blue-600 hover:text-blue-700 font-medium">
-                    privacy@nexeagle.com
-                  </a>
-                </div>
-                <div>
-                  <p className="text-sm font-semibold text-slate-500 mb-1">General Inquiries</p>
-                  <a href="mailto:info@nexeagle.com" className="text-lg text-blue-600 hover:text-blue-700 font-medium">
-                    info@nexeagle.com
-                  </a>
-                </div>
-                <div>
-                  <p className="text-sm font-semibold text-slate-500 mb-1">Phone</p>
-                  <a href="tel:+918074906808" className="text-lg text-slate-900 font-medium">
-                    +91 8074906808
-                  </a>
-                </div>
-                <div>
-                  <p className="text-sm font-semibold text-slate-500 mb-1">Address</p>
-                  <p className="text-lg text-slate-900">
-                    NexEagle<br />
-                    Kolkata, India
+                <div className="pt-6 border-t border-slate-200 flex gap-3 items-start">
+                  <ShieldAlert className="w-5 h-5 text-amber-500 shrink-0 mt-0.5" />
+                  <p className="text-xs text-slate-500 leading-relaxed">
+                    <strong>HIPAA & NABH Notice:</strong> For regulatory audits, business associate agreement (BAA) coordination, or reporting privacy concerns under clinical compliance directives, contact our designated Data Protection Officer at <a href="mailto:privacy@nexeagle.com" className="text-brand-teal hover:underline font-medium">privacy@nexeagle.com</a>.
                   </p>
                 </div>
               </div>
 
-              <div className="mt-8 pt-8 border-t border-slate-200">
-                <p className="text-sm text-slate-500">
-                  For HIPAA-related inquiries or to report a potential privacy breach, please contact our Privacy Officer at{" "}
-                  <a href="mailto:privacy@nexeagle.com" className="text-blue-600 hover:text-blue-700 font-medium">
-                    privacy@nexeagle.com
-                  </a>
-                </p>
+              {/* Related Policies Links */}
+              <div className="pt-6 flex flex-wrap gap-4 justify-center text-sm font-semibold select-none border-t border-slate-100">
+                <Link to="/terms" className="text-slate-500 hover:text-brand-teal transition-colors">
+                  Terms of Service
+                </Link>
+                <span className="text-slate-300">•</span>
+                <Link to="/security" className="text-slate-500 hover:text-brand-teal transition-colors">
+                  Security Systems
+                </Link>
+                <span className="text-slate-300">•</span>
+                <Link to="/contact" className="text-slate-500 hover:text-brand-teal transition-colors">
+                  Schedule Demo
+                </Link>
               </div>
-            </div>
 
-            {/* Related Links */}
-            <div className="mt-8 flex flex-wrap gap-4 justify-center">
-              <Link 
-                to="/terms" 
-                className="text-slate-600 hover:text-slate-900 font-medium transition-colors"
-              >
-                Terms of Service
-              </Link>
-              <span className="text-slate-300">•</span>
-              <Link 
-                to="/security" 
-                className="text-slate-600 hover:text-slate-900 font-medium transition-colors"
-              >
-                Security
-              </Link>
-              <span className="text-slate-300">•</span>
-              <Link 
-                to="/contact" 
-                className="text-slate-600 hover:text-slate-900 font-medium transition-colors"
-              >
-                Contact Us
-              </Link>
             </div>
           </div>
-        </div>
-      </section>
+        </section>
+      </main>
 
       <Footer />
     </div>

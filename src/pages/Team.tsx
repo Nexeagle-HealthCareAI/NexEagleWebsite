@@ -12,7 +12,7 @@ const Team = () => {
   useEffect(() => {
     if (typeof window !== 'undefined' && (window as any).gtag) {
       (window as any).gtag('config', 'GA_MEASUREMENT_ID', {
-        page_title: 'About NexEagle - Software Development Company',
+        page_title: 'Team - NexEagle | Healthcare IT & Product Engineers',
         page_location: window.location.href,
       });
     }
@@ -25,12 +25,22 @@ const Team = () => {
       "@type": "Organization",
       "name": "NexEagle",
       "url": "https://nexeagle.com",
-      "description": "Software development company specializing in healthcare. We build custom software for any industry and healthcare products that work.",
+      "description": "Meet the NexEaglians. A dedicated group of clinicians, engineers, and product builders designing the future of healthcare software.",
       "founder": [
         {
           "@type": "Person",
           "name": "Md Tasquil Noori",
           "jobTitle": "Tech Lead"
+        },
+        {
+          "@type": "Person",
+          "name": "Dr Md Taquedis Noori",
+          "jobTitle": "Medical Advisor"
+        },
+        {
+          "@type": "Person",
+          "name": "Md Aquib",
+          "jobTitle": "Product Manager"
         }
       ],
       "address": {
@@ -44,8 +54,8 @@ const Team = () => {
   return (
     <div className="min-h-screen bg-white">
       <SEO
-        title="About NexEagle - Software Development Company | Healthcare Specialists"
-        description="NexEagle is a software development company specializing in healthcare. We build custom software for any industry and healthcare products (1HMS, 1Rad, 1Lab, 1Pharma) used by hospitals and clinics."
+        title="Team - NexEagle | Healthcare IT & Product Engineers"
+        description="Meet the NexEaglians—our founding team of clinicians, software developers, and research advisors building the next generation of healthcare platforms (1HMS, 1Rad, 1Lab, 1Pharma)."
         keywords="software development company, custom software development, healthcare software, hospital management system, medical software developers, NexEagle team"
         structuredData={structuredData}
       />

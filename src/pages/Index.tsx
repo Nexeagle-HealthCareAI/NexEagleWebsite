@@ -1,14 +1,22 @@
-import { useEffect } from "react";
+import { useEffect, lazy, Suspense } from "react";
 import Navbar from "@/components/Navbar";
 import Hero from "@/components/Hero";
 import TrustedBy from "@/components/home/TrustedBy";
-
-import ProductEcosystem from "@/components/home/ProductEcosystem";
-import HealthcareChallenges from "@/components/home/HealthcareChallenges";
-import VisionSection from "@/components/home/VisionSection";
 import Footer from "@/components/Footer";
-import LiveChat from "@/components/LiveChat";
 import SEO from "@/components/SEO";
+
+// Lazy-loaded below-the-fold components
+const HealthcareChallenges = lazy(() => import("@/components/home/HealthcareChallenges"));
+const FeaturesSection = lazy(() => import("@/components/home/FeaturesSection"));
+const ProductEcosystem = lazy(() => import("@/components/home/ProductEcosystem"));
+const Testimonials = lazy(() => import("@/components/home/Testimonials"));
+const DeferredLiveChat = lazy(() => import("@/components/DeferredLiveChat"));
+
+const SectionPlaceholder = () => (
+  <div className="w-full py-16 flex items-center justify-center">
+    <div className="w-6 h-6 rounded-full border-2 border-brand-teal/20 border-t-brand-teal animate-spin" />
+  </div>
+);
 
 const Index = () => {
   useEffect(() => {
@@ -104,13 +112,24 @@ const Index = () => {
         <Hero />
         <TrustedBy />
 
-        <HealthcareChallenges />
-        <ProductEcosystem />
-        {/*<VisionSection />*/}
+        <Suspense fallback={<SectionPlaceholder />}>
+          <HealthcareChallenges />
+        </Suspense>
+        <Suspense fallback={<SectionPlaceholder />}>
+          <FeaturesSection />
+        </Suspense>
+        <Suspense fallback={<SectionPlaceholder />}>
+          <ProductEcosystem />
+        </Suspense>
+        <Suspense fallback={<SectionPlaceholder />}>
+          <Testimonials />
+        </Suspense>
       </main>
       
       <Footer />
-      <LiveChat />
+      <Suspense fallback={null}>
+        <DeferredLiveChat />
+      </Suspense>
     </div>
   );
 };
