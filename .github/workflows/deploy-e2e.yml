@@ -1,0 +1,83 @@
+name: Deploy to E2E VM
+
+# Builds the Vite/React site and ships the static `dist/` output to the
+# end-to-end (e2e) VM over SSH using rsync. nginx serves the files.
+#
+# Required GitHub Secrets (Settings -> Secrets and variables -> Actions):
+#   E2E_SSH_PRIVATE_KEY  Private key whose public half is in the deploy
+#                        user's ~/.ssh/authorized_keys on the VM.
+#   E2E_SSH_HOST         VM hostname or public IP.
+#   E2E_SSH_USER         Deploy user on the VM (e.g. "deploy").
+#   E2E_SSH_PORT         (optional) SSH port; defaults to 22 if unset.
+# See deploy/README.md for one-time VM setup.
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch: {}
+
+# Never let two deploys race onto the same VM.
+concurrency:
+  group: deploy-e2e
+  cancel-in-progress: false
+
+env:
+  NODE_VERSION: "20"
+  # Web root that nginx serves on the VM. Keep in sync with deploy/nginx/nexeagle-e2e.conf.
+  DEPLOY_PATH: /var/www/nexeagle-e2e
+
+jobs:
+  build-and-deploy:
+    name: Build and deploy
+    runs-on: ubuntu-latest
+    environment: e2e
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: npm
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Build
+        run: npm run build
+
+      - name: Verify build output
+        run: test -f dist/index.html
+
+      - name: Set up SSH
+        env:
+          SSH_PRIVATE_KEY: ${{ secrets.E2E_SSH_PRIVATE_KEY }}
+          SSH_HOST: ${{ secrets.E2E_SSH_HOST }}
+          SSH_PORT: ${{ secrets.E2E_SSH_PORT }}
+        run: |
+          mkdir -p ~/.ssh
+          printf '%s\n' "$SSH_PRIVATE_KEY" > ~/.ssh/deploy_key
+          chmod 600 ~/.ssh/deploy_key
+          # Pin the VM's host key so the connection can't be silently MITM'd.
+          ssh-keyscan -p "${SSH_PORT:-22}" -H "$SSH_HOST" >> ~/.ssh/known_hosts 2>/dev/null
+
+      - name: Deploy to VM with rsync
+        env:
+          SSH_HOST: ${{ secrets.E2E_SSH_HOST }}
+          SSH_USER: ${{ secrets.E2E_SSH_USER }}
+          SSH_PORT: ${{ secrets.E2E_SSH_PORT }}
+        run: |
+          rsync -az --delete --human-readable \
+            -e "ssh -i ~/.ssh/deploy_key -p ${SSH_PORT:-22}" \
+            dist/ \
+            "${SSH_USER}@${SSH_HOST}:${DEPLOY_PATH}/"
+
+      - name: Reload nginx
+        env:
+          SSH_HOST: ${{ secrets.E2E_SSH_HOST }}
+          SSH_USER: ${{ secrets.E2E_SSH_USER }}
+          SSH_PORT: ${{ secrets.E2E_SSH_PORT }}
+        run: |
+          ssh -i ~/.ssh/deploy_key -p "${SSH_PORT:-22}" \
+            "${SSH_USER}@${SSH_HOST}" "sudo systemctl reload nginx"
