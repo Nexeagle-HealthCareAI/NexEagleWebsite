@@ -17,16 +17,21 @@ export const Logo: React.FC<LogoProps> = ({
     <div className={`flex items-center gap-0.5 sm:gap-1 ${className}`}>
       <img 
         src="/assets/logo.webp" 
-        alt="NEXEAGLE Logo" 
-        className="w-24 h-24 sm:w-28 sm:h-28 object-contain select-none -mr-4 sm:-mr-6" 
+        alt="NexEagle Logo" 
+        className="w-16 h-16 sm:w-20 sm:h-20 max-h-full object-contain select-none -mr-2.5 sm:-mr-4" 
         fetchPriority="high"
         decoding="async"
       />
       
       {!iconOnly && (
-        <span className={`${textSize} ${textColor} font-extrabold tracking-tight font-display select-none`}>
-          NEXEAGLE
-        </span>
+        <div className="flex flex-col justify-center select-none">
+          <span className={`${textSize} ${textColor} font-extrabold tracking-tight font-display leading-[0.9]`}>
+            NexEagle
+          </span>
+          <span className="text-[7px] sm:text-[9px] md:text-[10px] tracking-[0.14em] font-bold text-brand-sky uppercase mt-1 leading-[0.9]">
+            Healthcare Excellence
+          </span>
+        </div>
       )}
     </div>
   );
