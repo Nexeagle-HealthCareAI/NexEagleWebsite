@@ -69,3 +69,20 @@ jobs:
             -e "ssh -p ${SSH_PORT:-22} -o StrictHostKeyChecking=accept-new" \
             dist/ \
             "${SSH_USER}@${SSH_HOST}:${DEPLOY_PATH}/"
+
+      - name: Provision nginx on VM (idempotent)
+        # Installs/refreshes the NexEagle server block (port 8080) and reloads
+        # nginx. Idempotent and leaves any other site (port 80) untouched, so
+        # the VM is configured entirely from code — no manual SSH steps.
+        env:
+          SSHPASS: ${{ secrets.SSH_PASSWORD }}
+          SSH_HOST: ${{ secrets.SSH_HOST }}
+          SSH_USER: ${{ secrets.SSH_USER }}
+          SSH_PORT: ${{ secrets.SSH_PORT }}
+        run: |
+          sshpass -e rsync -az \
+            -e "ssh -p ${SSH_PORT:-22} -o StrictHostKeyChecking=accept-new" \
+            deploy/nginx/nexeagle.conf deploy/setup-nginx.sh \
+            "${SSH_USER}@${SSH_HOST}:/tmp/nexeagle-provision/"
+          sshpass -e ssh -p "${SSH_PORT:-22}" -o StrictHostKeyChecking=accept-new \
+            "${SSH_USER}@${SSH_HOST}" "bash /tmp/nexeagle-provision/setup-nginx.sh"
