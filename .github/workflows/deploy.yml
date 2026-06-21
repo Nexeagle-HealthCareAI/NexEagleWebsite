@@ -1,0 +1,71 @@
+name: Deploy (dev / prod)
+
+# Branch -> VM routing:
+#   push to develop  ->  dev VM   (GitHub Environment: dev)
+#   push to main     ->  prod VM  (GitHub Environment: prod)
+#
+# Auth is SSH *password* (via sshpass). Each GitHub Environment holds the
+# same secret names with different values, so the workflow body never has to
+# branch on dev vs prod:
+#   Environment Secrets:   SSH_HOST, SSH_USER, SSH_PASSWORD, SSH_PORT (optional)
+#   Environment Variables: DEPLOY_PATH (optional; defaults to /var/www/nexeagle)
+# See deploy/README.md for setup.
+
+on:
+  push:
+    branches: [main, develop]
+  workflow_dispatch: {}
+
+# Serialize deploys per branch so two pushes can't race onto the same VM.
+concurrency:
+  group: deploy-${{ github.ref_name }}
+  cancel-in-progress: false
+
+env:
+  NODE_VERSION: "20"
+
+jobs:
+  build-and-deploy:
+    name: Build and deploy
+    runs-on: ubuntu-latest
+    # main -> prod environment; everything else (develop) -> dev environment.
+    environment: ${{ github.ref == 'refs/heads/main' && 'prod' || 'dev' }}
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: npm
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Build
+        run: npm run build
+
+      - name: Verify build output
+        run: test -f dist/index.html
+
+      - name: Show deploy target
+        run: echo "Deploying '${{ github.ref_name }}' -> ${{ github.ref == 'refs/heads/main' && 'prod' || 'dev' }} environment"
+
+      - name: Install sshpass
+        run: sudo apt-get update && sudo apt-get install -y sshpass rsync
+
+      - name: Deploy to VM with rsync (password auth)
+        env:
+          # sshpass -e reads the password from $SSHPASS, keeping it out of the
+          # command line / process list. GitHub also masks it in logs.
+          SSHPASS: ${{ secrets.SSH_PASSWORD }}
+          SSH_HOST: ${{ secrets.SSH_HOST }}
+          SSH_USER: ${{ secrets.SSH_USER }}
+          SSH_PORT: ${{ secrets.SSH_PORT }}
+          DEPLOY_PATH: ${{ vars.DEPLOY_PATH || '/var/www/nexeagle' }}
+        run: |
+          sshpass -e rsync -az --delete --human-readable \
+            -e "ssh -p ${SSH_PORT:-22} -o StrictHostKeyChecking=accept-new" \
+            dist/ \
+            "${SSH_USER}@${SSH_HOST}:${DEPLOY_PATH}/"

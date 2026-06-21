@@ -1,118 +1,119 @@
-# Deploying NexEagle to the E2E VM
+# Deploying NexEagle (dev / prod VMs)
 
-The [`Deploy to E2E VM`](../.github/workflows/deploy-e2e.yml) GitHub Actions
-workflow builds the site and ships it to a Linux VM that serves the static
-files with nginx.
+The [`Deploy (dev / prod)`](../.github/workflows/deploy.yml) GitHub Actions
+workflow builds the site and ships it over SSH (password auth) to a Linux VM
+that serves the static files with nginx.
 
-## Flow
+## Branch -> VM routing
+
+| Push to branch | GitHub Environment | Deploys to |
+| -------------- | ------------------ | ---------- |
+| `develop`      | `dev`              | Dev VM     |
+| `main`         | `prod`             | Prod VM    |
 
 ```
-push to main ──► GitHub Actions runner
-                   ├─ npm ci
-                   ├─ npm run build         → dist/
-                   └─ rsync dist/ over SSH  → VM:/var/www/nexeagle-e2e
-                                              └─ sudo systemctl reload nginx
+push develop ─► runner ─ npm ci ─ npm run build ─► rsync dist/ (sshpass) ─► DEV  VM:/var/www/nexeagle
+push main    ─► runner ─ npm ci ─ npm run build ─► rsync dist/ (sshpass) ─► PROD VM:/var/www/nexeagle
 ```
 
-- **Trigger:** every push to `main` (also runnable manually via
-  *Actions → Deploy to E2E VM → Run workflow*).
-- **Delivery:** `rsync -az --delete` mirrors `dist/` into the web root, so
-  files removed from a build are removed on the VM too.
+- **Trigger:** push to `develop` or `main` (also runnable manually via
+  *Actions → Deploy (dev / prod) → Run workflow*; from `main` it targets prod,
+  otherwise dev).
+- **Delivery:** `rsync -az --delete` mirrors `dist/` into the web root.
+- **No nginx reload needed:** nginx serves the swapped files on the next
+  request. You only reload nginx when you change the conf itself.
 
-## One-time VM setup
+## GitHub setup — Environments + secrets
 
-Run these on the e2e VM (Ubuntu/Debian assumed).
+Because dev and prod use the **same secret names with different values**,
+create two **Environments** (not just repo secrets).
 
-### 1. Install nginx
+Go to **Settings → Environments → New environment**, create `dev` and `prod`,
+and in **each** add:
+
+**Secrets** (Environment secrets):
+
+| Secret         | Value                                         |
+| -------------- | --------------------------------------------- |
+| `SSH_HOST`     | That environment's VM IP / hostname.          |
+| `SSH_USER`     | SSH login user (e.g. `deploy`).               |
+| `SSH_PASSWORD` | That user's SSH password.                     |
+| `SSH_PORT`     | *(optional)* SSH port if not `22`.            |
+
+**Variables** (Environment variables — optional):
+
+| Variable      | Value / default                                       |
+| ------------- | ----------------------------------------------------- |
+| `DEPLOY_PATH` | Web root on that VM. Defaults to `/var/www/nexeagle`. |
+
+> Tip: on the `prod` environment you can add **Required reviewers** so a
+> deploy to production waits for approval.
+
+## One-time VM setup (run on EACH VM)
+
+Ubuntu/Debian assumed.
+
+### 1. Install nginx + rsync
 
 ```bash
 sudo apt-get update && sudo apt-get install -y nginx rsync
 ```
 
-### 2. Create a deploy user and web root
+### 2. Make sure SSH password login is allowed
+
+The workflow logs in with a password, so the VM's SSH server must allow it:
 
 ```bash
-sudo adduser --disabled-password --gecos "" deploy
-sudo mkdir -p /var/www/nexeagle-e2e
-sudo chown -R deploy:deploy /var/www/nexeagle-e2e
+sudo sed -i 's/^#\?PasswordAuthentication.*/PasswordAuthentication yes/' /etc/ssh/sshd_config
+sudo systemctl restart ssh
 ```
 
-### 3. Add the CI SSH key
-
-Generate a dedicated key pair (on your machine, not the VM):
+### 3. Create the deploy user + web root
 
 ```bash
-ssh-keygen -t ed25519 -f nexeagle-e2e-deploy -C "github-actions-e2e" -N ""
+sudo adduser deploy            # set the password you'll store in SSH_PASSWORD
+sudo mkdir -p /var/www/nexeagle
+sudo chown -R deploy:deploy /var/www/nexeagle
 ```
 
-Put the **public** key on the VM:
+### 4. Install the nginx site config
 
 ```bash
-sudo -u deploy mkdir -p /home/deploy/.ssh
-sudo -u deploy tee -a /home/deploy/.ssh/authorized_keys < nexeagle-e2e-deploy.pub
-sudo -u deploy chmod 700 /home/deploy/.ssh
-sudo -u deploy chmod 600 /home/deploy/.ssh/authorized_keys
-```
-
-The **private** key (`nexeagle-e2e-deploy`) goes into the
-`E2E_SSH_PRIVATE_KEY` GitHub secret (see below).
-
-### 4. Allow the deploy user to reload nginx without a password
-
-```bash
-echo 'deploy ALL=(root) NOPASSWD: /bin/systemctl reload nginx' \
-  | sudo tee /etc/sudoers.d/deploy-nginx
-sudo chmod 440 /etc/sudoers.d/deploy-nginx
-```
-
-### 5. Install the nginx site config
-
-```bash
-sudo cp deploy/nginx/nexeagle-e2e.conf /etc/nginx/sites-available/nexeagle-e2e
-sudo ln -sf /etc/nginx/sites-available/nexeagle-e2e /etc/nginx/sites-enabled/
+sudo cp deploy/nginx/nexeagle.conf /etc/nginx/sites-available/nexeagle
+sudo ln -sf /etc/nginx/sites-available/nexeagle /etc/nginx/sites-enabled/
 sudo rm -f /etc/nginx/sites-enabled/default   # optional: drop the welcome page
 sudo nginx -t && sudo systemctl reload nginx
 ```
 
-Edit `server_name` / `root` in that file first if your hostname or path differ.
-
-## GitHub secrets
-
-Set these under **Settings → Secrets and variables → Actions**:
-
-| Secret                 | Value                                                        |
-| ---------------------- | ----------------------------------------------------------- |
-| `E2E_SSH_PRIVATE_KEY`  | Contents of the private key file (`nexeagle-e2e-deploy`).   |
-| `E2E_SSH_HOST`         | VM public IP or hostname.                                    |
-| `E2E_SSH_USER`         | `deploy`                                                     |
-| `E2E_SSH_PORT`         | *(optional)* SSH port if not `22`.                          |
-
-> The web root path lives in the workflow as the `DEPLOY_PATH` env var
-> (`/var/www/nexeagle-e2e`). Keep it in sync with the nginx `root`.
+Edit `server_name` (and `root` if you changed `DEPLOY_PATH`) in that file
+first — `dev.nexeagle.com` on the dev VM, your prod hostname on the prod VM.
 
 ## Verifying a deploy
-
-After a run completes, check the VM:
 
 ```bash
 curl -I http://<host>/                 # 200, no-cache on the HTML shell
 curl -I http://<host>/assets/<file>.js # 200 with immutable cache-control
-ls -la /var/www/nexeagle-e2e           # files owned by deploy, fresh mtime
+ls -la /var/www/nexeagle               # files owned by deploy, fresh mtime
 ```
 
 ## Rollback
 
-`dist/` is a fresh build each run, so to roll back just re-run the workflow
-from the last good commit (Actions → pick the commit → Re-run), or revert the
-offending commit on `main`.
+`dist/` is a fresh build each run, so roll back by re-running the workflow from
+the last good commit (Actions → pick the commit → Re-run) or reverting the
+offending commit on that branch.
+
+## Security note (passwords vs keys)
+
+Password auth is simpler but weaker than SSH keys (replayable, brute-forceable).
+For production, prefer switching `SSH_PASSWORD` to an SSH **key**
+(`SSH_PRIVATE_KEY`) and disabling `PasswordAuthentication`. The workflow's
+`sshpass` step would then become a plain key-based `ssh`/`rsync`. Ask and I'll
+swap it.
 
 ## Hardening ideas (optional)
 
 - **Atomic releases:** rsync into `releases/<sha>/` and flip a `current`
-  symlink instead of writing into the live root, for zero-downtime swaps and
-  instant rollback.
-- **Pin the host key:** replace the runtime `ssh-keyscan` in the workflow with
-  a checked-in/known-good host key to remove trust-on-first-use.
+  symlink for zero-downtime swaps + instant rollback.
 - **HTTPS:** run certbot (see the note at the bottom of the nginx conf).
-- **Required reviewers:** add protection rules to the `e2e` GitHub
-  *Environment* so deploys need approval.
+- **Pin host keys:** replace `StrictHostKeyChecking=accept-new` with a known
+  `known_hosts` entry to remove trust-on-first-use.
