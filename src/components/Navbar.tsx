@@ -49,14 +49,16 @@ const Navbar = () => {
   };
 
   return (
-    <nav className={cn(
-      "fixed top-0 z-50 w-full transition-all duration-300",
-      isScrolled 
-        ? "bg-background/80 backdrop-blur-xl border-b border-border shadow-[0_4px_30px_rgba(0,0,0,0.1)]" 
-        : "bg-transparent"
+    <div className={cn(
+      "fixed top-0 left-0 right-0 z-50 flex justify-center w-full transition-all duration-300 pointer-events-none",
+      isScrolled ? "pt-2 sm:pt-3 px-3 sm:px-6" : "pt-4 sm:pt-6 px-4 sm:px-8"
     )}>
-      <div className="container mx-auto px-6 md:px-8 lg:px-12">
-        <div className="flex h-20 items-center justify-between">
+      <nav className={cn(
+        "w-full max-w-6xl rounded-full border transition-all duration-300 pointer-events-auto flex items-center justify-between px-6 sm:px-8 shadow-md",
+        isScrolled 
+          ? "h-14 sm:h-16 bg-background/80 backdrop-blur-xl border-border shadow-[0_8px_30px_rgba(0,0,0,0.08)]" 
+          : "h-16 sm:h-20 bg-background/30 backdrop-blur-md border-border/40"
+      )}>
           
           {/* Logo */}
           <Link to="/" className="flex items-center group relative">
@@ -231,9 +233,8 @@ const Navbar = () => {
               </SheetContent>
             </Sheet>
           </div>
-        </div>
-      </div>
-    </nav>
+      </nav>
+    </div>
   );
 };
 

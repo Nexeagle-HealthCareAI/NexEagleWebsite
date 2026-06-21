@@ -51,18 +51,18 @@ const Footer = () => {
             <div className="space-y-2 text-center md:text-left">
               <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-brand-teal/10 border border-brand-teal/20 text-brand-sky text-xs font-semibold uppercase tracking-wider">
                 <Sparkles className="w-3 h-3 text-brand-sky" />
-                <span>Next-Gen Healthcare</span>
+                <span>Transparent Pricing</span>
               </span>
               <h3 className="text-2xl md:text-3xl font-bold tracking-tight text-white">
-                Transform Your Clinical Operations
+                Transparent Pricing, No Hidden Charges
               </h3>
               <p className="text-slate-400 text-sm max-w-xl">
-                Ready to deploy an intelligent, voice-enabled, and connected ecosystem in your facility? Let's build it together.
+                We believe in complete transparency. Our solutions feature upfront pricing with absolutely zero hidden fees. Contact our sales team to get started.
               </p>
             </div>
             <Link to="/contact" className="shrink-0 w-full md:w-auto">
               <button className="w-full inline-flex items-center justify-center gap-2 px-6 py-3.5 rounded-xl bg-gradient-to-r from-brand-teal to-brand-sky hover:opacity-95 text-white font-bold text-sm sm:text-base shadow-lg shadow-brand-teal/15 hover:shadow-xl transition-all duration-300 group hover:-translate-y-0.5">
-                Request a Demo
+                Talk to Sales
                 <ArrowRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
               </button>
             </Link>
