@@ -7,6 +7,11 @@ COPY package.json ./
 RUN npm install
 
 COPY . .
+# API origin baked into the static bundle (chat hub = <VITE_API_URL>/chathub).
+#   Dev : --build-arg VITE_API_URL=http://151.185.45.77:5002
+#   Prod: --build-arg VITE_API_URL=http://151.185.45.67:5002
+ARG VITE_API_URL
+ENV VITE_API_URL=$VITE_API_URL
 # Use vite directly to skip the Azure staticwebapp postbuild step
 RUN npx vite build
 

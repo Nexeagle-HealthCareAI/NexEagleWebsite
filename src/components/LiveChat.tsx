@@ -1,12 +1,27 @@
 import { useState, useEffect, useRef } from "react";
-import { MessageCircle, X, Send, Minimize2, Loader2 } from "lucide-react";
+import { MessageCircle, X, Send, Minimize2 } from "lucide-react";
 import { Button } from "./ui/button";
 import { Input } from "./ui/input";
 import * as signalR from "@microsoft/signalr";
 import { v4 as uuidv4 } from "uuid";
 
-// Pointing to local backend since the Azure API isn't updated with the latest fixes yet
-const API_BASE_URL = "http://localhost:5176";
+// The SignalR hub lives at <api-origin>/chathub on the CMS API. Derive it from VITE_API_URL
+// (set per environment at build time; the /api/v1 suffix is stripped if present) so it works
+// in dev and prod instead of a hardcoded localhost. Falls back to the Dev CMS API VM.
+//   Dev build : VITE_API_URL=http://151.185.45.77:5002
+//   Prod build: VITE_API_URL=http://151.185.45.67:5002
+const API_ORIGIN =
+  ((import.meta.env.VITE_API_URL as string | undefined)?.replace(/\/api\/v1\/?$/, "").replace(/\/$/, "")) ||
+  "http://151.185.45.77:5002";
+const CHAT_HUB_URL = `${API_ORIGIN}/chathub`;
+
+type ChatMessage = {
+  messageId?: string;
+  sessionId?: string;
+  senderType: string;
+  messageText: string;
+  sentAt: string;
+};
 
 const LiveChat = () => {
   const [isOpen, setIsOpen] = useState(false);
@@ -17,8 +32,7 @@ const LiveChat = () => {
   const [isRegistered, setIsRegistered] = useState(!!localStorage.getItem("nex_eagle_guest_name"));
   const [connection, setConnection] = useState<signalR.HubConnection | null>(null);
   const [sessionId, setSessionId] = useState<string | null>(null);
-  const [chatMessages, setChatMessages] = useState<Array<{ senderType: string; messageText: string; sentAt: string }>>([]);
-  const [isLoading, setIsLoading] = useState(false);
+  const [chatMessages, setChatMessages] = useState<ChatMessage[]>([]);
   const [isConnected, setIsConnected] = useState(false);
   const messagesEndRef = useRef<HTMLDivElement>(null);
 
@@ -30,89 +44,113 @@ const LiveChat = () => {
     scrollToBottom();
   }, [chatMessages]);
 
+  // Build, start and own the SignalR connection while the widget is open and the guest is
+  // registered. Tearing it down on close/unmount (and rebuilding on reopen) fixes the leak
+  // and gives a recovery path after a permanent disconnect.
   useEffect(() => {
-    if (isOpen && isRegistered && !connection) {
-      const guestId = localStorage.getItem("nex_eagle_guest_id") || uuidv4();
-      localStorage.setItem("nex_eagle_guest_id", guestId);
+    if (!isOpen || !isRegistered) return;
 
-      const newConnection = new signalR.HubConnectionBuilder()
-        .withUrl(`${API_BASE_URL}/chathub`)
-        .withAutomaticReconnect()
-        .build();
+    const guestId = localStorage.getItem("nex_eagle_guest_id") || uuidv4();
+    localStorage.setItem("nex_eagle_guest_id", guestId);
 
-      setConnection(newConnection);
-    }
+    const conn = new signalR.HubConnectionBuilder()
+      .withUrl(CHAT_HUB_URL)
+      .withAutomaticReconnect()
+      .build();
+
+    // Must run on every (re)connect: a reconnect is a brand-new server connection that is in
+    // no session group until JoinSession is invoked again.
+    const joinSession = () =>
+      conn
+        .invoke(
+          "JoinSession",
+          guestId,
+          localStorage.getItem("nex_eagle_guest_name"),
+          localStorage.getItem("nex_eagle_guest_email")
+        )
+        .catch((e) => console.error("JoinSession failed:", e));
+
+    conn.on("LoadHistory", (history: ChatMessage[]) => {
+      if (history.length > 0) {
+        setSessionId(history[0].sessionId ?? null);
+        setChatMessages(history);
+      } else {
+        setChatMessages([
+          {
+            senderType: "Agent",
+            messageText: "Hi! 👋 I'm here to help. What can I assist you with today?",
+            sentAt: new Date().toISOString(),
+          },
+        ]);
+      }
+    });
+
+    conn.on("SessionJoined", (id: string) => setSessionId(id));
+
+    conn.on("ReceiveMessage", (msg: ChatMessage) => {
+      if (msg.sessionId) setSessionId(msg.sessionId);
+      setChatMessages((prev) => [...prev, msg]);
+    });
+
+    conn.on("SessionClosed", () => {
+      setChatMessages((prev) => [
+        ...prev,
+        {
+          senderType: "Agent",
+          messageText: "This chat session has been closed. Thank you for reaching out!",
+          sentAt: new Date().toISOString(),
+        },
+      ]);
+      setSessionId(null);
+    });
+
+    conn.onreconnecting(() => setIsConnected(false));
+    conn.onreconnected(() => {
+      setIsConnected(true);
+      joinSession();
+    });
+    conn.onclose(() => setIsConnected(false));
+
+    let cancelled = false;
+    conn
+      .start()
+      .then(() => {
+        if (cancelled) return;
+        setIsConnected(true);
+        joinSession();
+      })
+      .catch((e) => {
+        console.error("Connection failed: ", e);
+        setIsConnected(false);
+      });
+
+    setConnection(conn);
+
+    return () => {
+      cancelled = true;
+      setConnection(null);
+      setIsConnected(false);
+      setSessionId(null);
+      conn.stop().catch(() => {});
+    };
   }, [isOpen, isRegistered]);
 
-  useEffect(() => {
-    if (connection && connection.state === signalR.HubConnectionState.Disconnected) {
-      connection.start()
-        .then(() => {
-          console.log("Connected to SignalR");
-          setIsConnected(true);
-          const guestId = localStorage.getItem("nex_eagle_guest_id");
-          const gName = localStorage.getItem("nex_eagle_guest_name");
-          const gEmail = localStorage.getItem("nex_eagle_guest_email");
-          connection.invoke("JoinSession", guestId, gName, gEmail);
-
-          connection.on("LoadHistory", (history) => {
-            if (history.length > 0) {
-              setSessionId(history[0].sessionId);
-              setChatMessages(history);
-            } else {
-              // Initial greeting if no history
-              setChatMessages([
-                {
-                  senderType: "Agent",
-                  messageText: "Hi! 👋 I'm here to help. What can I assist you with today?",
-                  sentAt: new Date().toISOString()
-                }
-              ]);
-            }
-          });
-
-          connection.on("SessionJoined", (id) => {
-            setSessionId(id);
-          });
-
-          connection.on("ReceiveMessage", (msg) => {
-            setSessionId(msg.sessionId);
-            setChatMessages(prev => [...prev, msg]);
-          });
-
-          connection.on("SessionClosed", () => {
-            setChatMessages(prev => [
-              ...prev,
-              {
-                senderType: "Agent",
-                messageText: "This chat session has been closed. Thank you for reaching out!",
-                sentAt: new Date().toISOString()
-              }
-            ]);
-            setSessionId(null);
-          });
-
-          connection.onreconnecting(() => setIsConnected(false));
-          connection.onreconnected(() => setIsConnected(true));
-          connection.onclose(() => setIsConnected(false));
-        })
-        .catch(e => {
-            console.error("Connection failed: ", e);
-            setIsConnected(false);
-        });
+  // A guest may only post once the server has assigned a session id; never invent one.
+  const sendText = async (text: string): Promise<boolean> => {
+    const trimmed = text.trim();
+    if (!trimmed || !connection || !isConnected || !sessionId) return false;
+    try {
+      // senderType/senderId are derived server-side from the connection, so we don't send them.
+      await connection.invoke("SendMessage", sessionId, trimmed);
+      return true;
+    } catch (e) {
+      console.error("Error sending message: ", e);
+      return false;
     }
-  }, [connection]);
+  };
 
   const handleSendMessage = async () => {
-    if (message.trim() && connection && isConnected) {
-      const guestId = localStorage.getItem("nex_eagle_guest_id");
-      try {
-        await connection.invoke("SendMessage", sessionId || uuidv4(), message, "Guest", guestId);
-        setMessage("");
-      } catch (e) {
-        console.error("Error sending message: ", e);
-      }
-    }
+    if (await sendText(message)) setMessage("");
   };
 
   const quickActions = [
@@ -123,14 +161,10 @@ const LiveChat = () => {
   ];
 
   const handleQuickAction = (action: string) => {
-    setMessage(action);
-    // Auto send quick action
-    if (connection && isConnected) {
-       const guestId = localStorage.getItem("nex_eagle_guest_id");
-       connection.invoke("SendMessage", sessionId || uuidv4(), action, "Guest", guestId);
-       setMessage("");
-    }
+    void sendText(action);
   };
+
+  const canSend = isConnected && !!sessionId;
 
   if (!isOpen) {
     return (
@@ -165,7 +199,7 @@ const LiveChat = () => {
             <p className="text-xs text-blue-100">We're online • Reply in ~2 min</p>
           </div>
         </div>
-        
+
         <div className="flex items-center gap-2">
           <button
             onClick={() => setIsMinimized(!isMinimized)}
@@ -191,20 +225,20 @@ const LiveChat = () => {
                  <p className="text-sm text-slate-500">Please enter your details to start chatting.</p>
                </div>
                <div className="space-y-3">
-                 <Input 
-                   placeholder="Your Name" 
-                   value={guestName} 
-                   onChange={e => setGuestName(e.target.value)} 
+                 <Input
+                   placeholder="Your Name"
+                   value={guestName}
+                   onChange={e => setGuestName(e.target.value)}
                    className="h-10"
                  />
-                 <Input 
-                   placeholder="Your Email (Optional)" 
+                 <Input
+                   placeholder="Your Email (Optional)"
                    type="email"
-                   value={guestEmail} 
-                   onChange={e => setGuestEmail(e.target.value)} 
+                   value={guestEmail}
+                   onChange={e => setGuestEmail(e.target.value)}
                    className="h-10"
                  />
-                 <Button 
+                 <Button
                    onClick={() => {
                      if(guestName.trim()) {
                        localStorage.setItem("nex_eagle_guest_name", guestName.trim());
@@ -227,16 +261,16 @@ const LiveChat = () => {
               <div className="flex-1 p-4 space-y-4 overflow-y-auto bg-slate-50">
             {chatMessages.map((msg, index) => (
               <div
-                key={index}
+                key={msg.messageId ?? `local-${index}`}
                 className={`flex ${msg.senderType === "Guest" ? "justify-end" : "justify-start"}`}
               >
                 <div
                   className={`max-w-[80%] px-4 py-2.5 rounded-2xl transform transition-all duration-300 hover:-translate-y-0.5 ${
                     msg.senderType === "Guest" ? "rounded-br-sm shadow-md" : "shadow-sm border border-slate-600 rounded-bl-sm"
                   }`}
-                  style={{ 
+                  style={{
                     backgroundColor: msg.senderType === "Guest" ? "#2563eb" : "#334155",
-                    color: "white" 
+                    color: "white"
                   }}
                 >
                   <p className="text-sm leading-relaxed" style={{ color: "white" }}>{msg.messageText}</p>
@@ -256,7 +290,8 @@ const LiveChat = () => {
                   <button
                     key={index}
                     onClick={() => handleQuickAction(action)}
-                    className="w-full text-left px-4 py-2 rounded-xl bg-white border border-slate-200 hover:border-blue-500 hover:bg-blue-50 text-sm font-medium text-slate-700 hover:text-blue-600 transition-all"
+                    disabled={!canSend}
+                    className="w-full text-left px-4 py-2 rounded-xl bg-white border border-slate-200 hover:border-blue-500 hover:bg-blue-50 text-sm font-medium text-slate-700 hover:text-blue-600 transition-all disabled:opacity-50 disabled:cursor-not-allowed"
                   >
                     {action}
                   </button>
@@ -271,8 +306,8 @@ const LiveChat = () => {
               <Input
                 value={message}
                 onChange={(e) => setMessage(e.target.value)}
-                onKeyPress={(e) => e.key === "Enter" && handleSendMessage()}
-                placeholder={isConnected ? "Type your message..." : "Connecting to support..."}
+                onKeyDown={(e) => e.key === "Enter" && handleSendMessage()}
+                placeholder={!isConnected ? "Connecting to support..." : !sessionId ? "Starting session..." : "Type your message..."}
                 className="flex-1 h-10 border-2 border-slate-200 focus:border-blue-500"
                 disabled={!isConnected}
               />
@@ -280,7 +315,7 @@ const LiveChat = () => {
                 onClick={handleSendMessage}
                 size="sm"
                 className="h-10 px-4 bg-blue-600 hover:bg-blue-700 text-white"
-                disabled={!isConnected || !message.trim()}
+                disabled={!canSend || !message.trim()}
               >
                 <Send className="w-4 h-4" />
               </Button>
