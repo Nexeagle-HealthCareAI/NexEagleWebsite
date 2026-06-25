@@ -1,0 +1,2 @@
+# Keep shell scripts LF-only so they run on the Linux VM even when authored on Windows.
+*.sh text eol=lf
