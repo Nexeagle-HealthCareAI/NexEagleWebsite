@@ -31,6 +31,8 @@ const OneRad = lazy(() => import("./pages/solutions/OneRad"));
 const OnePharma = lazy(() => import("./pages/solutions/OnePharma"));
 const OneLab = lazy(() => import("./pages/solutions/OneLab"));
 const NexEagleAI = lazy(() => import("./pages/NexEagleAI"));
+const BookAppointment = lazy(() => import("./pages/BookAppointment"));
+const Feedback = lazy(() => import("./pages/Feedback"));
 
 const queryClient = new QueryClient();
 
@@ -77,6 +79,10 @@ const App = () => (
               
               {/* AI Route */}
               <Route path="/ai" element={<NexEagleAI />} />
+
+              {/* Appointments & Feedback */}
+              <Route path="/book-appointment" element={<BookAppointment />} />
+              <Route path="/feedback" element={<Feedback />} />
               
               {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
               <Route path="*" element={<NotFound />} />
