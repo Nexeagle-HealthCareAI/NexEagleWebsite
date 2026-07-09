@@ -34,6 +34,7 @@ const Navbar = () => {
     },
     { name: "NEXEAGLE AI", href: "/ai" },
     // { name: "Pricing", href: "/pricing" },
+    { name: "Book Appointment", href: "/book-appointment" },
     { name: "Team", href: "/team" },
     { name: "Contact", href: "/contact" }
   ];

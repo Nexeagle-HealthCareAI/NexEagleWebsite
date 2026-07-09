@@ -20,6 +20,8 @@ const Footer = () => {
   ];
 
   const resourceLinks = [
+    { name: "Book Appointment", href: "/book-appointment" },
+    { name: "Share Feedback", href: "/feedback" },
     { name: "FAQs & Support", href: "/faqs" },
     { name: "Privacy Policy", href: "/privacy" },
     { name: "Terms of Service", href: "/terms" },
