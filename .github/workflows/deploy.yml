@@ -47,7 +47,7 @@ jobs:
       - run: npm ci
 
       - name: Build (validation)
-        run: npx vite build
+        run: npm run build
 
 # ═══════════════════════════════════════════════════════════════════════════════
   deploy-prod:
