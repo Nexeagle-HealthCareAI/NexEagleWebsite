@@ -1,16 +1,20 @@
+"use client";
+
 import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
 import { Menu, X, ChevronDown, ArrowRight } from "lucide-react";
-import { Link, useNavigate, useLocation } from "react-router-dom";
+import Link from "next/link";
+import { useRouter, usePathname } from "next/navigation";
 import { cn } from "@/lib/utils";
 import { Logo } from "./Logo";
 
 const Navbar = () => {
   const [isOpen, setIsOpen] = useState(false);
   const [isScrolled, setIsScrolled] = useState(false);
-  const location = useLocation();
-  const navigate = useNavigate();
+  const pathname = usePathname();
+  const router = useRouter();
+  const navigate = (href: string) => router.push(href);
 
   useEffect(() => {
     const handleScroll = () => {
@@ -33,15 +37,14 @@ const Navbar = () => {
       ]
     },
     { name: "NEXEAGLE AI", href: "/ai" },
-    // { name: "Pricing", href: "/pricing" },
-    { name: "Book Appointment", href: "/book-appointment" },
+    { name: "Pricing", href: "/pricing" },
     { name: "Team", href: "/team" },
     { name: "Contact", href: "/contact" }
   ];
 
   const isActive = (href: string) => {
-    if (href === "/") return location.pathname === "/";
-    return location.pathname.startsWith(href);
+    if (href === "/") return pathname === "/";
+    return pathname.startsWith(href);
   };
 
   const handleNavigation = (href: string) => {
@@ -62,7 +65,7 @@ const Navbar = () => {
       )}>
           
           {/* Logo */}
-          <Link to="/" className="flex items-center group relative">
+          <Link href="/os" className="flex items-center group relative">
             <Logo textSize="text-xl sm:text-2xl md:text-3xl lg:text-4xl" />
           </Link>
 
@@ -84,7 +87,7 @@ const Navbar = () => {
                   </button>
                 ) : (
                   <Link
-                    to={link.href}
+                    href={link.href}
                     className={cn(
                       "relative px-4 py-2 text-sm font-medium transition-all duration-200 rounded-full",
                       isActive(link.href)
@@ -103,7 +106,7 @@ const Navbar = () => {
                       {link.dropdown.map((subItem) => (
                         <Link
                           key={subItem.name}
-                          to={subItem.href}
+                          href={subItem.href}
                           className="px-4 py-2 text-sm text-muted-foreground hover:text-foreground hover:bg-secondary/10 rounded-lg transition-colors"
                         >
                           {subItem.name}
@@ -118,11 +121,11 @@ const Navbar = () => {
 
           {/* Desktop CTA */}
           <div className="hidden lg:flex items-center gap-4">
-            <Link to="/contact" className="text-sm font-medium text-foreground hover:text-brand-teal transition-colors">
+            <Link href="/contact" className="text-sm font-medium text-foreground hover:text-brand-teal transition-colors">
               Talk to Sales
             </Link>
             
-            <Link to="/contact">
+            <Link href="/contact">
               <Button
                 className="bg-brand-teal hover:bg-brand-teal/90 text-white rounded-full px-6 shadow-[0_0_15px_rgba(20,184,166,0.3)] hover:shadow-[0_0_25px_rgba(20,184,166,0.5)] transition-all"
               >

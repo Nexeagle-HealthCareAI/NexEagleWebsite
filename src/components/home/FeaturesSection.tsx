@@ -1,5 +1,7 @@
+"use client";
+
 import React, { useState, useEffect } from "react";
-import { Link } from "react-router-dom";
+import Link from "next/link";
 import { Mic, BrainCircuit, ShieldCheck, CalendarClock, ArrowRight, Check, AlertTriangle, Shield, Calendar, Users, Eye } from "lucide-react";
 
 interface Feature {
@@ -330,7 +332,7 @@ export const FeaturesSection = () => {
                   Want to explore more detailed clinical features?
                 </span>
                 <Link
-                  to="/blog"
+                  href="/blog"
                   className="inline-flex items-center gap-2 text-xs font-bold text-white bg-brand-teal px-4 py-2 rounded-xl hover:bg-brand-teal/90 transition-all shadow-[0_4px_15px_rgba(27,122,103,0.25)] group/learn shrink-0"
                 >
                   <span>Explore Full Details in Our Blog</span>

@@ -12,14 +12,6 @@ dist
 dist-ssr
 *.local
 
-# Environment files (keep .env.example tracked)
-.env
-.env.local
-.env.*.local
-
-# Backend local persistence (nexeagle-api)
-nexeagle-api/data/store.json
-
 # Editor directories and files
 .vscode/*
 !.vscode/extensions.json
@@ -30,3 +22,13 @@ nexeagle-api/data/store.json
 *.njsproj
 *.sln
 *.sw?
+
+# Next.js build output
+.next/
+out/
+
+# Tool/agent directories
+.claude/
+.agents/
+.gemini/
+

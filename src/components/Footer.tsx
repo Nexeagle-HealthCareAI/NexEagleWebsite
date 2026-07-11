@@ -1,5 +1,5 @@
 import { Mail, Phone, Linkedin, MapPin, ArrowRight, Sparkles } from "lucide-react";
-import { Link } from "react-router-dom";
+import Link from "next/link";
 import { Logo } from "./Logo";
 
 const Footer = () => {
@@ -14,14 +14,12 @@ const Footer = () => {
   ];
 
   const platformLinks = [
-    { name: "Why NexEagle", href: "/team" },
-    { name: "How It Works", href: "/team" },
+    { name: "Why NexEagle", href: "/why" },
+    { name: "How It Works", href: "/how-it-works" },
     { name: "Platform Overview", href: "/contact" },
   ];
 
   const resourceLinks = [
-    { name: "Book Appointment", href: "/book-appointment" },
-    { name: "Share Feedback", href: "/feedback" },
     { name: "FAQs & Support", href: "/faqs" },
     { name: "Privacy Policy", href: "/privacy" },
     { name: "Terms of Service", href: "/terms" },
@@ -62,7 +60,7 @@ const Footer = () => {
                 We believe in complete transparency. Our solutions feature upfront pricing with absolutely zero hidden fees. Contact our sales team to get started.
               </p>
             </div>
-            <Link to="/contact" className="shrink-0 w-full md:w-auto">
+            <Link href="/contact" className="shrink-0 w-full md:w-auto">
               <button className="w-full inline-flex items-center justify-center gap-2 px-6 py-3.5 rounded-xl bg-gradient-to-r from-brand-teal to-brand-sky hover:opacity-95 text-white font-bold text-sm sm:text-base shadow-lg shadow-brand-teal/15 hover:shadow-xl transition-all duration-300 group hover:-translate-y-0.5">
                 Talk to Sales
                 <ArrowRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
@@ -75,7 +73,7 @@ const Footer = () => {
         <div className="py-16 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-12 gap-10 md:gap-12">
           {/* Brand Info */}
           <div className="lg:col-span-4 space-y-6">
-            <Link to="/" className="inline-flex items-center group">
+            <Link href="/os" className="inline-flex items-center group">
               <Logo textSize="text-2xl sm:text-3xl" textColor="text-white" />
             </Link>
             <p className="text-slate-400 text-sm leading-relaxed max-w-sm">
@@ -103,7 +101,7 @@ const Footer = () => {
               {solutionLinks.map((link) => (
                 <li key={link.name}>
                   <Link
-                    to={link.href}
+                    href={link.href}
                     className="text-slate-400 hover:text-brand-teal transition-colors text-sm font-medium"
                   >
                     {link.name}
@@ -122,7 +120,7 @@ const Footer = () => {
               {platformLinks.map((link) => (
                 <li key={link.name}>
                   <Link
-                    to={link.href}
+                    href={link.href}
                     className="text-slate-400 hover:text-brand-teal transition-colors text-sm font-medium"
                   >
                     {link.name}
@@ -141,7 +139,7 @@ const Footer = () => {
               {resourceLinks.map((link) => (
                 <li key={link.name}>
                   <Link
-                    to={link.href}
+                    href={link.href}
                     className="text-slate-400 hover:text-brand-teal transition-colors text-sm font-medium"
                   >
                     {link.name}
@@ -160,7 +158,7 @@ const Footer = () => {
               {companyLinks.map((link) => (
                 <li key={link.name}>
                   <Link
-                    to={link.href}
+                    href={link.href}
                     className="text-slate-400 hover:text-brand-teal transition-colors text-sm font-medium"
                   >
                     {link.name}
@@ -199,13 +197,13 @@ const Footer = () => {
         <div className="border-t border-slate-900 py-8 flex flex-col sm:flex-row justify-between items-center gap-4 text-xs text-slate-500 font-medium">
           <p>© {currentYear} NEXEAGLE. All rights reserved.</p>
           <div className="flex gap-6">
-            <Link to="/privacy" className="hover:text-slate-300 transition-colors">
+            <Link href="/privacy" className="hover:text-slate-300 transition-colors">
               Privacy Policy
             </Link>
-            <Link to="/terms" className="hover:text-slate-300 transition-colors">
+            <Link href="/terms" className="hover:text-slate-300 transition-colors">
               Terms of Service
             </Link>
-            <Link to="/security" className="hover:text-slate-300 transition-colors">
+            <Link href="/security" className="hover:text-slate-300 transition-colors">
               Security Standards
             </Link>
           </div>

@@ -1,5 +1,7 @@
+"use client";
+
 import React, { useEffect, useState } from "react";
-import { Link } from "react-router-dom";
+import Link from "next/link";
 import { ArrowRight } from "lucide-react";
 import { LiquidButton } from "./ui/LiquidButton";
 import { ConnectedEcosystem } from "./home/ConnectedEcosystem";
@@ -203,7 +205,7 @@ const Hero = () => {
 
           {/* CTA Buttons (Permanently visible) */}
           <div className="flex flex-col sm:flex-row gap-4 pt-4">
-            <Link to="/contact" className="w-full sm:w-auto">
+            <Link href="/contact" className="w-full sm:w-auto">
               <LiquidButton size="lg" className="w-full">
                 Book a Demo <ArrowRight className="w-5 h-5" />
               </LiquidButton>

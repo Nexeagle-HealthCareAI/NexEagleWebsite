@@ -1,6 +1,6 @@
 import { Button } from "@/components/ui/button";
 import { ArrowRight, Briefcase } from "lucide-react";
-import { Link } from "react-router-dom";
+import Link from "next/link";
 
 const AboutCTA = () => {
   return (
@@ -30,7 +30,7 @@ const AboutCTA = () => {
               size="lg"
               className="px-8 py-6 text-base font-semibold bg-white text-slate-900 hover:bg-slate-50 rounded-full shadow-lg shadow-black/5 hover:translate-y-[-2px] transition-all duration-300"
             >
-              <Link to="/careers">
+              <Link href="/careers">
                 View Open Positions
                 <ArrowRight className="w-5 h-5 ml-2" />
               </Link>

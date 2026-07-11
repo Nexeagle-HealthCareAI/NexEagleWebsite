@@ -1,5 +1,7 @@
-import React from "react";
-import { Link } from "react-router-dom";
+"use client";
+
+import React, { useState } from "react";
+import Link from "next/link";
 // import { motion, AnimatePresence } from "framer-motion";
 import { 
   ArrowRight, Building2, Stethoscope, Pill, FlaskConical, Scan
@@ -112,7 +114,7 @@ const ProductEcosystem = () => {
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4 md:gap-6">
             
             {/* 1HMS - Large Card */}
-            <Link to="/solutions/1hms" className="md:col-span-3 group relative p-8 rounded-[2rem] bg-card border border-border overflow-hidden hover:border-brand-teal/50 transition-all duration-500 cursor-pointer block">
+            <Link href="/solutions/1hms" className="md:col-span-3 group relative p-8 rounded-[2rem] bg-card border border-border overflow-hidden hover:border-brand-teal/50 transition-all duration-500 cursor-pointer block">
               <div className="absolute inset-0 bg-gradient-to-br from-brand-teal/5 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
               
               <div className="relative z-10 h-full flex flex-col justify-between">
@@ -133,7 +135,7 @@ const ProductEcosystem = () => {
             </Link>
 
             {/* 1Pharma - Small Card */}
-            <Link to="/solutions/1pharma" className="group relative p-8 rounded-[2rem] bg-card border border-border overflow-hidden hover:border-brand-iris/50 transition-all duration-500 cursor-pointer block">
+            <Link href="/solutions/1pharma" className="group relative p-8 rounded-[2rem] bg-card border border-border overflow-hidden hover:border-brand-iris/50 transition-all duration-500 cursor-pointer block">
               <div className="absolute inset-0 bg-gradient-to-br from-brand-iris/5 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
               
               <div className="relative z-10 h-full flex flex-col justify-between">
@@ -154,7 +156,7 @@ const ProductEcosystem = () => {
             </Link>
 
             {/* 1Lab - Small Card */}
-            <Link to="/solutions/1lab" className="group relative p-8 rounded-[2rem] bg-card border border-border overflow-hidden hover:border-brand-teal/50 transition-all duration-500 cursor-pointer block">
+            <Link href="/solutions/1lab" className="group relative p-8 rounded-[2rem] bg-card border border-border overflow-hidden hover:border-brand-teal/50 transition-all duration-500 cursor-pointer block">
               <div className="absolute inset-0 bg-gradient-to-br from-brand-teal/5 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
               
               <div className="relative z-10 h-full flex flex-col justify-between">
@@ -175,7 +177,7 @@ const ProductEcosystem = () => {
             </Link>
 
             {/* 1Rad - Small Card */}
-            <Link to="/solutions/1rad" className="group relative p-8 rounded-[2rem] bg-card border border-border overflow-hidden hover:border-brand-sky/50 transition-all duration-500 cursor-pointer block">
+            <Link href="/solutions/1rad" className="group relative p-8 rounded-[2rem] bg-card border border-border overflow-hidden hover:border-brand-sky/50 transition-all duration-500 cursor-pointer block">
               <div className="absolute inset-0 bg-gradient-to-br from-brand-sky/5 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
               
               <div className="relative z-10 h-full flex flex-col justify-between">
@@ -799,7 +801,7 @@ const ProductEcosystem = () => {
                             Test Again
                           </button>
 
-                          <Link to="/contact">
+                          <Link href="/contact">
                             <button className="flex items-center gap-1 text-xs font-bold bg-slate-900 hover:bg-slate-800 text-white shadow-md py-2 px-4 rounded-xl transition-all">
                               Request Live Demo
                               <ChevronRight className="w-4 h-4" />

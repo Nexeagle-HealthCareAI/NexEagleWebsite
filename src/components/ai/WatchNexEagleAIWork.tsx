@@ -1,5 +1,7 @@
+"use client";
+
 import React, { useState, useEffect, useRef } from "react";
-import { Link } from "react-router-dom";
+import Link from "next/link";
 import { motion, AnimatePresence } from "framer-motion";
 import { 
   Mic, 
@@ -638,8 +640,8 @@ export const WatchNexEagleAIWork = () => {
                     className="flex flex-col sm:flex-row items-center justify-center gap-4 pt-6"
                   >
                     <Link 
-                      to="/contact"
-                      className="w-full sm:w-auto inline-flex items-center justify-center gap-2 px-8 py-4 rounded-2xl bg-white hover:bg-slate-50 text-slate-950 font-bold text-sm sm:text-base shadow-lg hover:shadow-xl transition-all duration-300 group hover:-translate-y-0.5"
+                      href="/contact"
+                      className="w-full sm:w-auto inline-flex items-center justify-center gap-2 px-8 py-4 rounded-2xl bg-white hover:bg-slate-50 text-slate-955 font-bold text-sm sm:text-base shadow-lg hover:shadow-xl transition-all duration-300 group hover:-translate-y-0.5"
                     >
                       <span>See NexEagle AI In Action</span>
                       <ArrowRight className="w-5 h-5 text-slate-950 group-hover:translate-x-1 transition-transform" />

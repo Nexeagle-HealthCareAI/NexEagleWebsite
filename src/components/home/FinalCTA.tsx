@@ -1,6 +1,6 @@
 import { Button } from "@/components/ui/button";
 import { ArrowRight, Mail } from "lucide-react";
-import { Link } from "react-router-dom";
+import Link from "next/link";
 
 const FinalCTA = () => {
   return (
@@ -32,7 +32,7 @@ const FinalCTA = () => {
                   size="lg"
                   className="px-8 py-6 text-base font-semibold bg-white text-slate-900 hover:bg-slate-100"
                 >
-                  <Link to="/contact">
+                  <Link href="/contact">
                     Start a Project
                     <ArrowRight className="w-5 h-5 ml-2" />
                   </Link>
