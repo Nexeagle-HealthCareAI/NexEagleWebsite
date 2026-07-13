@@ -181,7 +181,7 @@ export default function OneRadPage() {
                 </p>
               </div>
               <div className="mt-6 pt-4 border-t border-slate-200/60 text-[11px] text-slate-500 font-medium">
-                <span className="text-brand-teal font-semibold">Evidence:</span> "Cloud-Native PACS Workflow Optimization", <em>Journal of Digital Imaging</em>, 2023.
+                <span className="text-brand-teal font-semibold">Evidence:</span> &quot;Cloud-Native PACS Workflow Optimization&quot;, <em>Journal of Digital Imaging</em>, 2023.
               </div>
             </div>
 
@@ -197,7 +197,7 @@ export default function OneRadPage() {
                 </p>
               </div>
               <div className="mt-6 pt-4 border-t border-slate-200/60 text-[11px] text-slate-500 font-medium">
-                <span className="text-brand-sky font-semibold">Evidence:</span> "AI-Assisted Diagnostics in Chest Radiology", <em>JAMA Network Open</em>, 2024.
+                <span className="text-brand-sky font-semibold">Evidence:</span> &quot;AI-Assisted Diagnostics in Chest Radiology&quot;, <em>JAMA Network Open</em>, 2024.
               </div>
             </div>
 
@@ -213,7 +213,7 @@ export default function OneRadPage() {
                 </p>
               </div>
               <div className="mt-6 pt-4 border-t border-slate-200/60 text-[11px] text-slate-500 font-medium">
-                <span className="text-brand-sky font-semibold">Evidence:</span> "Economic Viability of Cloud Storage in Radiology", <em>Journal of Medical Systems</em>, 2023.
+                <span className="text-brand-sky font-semibold">Evidence:</span> &quot;Economic Viability of Cloud Storage in Radiology&quot;, <em>Journal of Medical Systems</em>, 2023.
               </div>
             </div>
 
@@ -229,7 +229,7 @@ export default function OneRadPage() {
                 </p>
               </div>
               <div className="mt-6 pt-4 border-t border-slate-200/60 text-[11px] text-slate-500 font-medium">
-                <span className="text-brand-teal font-semibold">Evidence:</span> "Radiologist Fatigue and PACS Interface Design", <em>Academic Radiology</em>.
+                <span className="text-brand-teal font-semibold">Evidence:</span> &quot;Radiologist Fatigue and PACS Interface Design&quot;, <em>Academic Radiology</em>.
               </div>
             </div>
           </div>

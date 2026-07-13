@@ -20,7 +20,7 @@ const AboutCTA = () => {
             
             <h3 className="text-3xl font-extrabold tracking-tight">Join the NexEaglians</h3>
             <p className="text-teal-100 leading-relaxed font-light text-base sm:text-lg">
-              We're looking for ambitious engineers, product designers, and clinicians who want to build the future of automated, intelligent healthcare.
+              We&apos;re looking for ambitious engineers, product designers, and clinicians who want to build the future of automated, intelligent healthcare.
             </p>
           </div>
 

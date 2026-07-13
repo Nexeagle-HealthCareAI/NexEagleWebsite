@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useMemo } from "react";
 import Link from "next/link";
 import { Clock, Mail, Phone, MapPin, AlertTriangle, ShieldCheck, Server, Key, Database, Users } from "lucide-react";
 
@@ -43,7 +43,7 @@ export default function SecurityClient() {
     }
   ];
 
-  const sections: Section[] = [
+  const sections: Section[] = useMemo(() => [
     {
       id: "certifications",
       title: "Certifications & Compliance",
@@ -142,7 +142,7 @@ export default function SecurityClient() {
         }
       ]
     }
-  ];
+  ], []);
 
   // Track active section on scroll
   useEffect(() => {
@@ -171,7 +171,7 @@ export default function SecurityClient() {
 
     window.addEventListener("scroll", handleScroll);
     return () => window.removeEventListener("scroll", handleScroll);
-  }, []);
+  }, [sections]);
 
   const handleLinkClick = (id: string) => {
     setActiveSection(id);

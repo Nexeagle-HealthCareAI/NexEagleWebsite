@@ -51,11 +51,11 @@ export default function NexEagleAIPage() {
                 </div>
                 <h3 className="text-xl font-bold text-slate-900">Combating Clinical Burnout</h3>
                 <p className="text-sm text-slate-600 font-light leading-relaxed">
-                  By converting verbal patient-doctor conversations directly into structured EMR data, clinical AI eliminates the manual "typing tax", reducing charting work by up to 50% and restoring joy to practice.
+                  By converting verbal patient-doctor conversations directly into structured EMR data, clinical AI eliminates the manual &quot;typing tax&quot;, reducing charting work by up to 50% and restoring joy to practice.
                 </p>
               </div>
               <div className="mt-6 pt-4 border-t border-slate-200/60 text-[11px] text-slate-500 font-medium">
-                <span className="text-brand-teal font-semibold">Evidence:</span> "The EHR Typing Tax & Provider Burnout", <em>Annals of Internal Medicine</em>.
+                <span className="text-brand-teal font-semibold">Evidence:</span> &quot;The EHR Typing Tax &amp; Provider Burnout&quot;, <em>Annals of Internal Medicine</em>.
               </div>
             </div>
 
@@ -71,7 +71,7 @@ export default function NexEagleAIPage() {
                 </p>
               </div>
               <div className="mt-6 pt-4 border-t border-slate-200/60 text-[11px] text-slate-500 font-medium">
-                <span className="text-brand-sky font-semibold">Evidence:</span> "Clinical Decision Support Systems for Safety", <em>Journal of Patient Safety</em>.
+                <span className="text-brand-sky font-semibold">Evidence:</span> &quot;Clinical Decision Support Systems for Safety&quot;, <em>Journal of Patient Safety</em>.
               </div>
             </div>
 
@@ -87,7 +87,7 @@ export default function NexEagleAIPage() {
                 </p>
               </div>
               <div className="mt-6 pt-4 border-t border-slate-200/60 text-[11px] text-slate-500 font-medium">
-                <span className="text-brand-sky font-semibold">Evidence:</span> "AI-Driven Clinical Triage in Emergency Radiology", <em>Academic Radiology</em>.
+                <span className="text-brand-sky font-semibold">Evidence:</span> &quot;AI-Driven Clinical Triage in Emergency Radiology&quot;, <em>Academic Radiology</em>.
               </div>
             </div>
 
@@ -103,7 +103,7 @@ export default function NexEagleAIPage() {
                 </p>
               </div>
               <div className="mt-6 pt-4 border-t border-slate-200/60 text-[11px] text-slate-500 font-medium">
-                <span className="text-brand-teal font-semibold">Evidence:</span> "Natural Language Processing in Discharge Summaries", <em>BMC Medical Informatics</em>.
+                <span className="text-brand-teal font-semibold">Evidence:</span> &quot;Natural Language Processing in Discharge Summaries&quot;, <em>BMC Medical Informatics</em>.
               </div>
             </div>
           </div>

@@ -194,7 +194,7 @@ export default function CareersClient() {
       <section className="container px-6 md:px-8 lg:px-12 max-w-4xl mx-auto mt-16 select-none">
         <div className="p-8 rounded-3xl bg-slate-50 border border-slate-200/80 flex flex-col md:flex-row justify-between items-center gap-6">
           <div className="space-y-2 text-center md:text-left">
-            <h3 className="text-xl font-bold text-slate-900">Don't see a perfect fit?</h3>
+            <h3 className="text-xl font-bold text-slate-900">Don&apos;t see a perfect fit?</h3>
             <p className="text-sm text-slate-500 max-w-lg leading-relaxed">
               We are always excited to meet clinicians who code, developers interested in healthcare, and growth specialists. Drop us your resume!
             </p>

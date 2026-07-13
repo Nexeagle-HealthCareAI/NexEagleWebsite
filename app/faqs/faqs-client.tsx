@@ -184,7 +184,7 @@ export default function FAQsClient() {
             <HelpCircle className="w-10 h-10 text-slate-300 mx-auto" />
             <h3 className="font-bold text-slate-800">No matching questions found</h3>
             <p className="text-sm text-slate-500 max-w-sm mx-auto">
-              Try searching for general keywords like "EMR", "voice", "setup", or adjust your category tab filter.
+              Try searching for general keywords like &quot;EMR&quot;, &quot;voice&quot;, &quot;setup&quot;, or adjust your category tab filter.
             </p>
           </div>
         )}
@@ -202,7 +202,7 @@ export default function FAQsClient() {
 
             <h3 className="text-3xl font-extrabold tracking-tight">Still have questions?</h3>
             <p className="text-teal-100 leading-relaxed font-light text-base sm:text-lg">
-              Can't find what you're looking for? Reach out to our clinical onboarding advisors or schedule a demo.
+              Can&apos;t find what you&apos;re looking for? Reach out to our clinical onboarding advisors or schedule a demo.
             </p>
           </div>
 

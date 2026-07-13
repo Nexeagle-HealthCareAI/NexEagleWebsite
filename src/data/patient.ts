@@ -22,13 +22,22 @@ export interface Doctor {
   experienceYears: number;
 
   // ── Promotion / KPI fields ────────────────────────────────────────────────
-  rating: number;         // 0–5, e.g. 4.9
-  reviewCount: number;    // number of patients who rated
-  patientsServed: number; // total consultations delivered on the platform
-  recommendationPct: number; // % of patients who recommend the doctor
-  waitTimeMins: number;   // typical waiting time at the clinic
+  // Optional: the real EasyHMS public API doesn't return any of these (no
+  // per-doctor rating, patient counts, fee, or location/clinic — the API key
+  // is scoped to one hospital). Populated for the local mock data only; when
+  // undefined/empty, the UI hides that section instead of showing a fake zero
+  // (see DoctorCard.tsx).
+  rating?: number;         // 0–5, e.g. 4.9
+  reviewCount?: number;    // number of patients who rated
+  patientsServed?: number; // total consultations delivered on the platform
+  recommendationPct?: number; // % of patients who recommend the doctor
+  waitTimeMins?: number;   // typical waiting time at the clinic
 
-  fee: number;            // consultation fee, INR
+  fee?: number;            // consultation fee, INR
+  // Which hospital this doctor belongs to — populated from the real API's
+  // hospitalName now that the directory spans every publicly-listed hospital.
+  // Mock data leaves this undefined and uses `clinic` instead — see DoctorCard.tsx.
+  hospitalName?: string;
   // City name alone is NOT unique in India (e.g. "Kishanganj" is a town in Bihar
   // AND a locality in Delhi). Always filter/match on (city, state) together —
   // see CityOption/cityKey below. Never compare `city` in isolation.
@@ -42,6 +51,27 @@ export interface Doctor {
   promoted: boolean;      // "featured" / top-of-list placement
   about: string;
   focusAreas: string[];   // conditions the doctor commonly treats
+}
+
+// SEO-friendly doctor URL: keyword-rich slug with the real id suffixed after a
+// "--" separator, so lookup is exact (never guess a doctor from name text) while
+// the URL itself still reads as "dr-ananya-sen-cardiology-kolkata" in search
+// results. "--" (not "-") is the separator because doctor ids are GUIDs that
+// already contain single dashes — splitting on "-" would break the id apart.
+export function doctorSlug(doctor: Pick<Doctor, "id" | "name" | "specialty">, city?: string): string {
+  const parts = [doctor.name, doctor.specialty, city].filter(Boolean) as string[];
+  const words = parts
+    .join(" ")
+    .toLowerCase()
+    .replace(/[^a-z0-9]+/g, "-")
+    .replace(/(^-|-$)/g, "");
+  return `${words}--${doctor.id}`;
+}
+
+/** Recover the real doctor id from a slug built by doctorSlug(). */
+export function parseDoctorIdFromSlug(slug: string): string {
+  const idx = slug.lastIndexOf("--");
+  return idx === -1 ? slug : slug.slice(idx + 2);
 }
 
 export interface Specialty {
@@ -104,16 +134,6 @@ export const CITIES: CityOption[] = [
   city("Kishanganj", "Bihar"),
   city("Kishanganj", "Delhi"),
 ];
-
-// Two-step State → City/District filter: picking the state first, then only
-// the cities within it, is a clearer disambiguation UX than one flat list of
-// "Name, State" strings — and it's how the ambiguity is actually resolved on
-// the ground (an address is state + district, not just a town name).
-export const STATES: string[] = Array.from(new Set(CITIES.map((c) => c.state))).sort();
-
-export function citiesInState(state: string): CityOption[] {
-  return CITIES.filter((c) => c.state === state);
-}
 
 export const AREAS_BY_CITY: Record<string, string[]> = {
   [cityId("Kolkata", "West Bengal")]: ["Salt Lake", "Gariahat", "New Town", "Behala", "Howrah"],

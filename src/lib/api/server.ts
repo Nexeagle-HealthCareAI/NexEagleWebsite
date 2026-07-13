@@ -1,9 +1,14 @@
 // ─────────────────────────────────────────────────────────────────────────────
 // Server-only helper for talking to the EasyHMS public API.
 //
-// ⚠️  Import this ONLY from route handlers (app/api/**). It reads the secret API
-//     key from env, which must never reach the browser bundle.
+// ⚠️  Import this ONLY from route handlers (app/api/**) and Server Components
+//     (page.tsx files with no "use client"). It reads the secret API key from
+//     env, which must never reach the browser bundle.
 // ─────────────────────────────────────────────────────────────────────────────
+
+import type { Doctor } from "@/data/patient";
+import { mapDoctor } from "./mappers";
+import type { DoctorsResponseDto } from "./types";
 
 const BASE_URL = process.env.EASYHMS_API_BASE_URL ?? "";
 const API_KEY = process.env.EASYHMS_API_KEY ?? "";
@@ -49,4 +54,21 @@ export async function easyhmsFetch<T = unknown>(
   }
 
   return { ok: res.ok, status: res.status, data, notConfigured: false };
+}
+
+export interface GetDoctorByIdResult {
+  doctor: Doctor | null;
+  notConfigured: boolean;
+}
+
+// No single-doctor public backend endpoint exists yet (only the full-directory
+// list) — fetch the directory server-side and find the match. Fine at today's
+// directory size; if the platform-wide directory grows large, this is the spot
+// to swap in a dedicated GET /public/doctors/{id} backend endpoint instead.
+export async function getDoctorById(doctorId: string): Promise<GetDoctorByIdResult> {
+  const result = await easyhmsFetch<DoctorsResponseDto>("/public/doctors");
+  if (result.notConfigured) return { doctor: null, notConfigured: true };
+
+  const dto = result.data?.doctors?.find((d) => d.doctorId === doctorId);
+  return { doctor: dto ? mapDoctor(dto) : null, notConfigured: false };
 }

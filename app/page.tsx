@@ -1,69 +1,62 @@
-"use client";
+import type { Metadata } from "next";
+import HomeClient from "./home-client";
 
-import { useState } from "react";
-import AnalyticsTracker from "@/components/AnalyticsTracker";
-import PatientTopBar from "@/components/patient/PatientTopBar";
-import PatientHero from "@/components/patient/PatientHero";
-import SpecialtyRail from "@/components/patient/SpecialtyRail";
-import DoctorDirectory from "@/components/patient/DoctorDirectory";
-import HowItWorks from "@/components/patient/HowItWorks";
-import PatientFooter from "@/components/patient/PatientFooter";
-import { CITIES } from "@/data/patient";
+export const metadata: Metadata = {
+  // Overrides the root layout's "%s | NexEagle" template — this exact phrase
+  // is what should show up for "find doctor near me"-style searches.
+  title: { absolute: "NexEagle | Find Doctor Near Me" },
+  description:
+    "Find and book verified doctors near you — cardiologists, pediatricians, dermatologists and more — across every NexEagle-powered hospital. Compare experience, specialities and location, then reserve your slot online in under a minute. No app, no login.",
+  keywords: [
+    "find doctor near me",
+    "book doctor appointment online",
+    "doctor near me",
+    "hospital appointment booking",
+    "verified doctors India",
+    "online appointment booking",
+    "NexEagle",
+  ],
+  alternates: { canonical: "/" },
+  openGraph: {
+    title: "NexEagle | Find Doctor Near Me",
+    description:
+      "Find and book verified doctors near you across every NexEagle-powered hospital — compare specialities and experience, then reserve your slot online in under a minute.",
+    url: "/",
+    type: "website",
+  },
+};
 
-/**
- * Patient booking portal (Practo / JioHealth style).
- *
- * Two goals drive this page:
- *  1. Let patients discover and book an in-clinic appointment in seconds.
- *  2. Promote doctors — surface KPIs (rating, patients served, recommendation
- *     rate, experience) so strong doctors stand out.
- *
- * Shared filter state (city / search query / specialty) lives here and flows
- * down to the hero (location + search) and doctor directory. Booking state is
- * local to the directory. Data comes from src/data/patient.ts — swap for API
- * calls later.
- */
-export default function PatientBookingPage() {
-  const [cityId, setCityId] = useState(CITIES[0].id);
-  const city = CITIES.find((c) => c.id === cityId) ?? CITIES[0];
-  const [query, setQuery] = useState("");
-  const [specialtyId, setSpecialtyId] = useState("");
+const structuredData = {
+  "@context": "https://schema.org",
+  "@graph": [
+    {
+      "@type": "WebSite",
+      "@id": "https://nexeagle.com/#website",
+      name: "NexEagle",
+      url: "https://nexeagle.com",
+      potentialAction: {
+        "@type": "SearchAction",
+        target: "https://nexeagle.com/?q={search_term_string}",
+        "query-input": "required name=search_term_string",
+      },
+    },
+    {
+      "@type": "MedicalOrganization",
+      "@id": "https://nexeagle.com/#organization",
+      name: "NexEagle",
+      url: "https://nexeagle.com",
+      logo: "https://nexeagle.com/assets/logo.webp",
+      description:
+        "NexEagle connects patients with verified doctors across its network of hospitals for online appointment booking.",
+    },
+  ],
+};
 
-  function handleSpecialtySelect(id: string) {
-    setSpecialtyId(id);
-    if (id) {
-      setTimeout(
-        () =>
-          document
-            .getElementById("doctors")
-            ?.scrollIntoView({ behavior: "smooth" }),
-        50
-      );
-    }
-  }
-
+export default function HomePage() {
   return (
-    <div className="min-h-screen bg-white flex flex-col font-sans text-slate-800">
-      <AnalyticsTracker title="Book a Doctor — NexEagle Health" />
-
-      <PatientTopBar />
-
-      <main className="flex-1">
-        <PatientHero
-          city={city}
-          onCityChange={setCityId}
-          query={query}
-          onQueryChange={setQuery}
-        />
-
-        <SpecialtyRail selected={specialtyId} onSelect={handleSpecialtySelect} />
-
-        <DoctorDirectory city={city} query={query} specialtyId={specialtyId} />
-
-        <HowItWorks />
-      </main>
-
-      <PatientFooter />
-    </div>
+    <>
+      <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(structuredData) }} />
+      <HomeClient />
+    </>
   );
 }

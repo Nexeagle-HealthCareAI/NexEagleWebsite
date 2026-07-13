@@ -1,89 +1,77 @@
 // ─────────────────────────────────────────────────────────────────────────────
-// Raw DTO shapes returned by the EasyHMS public API.
+// DTO shapes for the EasyHMS public API, confirmed against the live backend
+// (EasyHMSAPI.Api/Controllers/PublicController.cs + its response models):
+//   GET  /public/doctors                              -> GetPublicDoctorsResponseModel
+//   GET  /public/doctors/{doctorId}/availability?date= -> GetPublicDoctorAvailabilityResponseModel
+//   POST /public/appointments                          -> PublicBookAppointmentRequestModel / …ResponseModel
+// These are exact, not guesses — if the backend contract changes, update here.
 //
-// These are best-effort guesses — the mappers (mappers.ts) read several possible
-// field names so the UI keeps working regardless of exact casing. Once you have
-// the real Swagger shapes, tighten these types and trim the fallbacks.
+// The directory is platform-wide: /public/doctors returns doctors from every
+// hospital that has opted into public listing (Hospital.IsPubliclyListed), not one
+// hospital scoped by the API key — hence hospitalId/hospitalName/city/state below.
 // ─────────────────────────────────────────────────────────────────────────────
 
+// Public-safe field set only — no license/registration/internal scheduling data.
 export interface DoctorDto {
-  id?: string | number;
-  doctorId?: string | number;
-  name?: string;
-  fullName?: string;
-  photo?: string;
-  photoUrl?: string;
-  imageUrl?: string;
+  doctorId: string;
+  fullName?: string | null;
+  photoUrl?: string | null;
+  qualification?: string | null;
+  experienceYears?: number | null;
+  bio?: string | null;
+  departmentName?: string | null;
+  specializations?: string[] | null;
+  hospitalId: string;
+  hospitalName?: string | null;
+  city?: string | null;
+  state?: string | null;
+}
 
-  specialty?: string;
-  speciality?: string;
-  department?: string;
+export interface DoctorsResponseDto {
+  success: boolean;
+  message?: string | null;
+  doctors: DoctorDto[];
+}
 
-  qualification?: string;
-  qualifications?: string;
-
-  experienceYears?: number;
-  experience?: number;
-
-  // Promotion / KPI fields (may be absent — mapper falls back to 0/omit).
-  rating?: number;
-  reviewCount?: number;
-  ratingCount?: number;
-  patientsServed?: number;
-  recommendationPct?: number;
-  waitTimeMins?: number;
-
-  consultationFee?: number;
-  fee?: number;
-
-  city?: string;
-  state?: string;
-  area?: string;
-  clinic?: string;
-  clinicName?: string;
-
-  languages?: string[] | string;
-  focusAreas?: string[] | string;
-
-  verified?: boolean;
-  nextAvailable?: string;
-
-  [key: string]: unknown;
+// "Is the doctor generally working this day" only — no granular open-slot list,
+// since a public booking is a preferred-date/time request, not a claimed slot.
+export interface ShiftDto {
+  name?: string | null;
+  startTime?: string | null; // "HH:mm:ss"
+  endTime?: string | null;
 }
 
 export interface AvailabilityDto {
-  doctorId?: string | number;
-  date?: string;
-  isWorking?: boolean;
-  available?: boolean;
-  // The API may express windows as plain strings or shift objects.
-  windows?: string[];
-  slots?: string[];
-  shifts?: Array<{ label?: string; name?: string; start?: string; end?: string }>;
-  [key: string]: unknown;
+  success: boolean;
+  message?: string | null;
+  isAvailable: boolean;
+  reason?: string | null;
+  shifts: ShiftDto[];
 }
 
 export interface CreateAppointmentResponseDto {
-  id?: string | number;
-  appointmentId?: string | number;
-  preAppointmentId?: string | number;
-  reference?: string;
-  referenceNo?: string;
-  bookingId?: string;
-  status?: string;
-  [key: string]: unknown;
+  success: boolean;
+  message?: string | null;
+  appointmentId?: string | null;
+  patientId?: string | null;
 }
 
-/** Body we send to POST /public/appointments. Align keys with the backend. */
+// Body sent to POST /public/appointments — matches PublicBookAppointmentRequestModel.
+// HospitalId/IpAddress are resolved server-side by the backend from the API key /
+// connection, never sent from here.
 export interface CreateAppointmentRequest {
   doctorId: string;
-  date: string; // YYYY-MM-DD
-  window: string; // selected 1-hour arrival window
   patient: {
-    name: string;
-    phone: string;
-    age: string;
-    gender: string;
-    reason: string;
+    fullName: string;
+    mobile: string;
+    age?: number;
+    ageUnit?: string;
+    sex?: string;
   };
+  preferredDate: string; // YYYY-MM-DD
+  preferredTime?: string; // "HH:mm:ss", optional/non-binding
+  reason?: string;
+  // Booking-attribution metadata — only knowable client-side.
+  referrerUrl?: string;
+  utmCampaign?: string;
 }

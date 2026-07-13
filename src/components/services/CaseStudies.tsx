@@ -56,7 +56,7 @@ const CaseStudies = () => {
             </h2>
             
             <p className="text-xl text-slate-600 max-w-3xl mx-auto">
-              See how we've helped startups and businesses build and scale their products.
+              See how we&apos;ve helped startups and businesses build and scale their products.
             </p>
           </div>
 

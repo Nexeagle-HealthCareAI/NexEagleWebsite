@@ -99,7 +99,7 @@ const RadiologistAnimation = () => {
             
             <div className="bg-slate-100/80 rounded-xl p-4 min-h-[100px] border border-slate-200 relative">
               <p className="text-slate-700 italic font-medium leading-relaxed">
-                "{typedText}{step === 1 && <span className="animate-pulse">|</span>}"
+                &quot;{typedText}{step === 1 && <span className="animate-pulse">|</span>}&quot;
               </p>
               {!typedText && step === 1 && (
                 <p className="text-slate-400 italic absolute top-4 left-4">Listening for audio...</p>

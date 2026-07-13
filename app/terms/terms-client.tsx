@@ -15,11 +15,7 @@ interface Section {
   content: SubSection[];
 }
 
-export default function TermsClient() {
-  const lastUpdated = "April 19, 2026";
-  const [activeSection, setActiveSection] = useState("acceptance-of-terms");
-
-  const sections: Section[] = [
+const sections: Section[] = [
     {
       id: "acceptance-of-terms",
       title: "Acceptance of Terms",
@@ -124,6 +120,10 @@ export default function TermsClient() {
     }
   ];
 
+export default function TermsClient() {
+  const lastUpdated = "April 19, 2026";
+  const [activeSection, setActiveSection] = useState("acceptance-of-terms");
+
   const warranties = [
     {
       title: "Service Warranties",
@@ -227,7 +227,7 @@ export default function TermsClient() {
             Terms of Service.
           </h1>
           <p className="text-lg md:text-xl text-slate-600 max-w-2xl mx-auto font-light leading-relaxed">
-            These terms outline the rules, obligations, and system disclaimers governing the use of NexEagle's systems.
+            These terms outline the rules, obligations, and system disclaimers governing the use of NexEagle&apos;s systems.
           </p>
           <div className="flex items-center justify-center gap-2 text-sm text-slate-500 font-medium">
             <Clock className="w-4 h-4 text-slate-400" />
@@ -379,7 +379,7 @@ export default function TermsClient() {
             {/* Introduction Callout */}
             <div className="bg-slate-50 border-l-4 border-brand-teal p-6 md:p-8 rounded-r-2xl select-none">
               <p className="text-slate-700 leading-relaxed font-medium text-sm md:text-base">
-                These Terms of Service ("Terms") dictate the rights, service levels, and codes of conduct regarding clinical portals and engineering products managed by NexEagle. By creating portal credentials or executing Statements of Work with us, you agree to these legal conditions.
+                These Terms of Service (&quot;Terms&quot;) dictate the rights, service levels, and codes of conduct regarding clinical portals and engineering products managed by NexEagle. By creating portal credentials or executing Statements of Work with us, you agree to these legal conditions.
               </p>
             </div>
 
@@ -448,7 +448,7 @@ export default function TermsClient() {
                   Caution: Read Carefully
                 </p>
                 <p className="text-slate-600 leading-relaxed text-xs md:text-sm">
-                  This section defines the boundary lines of NexEagle's software liabilities. These exclusions are core foundations of our pricing and service delivery structures.
+                  This section defines the boundary lines of NexEagle&apos;s software liabilities. These exclusions are core foundations of our pricing and service delivery structures.
                 </p>
               </div>
 

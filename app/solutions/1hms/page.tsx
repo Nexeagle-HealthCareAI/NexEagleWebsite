@@ -90,7 +90,7 @@ export default function OneHMSPage() {
             <span className="text-transparent bg-clip-text bg-gradient-to-r from-brand-teal to-brand-sky">1HMS</span> - Complete Hospital Management
           </h1>
           <p className="text-lg md:text-xl text-muted-foreground font-light max-w-2xl mx-auto">
-            India's leading AI-powered hospital software with NABH compliance automation, voice scribe, and 15+ integrated modules.
+            India&apos;s leading AI-powered hospital software with NABH compliance automation, voice scribe, and 15+ integrated modules.
           </p>
           <div className="flex justify-center gap-4 pt-4">
             <Link href="/contact" id="onehms-hero-demo-link">
@@ -130,7 +130,7 @@ export default function OneHMSPage() {
                 </p>
               </div>
               <div className="mt-6 pt-4 border-t border-slate-200/60 text-[11px] text-slate-500 font-medium">
-                <span className="text-brand-teal font-semibold">Evidence:</span> "Ambient AI Scribes in Primary Care", <em>JAMA Network Open</em>, 2024.
+                <span className="text-brand-teal font-semibold">Evidence:</span> &quot;Ambient AI Scribes in Primary Care&quot;, <em>JAMA Network Open</em>, 2024.
               </div>
             </div>
 
@@ -146,7 +146,7 @@ export default function OneHMSPage() {
                 </p>
               </div>
               <div className="mt-6 pt-4 border-t border-slate-200/60 text-[11px] text-slate-500 font-medium">
-                <span className="text-brand-sky font-semibold">Evidence:</span> "Communication Failures & Diagnostic Safety", <em>The Joint Commission Journal on Quality and Safety</em>.
+                <span className="text-brand-sky font-semibold">Evidence:</span> &quot;Communication Failures &amp; Diagnostic Safety&quot;, <em>The Joint Commission Journal on Quality and Safety</em>.
               </div>
             </div>
 
@@ -162,7 +162,7 @@ export default function OneHMSPage() {
                 </p>
               </div>
               <div className="mt-6 pt-4 border-t border-slate-200/60 text-[11px] text-slate-500 font-medium">
-                <span className="text-brand-sky font-semibold">Evidence:</span> "Workflow Automation through Integrated PACS & EHRs", <em>Journal of Medical Systems</em>, 2023.
+                <span className="text-brand-sky font-semibold">Evidence:</span> &quot;Workflow Automation through Integrated PACS &amp; EHRs&quot;, <em>Journal of Medical Systems</em>, 2023.
               </div>
             </div>
 
@@ -178,7 +178,7 @@ export default function OneHMSPage() {
                 </p>
               </div>
               <div className="mt-6 pt-4 border-t border-slate-200/60 text-[11px] text-slate-500 font-medium">
-                <span className="text-brand-teal font-semibold">Evidence:</span> "Efficacy of Automated AI Coding in Inpatient Billing Systems", <em>Health Affairs Scholars</em>, 2024.
+                <span className="text-brand-teal font-semibold">Evidence:</span> &quot;Efficacy of Automated AI Coding in Inpatient Billing Systems&quot;, <em>Health Affairs Scholars</em>, 2024.
               </div>
             </div>
           </div>

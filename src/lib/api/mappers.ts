@@ -1,5 +1,5 @@
 // ─────────────────────────────────────────────────────────────────────────────
-// Map raw EasyHMS DTOs → the UI's Doctor / window shapes.
+// Map raw EasyHMS DTOs → the UI's Doctor / availability shapes.
 //
 // The UI components only ever read the mapped types (from src/data/patient.ts),
 // so if the backend field names differ, this is the ONLY file to adjust.
@@ -7,7 +7,11 @@
 
 import type { Doctor, Specialty } from "@/data/patient";
 import { specialties } from "@/data/patient";
-import type { AvailabilityDto, DoctorDto, CreateAppointmentResponseDto } from "./types";
+import type {
+  AvailabilityDto,
+  DoctorDto,
+  CreateAppointmentResponseDto,
+} from "./types";
 
 const GRADIENTS = [
   "from-teal-500 to-emerald-500",
@@ -20,16 +24,6 @@ const GRADIENTS = [
   "from-violet-500 to-purple-500",
 ];
 
-function pick<T>(...vals: (T | undefined | null)[]): T | undefined {
-  return vals.find((v) => v !== undefined && v !== null) ?? undefined;
-}
-
-function toArray(v: string[] | string | undefined): string[] {
-  if (Array.isArray(v)) return v;
-  if (typeof v === "string") return v.split(",").map((s) => s.trim()).filter(Boolean);
-  return [];
-}
-
 function initialsFrom(name: string): string {
   const parts = name.replace(/^Dr\.?\s*/i, "").trim().split(/\s+/);
   return (parts[0]?.[0] ?? "") + (parts[1]?.[0] ?? "");
@@ -41,7 +35,7 @@ function hashIndex(seed: string, len: number): number {
   return h % len;
 }
 
-/** Match a free-text specialty string to one of our taxonomy ids. */
+/** Match a free-text department/specialization string to one of our taxonomy ids. */
 function matchSpecialtyId(name: string): { id: string; label: string } {
   const norm = name.trim().toLowerCase();
   const found: Specialty | undefined = specialties.find(
@@ -52,41 +46,44 @@ function matchSpecialtyId(name: string): { id: string; label: string } {
 }
 
 export function mapDoctor(dto: DoctorDto): Doctor {
-  const id = String(pick(dto.id, dto.doctorId) ?? crypto.randomUUID());
-  const name = pick(dto.name, dto.fullName) ?? "Doctor";
-  const specialtyRaw = pick(dto.specialty, dto.speciality, dto.department) ?? "General Physician";
+  const id = String(dto.doctorId);
+  const name = dto.fullName?.trim() || "Doctor";
+  const specialtyRaw = dto.departmentName?.trim() || dto.specializations?.[0] || "General Physician";
   const { id: specialtyId, label: specialty } = matchSpecialtyId(specialtyRaw);
 
   return {
     id,
     name,
-    photo: pick(dto.photo, dto.photoUrl, dto.imageUrl),
+    photo: dto.photoUrl ?? undefined,
     gradient: GRADIENTS[hashIndex(id, GRADIENTS.length)],
     initials: initialsFrom(name).toUpperCase() || "DR",
     specialtyId,
     specialty,
-    qualifications: pick(dto.qualification, dto.qualifications) ?? "",
-    experienceYears: pick(dto.experienceYears, dto.experience) ?? 0,
+    qualifications: dto.qualification ?? "",
+    experienceYears: dto.experienceYears ?? 0,
+    about: dto.bio ?? "",
+    focusAreas: dto.specializations ?? [],
+    verified: true,
+    promoted: false,
 
-    rating: dto.rating ?? 0,
-    reviewCount: pick(dto.reviewCount, dto.ratingCount) ?? 0,
-    patientsServed: dto.patientsServed ?? 0,
-    recommendationPct: dto.recommendationPct ?? 0,
-    waitTimeMins: dto.waitTimeMins ?? 0,
-
-    fee: pick(dto.consultationFee, dto.fee) ?? 0,
-    // Keep city+state together — never resolve/match on city name alone (see
-    // the CityOption note in src/data/patient.ts).
+    // The real public API doesn't return per-doctor rating, patient counts, fee,
+    // sub-locality (area), clinic branch name, or languages. Left undefined/empty
+    // so the UI hides these sections instead of showing fake zero values — see
+    // DoctorCard.tsx's conditional rendering. hospitalName/city/state ARE real,
+    // now that the directory spans every publicly-listed hospital.
+    rating: undefined,
+    reviewCount: undefined,
+    patientsServed: undefined,
+    recommendationPct: undefined,
+    waitTimeMins: undefined,
+    fee: undefined,
+    hospitalName: dto.hospitalName ?? undefined,
     city: dto.city ?? "",
     state: dto.state ?? "",
-    area: dto.area ?? "",
-    clinic: pick(dto.clinic, dto.clinicName) ?? "",
-    languages: toArray(dto.languages),
-    nextAvailable: dto.nextAvailable ?? "",
-    verified: dto.verified ?? true,
-    promoted: false,
-    about: "",
-    focusAreas: toArray(dto.focusAreas),
+    area: "",
+    clinic: "",
+    languages: [],
+    nextAvailable: "",
   };
 }
 
@@ -94,32 +91,39 @@ export function mapDoctors(list: DoctorDto[] | undefined): Doctor[] {
   return (list ?? []).map(mapDoctor);
 }
 
-export interface AvailabilityResult {
-  isWorking: boolean;
-  windows: string[];
+export interface AvailabilityWindow {
+  /** Display label, e.g. "Morning (09:00 – 13:00)". */
+  label: string;
+  /** Raw "HH:mm:ss" shift start, for preferredTime — undefined for the mock fallback. */
+  startTime?: string;
 }
 
-/** Normalise the availability response into arrival-window strings. */
+export interface AvailabilityResult {
+  isAvailable: boolean;
+  reason?: string;
+  windows: AvailabilityWindow[];
+}
+
+const formatTime = (t?: string | null) => (t ? t.slice(0, 5) : "");
+
+/** Normalise the availability response into display-ready shift windows. */
 export function mapAvailability(dto: AvailabilityDto | undefined): AvailabilityResult {
-  if (!dto) return { isWorking: false, windows: [] };
+  if (!dto) return { isAvailable: false, windows: [] };
 
-  let windows: string[] = [];
-  if (Array.isArray(dto.windows)) windows = dto.windows;
-  else if (Array.isArray(dto.slots)) windows = dto.slots;
-  else if (Array.isArray(dto.shifts)) {
-    windows = dto.shifts.map((s) =>
-      pick(s.label, s.name) ??
-      (s.start && s.end ? `${s.start} – ${s.end}` : "")
-    ).filter(Boolean);
-  }
+  const windows = (dto.shifts ?? [])
+    .filter((s) => s.startTime && s.endTime)
+    .map((s) => {
+      const label = s.name?.trim();
+      const range = `${formatTime(s.startTime)} – ${formatTime(s.endTime)}`;
+      return { label: label ? `${label} (${range})` : range, startTime: s.startTime ?? undefined };
+    });
 
-  const isWorking = pick(dto.isWorking, dto.available) ?? windows.length > 0;
-  return { isWorking, windows };
+  return { isAvailable: dto.isAvailable, reason: dto.reason ?? undefined, windows };
 }
 
 /** Pull a display booking reference out of the create-appointment response. */
 export function mapBookingReference(dto: CreateAppointmentResponseDto | undefined): string | null {
   if (!dto) return null;
-  const ref = pick(dto.reference, dto.referenceNo, dto.bookingId, dto.preAppointmentId, dto.appointmentId, dto.id);
-  return ref !== undefined ? String(ref) : null;
+  const ref = dto.appointmentId ?? dto.patientId;
+  return ref !== undefined && ref !== null ? String(ref) : null;
 }

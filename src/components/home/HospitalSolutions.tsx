@@ -904,7 +904,7 @@ const HospitalSolutions = () => {
         clearInterval(autoPlayTimer.current);
       }
     };
-  }, [isPaused]);
+  }, [isPaused, features.length]);
 
   // Handle manual selection - pauses autoplay briefly
   const handleFeatureSelect = (idx: number) => {

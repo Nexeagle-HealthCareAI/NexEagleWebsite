@@ -15,11 +15,7 @@ interface Section {
   content: SubSection[];
 }
 
-export default function PrivacyClient() {
-  const lastUpdated = "April 19, 2026";
-  const [activeSection, setActiveSection] = useState("information-we-collect");
-
-  const sections: Section[] = [
+const sections: Section[] = [
     {
       id: "information-we-collect",
       title: "Information We Collect",
@@ -161,6 +157,10 @@ export default function PrivacyClient() {
       ]
     }
   ];
+
+export default function PrivacyClient() {
+  const lastUpdated = "April 19, 2026";
+  const [activeSection, setActiveSection] = useState("information-we-collect");
 
   const rights = [
     {
@@ -321,7 +321,7 @@ export default function PrivacyClient() {
             {/* Introduction Callout */}
             <div className="bg-slate-50 border-l-4 border-brand-teal p-6 md:p-8 rounded-r-2xl select-none">
               <p className="text-slate-700 leading-relaxed font-medium text-sm md:text-base">
-                NexEagle ("we," "our," or "us") is dedicated to protecting your privacy. This Privacy Policy details the policies, pipelines, and practices we use to secure personal profile datasets and clinical records processed across our primary healthcare systems (1HMS, 1Rad) and product engineering collaborations.
+                NexEagle (&quot;we,&quot; &quot;our,&quot; or &quot;us&quot;) is dedicated to protecting your privacy. This Privacy Policy details the policies, pipelines, and practices we use to secure personal profile datasets and clinical records processed across our primary healthcare systems (1HMS, 1Rad) and product engineering collaborations.
               </p>
             </div>
 

@@ -84,7 +84,7 @@ export default function ContactClient() {
             Get in Touch.
           </h1>
           <p className="text-lg md:text-xl text-slate-600 max-w-2xl mx-auto font-light leading-relaxed">
-            Whether you need a unified clinical system or a product engineering partner, we're here to help you deploy and scale.
+            Whether you need a unified clinical system or a product engineering partner, we&apos;re here to help you deploy and scale.
           </p>
         </div>
       </section>

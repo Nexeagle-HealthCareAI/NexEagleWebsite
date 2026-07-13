@@ -59,7 +59,7 @@ export function useDoctorAvailability(doctorId: string | undefined, date: string
       const json = await getJson(
         `/api/public/doctors/${doctorId}/availability?date=${date}`
       );
-      if (json?.notConfigured) return { isWorking: false, windows: [], notConfigured: true };
+      if (json?.notConfigured) return { isAvailable: false, windows: [], notConfigured: true };
       return { ...mapAvailability(json), notConfigured: false };
     },
   });

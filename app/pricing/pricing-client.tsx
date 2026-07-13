@@ -428,7 +428,7 @@ export default function PricingClient() {
                     {/* Features */}
                     <div className="space-y-3 sm:space-y-4">
                       <p className="text-xs font-bold uppercase tracking-wider text-slate-500">
-                        What's included:
+                        What&apos;s included:
                       </p>
                       {plan.features.map((feature, i) => (
                         <div key={i} className="flex items-start gap-2 sm:gap-3">
@@ -558,7 +558,7 @@ export default function PricingClient() {
                       Problem: {testimonial.problem}
                     </div>
                     <p className="text-sm sm:text-base text-slate-700 leading-relaxed italic">
-                      "{testimonial.quote}"
+                      &quot;{testimonial.quote}&quot;
                     </p>
                   </div>
                   <div className="border-t border-slate-200 pt-4">

@@ -1,9 +1,9 @@
 # ═══════════════════════════════════════════════════════════════════════════════
-# NEXEAGLE WEBSITE — CI/CD Pipeline  (React/Vite → nginx container on GHCR)
+# NEXEAGLE WEBSITE — CI/CD Pipeline  (Next.js → Node container on GHCR)
 # ═══════════════════════════════════════════════════════════════════════════════
 #
-#   Stage 1 — Build       npm ci + vite build  (runs on push + PRs)
-#   Stage 2 — Deploy Prod build nginx image → push GHCR → run on Prod VM :80
+#   Stage 1 — Build       npm ci + next build  (runs on push + PRs)
+#   Stage 2 — Deploy Prod build Node image (next start) → push GHCR → run on Prod VM :80
 #
 # The site is served on host port 8080 (port 80 is used by 1Rad easyrad UI).
 #
