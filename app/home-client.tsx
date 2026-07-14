@@ -1,10 +1,9 @@
 "use client";
 
-import { useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import AnalyticsTracker from "@/components/AnalyticsTracker";
 import PatientTopBar from "@/components/patient/PatientTopBar";
 import PatientHero from "@/components/patient/PatientHero";
-import SpecialtyRail from "@/components/patient/SpecialtyRail";
 import DoctorDirectory from "@/components/patient/DoctorDirectory";
 import HowItWorks from "@/components/patient/HowItWorks";
 import PatientFooter from "@/components/patient/PatientFooter";
@@ -12,26 +11,10 @@ import { CITIES, cityId as makeCityId, type CityOption } from "@/data/patient";
 import { useDoctors } from "@/lib/api/hooks";
 import { useGeolocatedCity } from "@/lib/geo";
 
-/**
- * Patient booking portal (Practo / JioHealth style).
- *
- * Two goals drive this page:
- *  1. Let patients discover and book an in-clinic appointment in seconds.
- *  2. Promote doctors — surface KPIs (rating, patients served, recommendation
- *     rate, experience) so strong doctors stand out.
- *
- * Location defaults to "all doctors" — geolocation (useGeolocatedCity) narrows
- * it to the visitor's nearest known city only once it actually resolves one;
- * denied/unsupported/still-detecting all leave it at "all," never an empty
- * filter. City/state options themselves are derived from live, publicly-listed
- * doctor data (dynamicCities below), falling back to the static mock list only
- * when the API isn't configured yet.
- */
 export default function HomeClient() {
-  // React Query dedupes this against DoctorDirectory's own useDoctors() call
-  // (same queryKey) — this doesn't add a second network round trip.
   const { data: doctorsData } = useDoctors();
 
+  // Build city list from live API data; fall back to static list
   const dynamicCities = useMemo<CityOption[]>(() => {
     if (!doctorsData || doctorsData.notConfigured || doctorsData.doctors.length === 0) {
       return CITIES;
@@ -49,8 +32,7 @@ export default function HomeClient() {
   const [userPicked, setUserPicked] = useState(false);
   const geo = useGeolocatedCity(dynamicCities);
 
-  // Adopt the geolocated city once it resolves — unless the visitor has
-  // already made their own choice via LocationBanner, which always wins.
+  // Auto-adopt geo city once resolved (unless user already picked manually)
   useEffect(() => {
     if (userPicked) return;
     if (geo.status === "found" && geo.city) setCity(geo.city);
@@ -61,6 +43,13 @@ export default function HomeClient() {
     setCity(next);
   }
 
+  // Re-trigger geolocation when user clicks "Allow Location"
+  const handleRequestLocation = useCallback(() => {
+    // Reset picked flag so geo result can apply
+    setUserPicked(false);
+  }, []);
+
+  // Search + specialty state (shared between Hero and Directory)
   const [query, setQuery] = useState("");
   const [specialtyId, setSpecialtyId] = useState("");
 
@@ -79,15 +68,27 @@ export default function HomeClient() {
 
   return (
     <div className="min-h-screen bg-white flex flex-col font-sans text-slate-800">
-      <AnalyticsTracker title="Find a Doctor Near Me — NexEagle" />
+      <AnalyticsTracker title="Doctor Dekho — Find a Doctor Near Me | NexEagle" />
 
-      <PatientTopBar />
+      {/* Topbar: Doctor Dekho brand + location pill */}
+      <PatientTopBar
+        geoStatus={geo.status}
+        city={city}
+        cities={dynamicCities}
+        onCityChange={handleCityChange}
+        onRequestLocation={handleRequestLocation}
+      />
 
       <main className="flex-1">
-        <PatientHero query={query} onQueryChange={setQuery} />
+        {/* Compact search section (replaces old hero) */}
+        <PatientHero
+          query={query}
+          onQueryChange={setQuery}
+          specialtyId={specialtyId}
+          onSpecialtyChange={handleSpecialtySelect}
+        />
 
-        <SpecialtyRail selected={specialtyId} onSelect={handleSpecialtySelect} />
-
+        {/* Doctor grid with location banner integrated inside */}
         <DoctorDirectory
           city={city}
           cities={dynamicCities}

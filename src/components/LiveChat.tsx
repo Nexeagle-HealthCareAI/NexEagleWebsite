@@ -158,7 +158,6 @@ const LiveChat = () => {
 
   const quickActions = [
     "Schedule a demo",
-    "See pricing",
     "Talk to sales",
     "Technical support"
   ];

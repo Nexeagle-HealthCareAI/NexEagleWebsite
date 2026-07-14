@@ -26,6 +26,7 @@ const Navbar = () => {
   }, []);
 
   const navLinks = [
+    { name: "Find a Doctor", href: "/", highlight: true },
     { 
       name: "Solutions", 
       href: "#",
@@ -37,7 +38,6 @@ const Navbar = () => {
       ]
     },
     { name: "NEXEAGLE AI", href: "/ai" },
-    { name: "Pricing", href: "/pricing" },
     { name: "Team", href: "/team" },
     { name: "Contact", href: "/contact" }
   ];
@@ -65,7 +65,7 @@ const Navbar = () => {
       )}>
           
           {/* Logo */}
-          <Link href="/os" className="flex items-center group relative">
+          <Link href="/" className="flex items-center group relative">
             <Logo textSize="text-xl sm:text-2xl md:text-3xl lg:text-4xl" />
           </Link>
 
@@ -73,10 +73,22 @@ const Navbar = () => {
           <div className="hidden lg:flex items-center gap-2">
             {navLinks.map((link) => (
               <div key={link.name} className="relative group">
-                {link.dropdown ? (
+                {link.highlight ? (
+                  <Link
+                    href={link.href}
+                    className={cn(
+                      "relative px-4 py-2 text-sm font-semibold whitespace-nowrap transition-all duration-200 rounded-full border",
+                      isActive(link.href)
+                        ? "text-brand-teal bg-teal-50 border-brand-teal/40"
+                        : "text-brand-teal bg-teal-50/60 border-brand-teal/20 hover:bg-teal-50 hover:border-brand-teal/40"
+                    )}
+                  >
+                    {link.name}
+                  </Link>
+                ) : link.dropdown ? (
                   <button
                     className={cn(
-                      "flex items-center gap-1 px-4 py-2 text-sm font-medium transition-all duration-200 rounded-full",
+                      "flex items-center gap-1 px-4 py-2 text-sm font-medium whitespace-nowrap transition-all duration-200 rounded-full",
                       isActive("/solutions")
                         ? "text-foreground bg-secondary/10"
                         : "text-muted-foreground hover:text-foreground hover:bg-secondary/5"
@@ -89,7 +101,7 @@ const Navbar = () => {
                   <Link
                     href={link.href}
                     className={cn(
-                      "relative px-4 py-2 text-sm font-medium transition-all duration-200 rounded-full",
+                      "relative px-4 py-2 text-sm font-medium whitespace-nowrap transition-all duration-200 rounded-full",
                       isActive(link.href)
                         ? "text-foreground bg-secondary/10"
                         : "text-muted-foreground hover:text-foreground hover:bg-secondary/5"
@@ -121,10 +133,6 @@ const Navbar = () => {
 
           {/* Desktop CTA */}
           <div className="hidden lg:flex items-center gap-4">
-            <Link href="/contact" className="text-sm font-medium text-foreground hover:text-brand-teal transition-colors">
-              Talk to Sales
-            </Link>
-            
             <Link href="/contact">
               <Button
                 className="bg-brand-teal hover:bg-brand-teal/90 text-white rounded-full px-6 shadow-[0_0_15px_rgba(20,184,166,0.3)] hover:shadow-[0_0_25px_rgba(20,184,166,0.5)] transition-all"
@@ -219,14 +227,6 @@ const Navbar = () => {
 
                 {/* Mobile CTA Buttons */}
                 <div className="space-y-3 pt-6 border-t border-border">
-                  <Button
-                    onClick={() => handleNavigation("/contact")}
-                    variant="outline"
-                    className="w-full h-12 font-semibold border-2 border-border text-foreground hover:bg-secondary/10"
-                  >
-                    Talk to Sales
-                  </Button>
-                  
                   <Button
                     onClick={() => handleNavigation("/contact")}
                     className="w-full h-12 bg-brand-teal hover:bg-brand-teal/90 text-white font-semibold"

@@ -2,6 +2,8 @@
 
 import { useEffect } from "react";
 import dynamic from "next/dynamic";
+import Link from "next/link";
+import { Stethoscope, ArrowRight } from "lucide-react";
 import Hero from "@/components/Hero";
 import TrustedBy from "@/components/home/TrustedBy";
 
@@ -45,6 +47,23 @@ export default function NexEagleOSPage() {
 
   return (
     <main>
+      {/* ── Patient crossover banner ─────────────────────────────────────────
+          Patients who land on the B2B /os page need a clear path to the
+          patient portal (/) without having to hunt around.
+      ─────────────────────────────────────────────────────────────────────── */}
+      <Link href="/" className="block w-full group">
+        <div className="w-full bg-gradient-to-r from-teal-600 to-emerald-500 text-white">
+          <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-2.5 flex items-center justify-center gap-2.5 text-sm font-medium">
+            <Stethoscope className="w-4 h-4 shrink-0 opacity-90" />
+            <span className="opacity-90">Looking for a doctor near you?</span>
+            <span className="font-bold underline underline-offset-2 flex items-center gap-1 group-hover:gap-2 transition-all duration-200">
+              Find &amp; Book Online
+              <ArrowRight className="w-3.5 h-3.5" />
+            </span>
+          </div>
+        </div>
+      </Link>
+
       <Hero />
       <TrustedBy />
       <HealthcareChallenges />

@@ -39,7 +39,7 @@ export default function PatientFooter() {
             Equip your clinic, hospital, lab or pharmacy with AI-powered tools,
             scribes and billing.
           </p>
-          <Link href="/os" className="inline-flex">
+          <Link href="/business" className="inline-flex">
             <button className="inline-flex items-center gap-1 px-4 py-2 bg-brand-teal hover:bg-brand-teal/90 text-white text-xs font-bold rounded-lg transition shadow-md">
               Explore NexEagle OS <ChevronRight className="w-3.5 h-3.5" />
             </button>

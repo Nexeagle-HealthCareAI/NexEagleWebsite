@@ -128,11 +128,12 @@ export const CITIES: CityOption[] = [
   city("Bengaluru", "Karnataka"),
   city("Hyderabad", "Telangana"),
   city("Chennai", "Tamil Nadu"),
-  // Tier 2/3 example, deliberately included: the SAME city name in two different
-  // states. This is exactly the case that breaks name-only filtering — the app
+  // 2/3 town names repeat across states (Bilaspur in Chhattisgarh vs. Himachal
+  // Pradesh; Hosur, Rajgarh, etc.). This is exactly the case that breaks name-only filtering — the app
   // must key on `id` (name+state), never on `name` alone.
   city("Kishanganj", "Bihar"),
   city("Kishanganj", "Delhi"),
+  city("Purnea", "Bihar"),
 ];
 
 export const AREAS_BY_CITY: Record<string, string[]> = {
@@ -144,6 +145,7 @@ export const AREAS_BY_CITY: Record<string, string[]> = {
   [cityId("Chennai", "Tamil Nadu")]: ["T. Nagar", "Adyar", "Velachery"],
   [cityId("Kishanganj", "Bihar")]: ["Thana Chowk", "Bahadurganj Road"],
   [cityId("Kishanganj", "Delhi")]: ["GTB Nagar", "Malka Ganj"],
+  [cityId("Purnea", "Bihar")]: ["Line Bazar", "Bhatta Bazar", "Khazanchi Haat"],
 };
 
 export const specialties: Specialty[] = [
@@ -365,6 +367,32 @@ export const doctors: Doctor[] = [
     promoted: false,
     about: "ENT surgeon experienced in sinus, hearing and throat disorders for all ages.",
     focusAreas: ["Sinusitis", "Ear infection", "Tonsils", "Vertigo"],
+  },
+  {
+    id: "9",
+    name: "Dr. Rakesh Singh",
+    gradient: "from-teal-500 to-cyan-500",
+    initials: "RS",
+    specialtyId: "general",
+    specialty: "General Physician",
+    qualifications: "MBBS, MD (Medicine)",
+    experienceYears: 18,
+    rating: 4.8,
+    reviewCount: 340,
+    patientsServed: 8500,
+    recommendationPct: 95,
+    waitTimeMins: 15,
+    fee: 400,
+    city: "Purnea",
+    state: "Bihar",
+    area: "Line Bazar",
+    clinic: "NexEagle City Care, Line Bazar",
+    languages: ["Hindi", "English", "Maithili"],
+    nextAvailable: "Today, 4:00 PM",
+    verified: true,
+    promoted: true,
+    about: "Senior physician dedicated to comprehensive family healthcare and fever management in the heart of Purnea.",
+    focusAreas: ["Fever", "Diabetes", "Blood Pressure", "General Checkup"],
   },
 ];
 

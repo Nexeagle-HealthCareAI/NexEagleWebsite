@@ -45,35 +45,13 @@ const Footer = () => {
       </div>
 
       <div className="container relative z-10 px-4 sm:px-6 md:px-8 lg:px-12 mx-auto">
-        {/* Top Section: CTA Card */}
-        <div className="pt-16 pb-12 border-b border-slate-900">
-          <div className="relative p-8 md:p-10 rounded-3xl bg-slate-900/40 border border-slate-800/80 overflow-hidden flex flex-col md:flex-row items-center justify-between gap-6">
-            <div className="space-y-2 text-center md:text-left">
-              <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-brand-teal/10 border border-brand-teal/20 text-brand-sky text-xs font-semibold uppercase tracking-wider">
-                <Sparkles className="w-3 h-3 text-brand-sky" />
-                <span>Transparent Pricing</span>
-              </span>
-              <h3 className="text-2xl md:text-3xl font-bold tracking-tight text-white">
-                Transparent Pricing, No Hidden Charges
-              </h3>
-              <p className="text-slate-400 text-sm max-w-xl">
-                We believe in complete transparency. Our solutions feature upfront pricing with absolutely zero hidden fees. Contact our sales team to get started.
-              </p>
-            </div>
-            <Link href="/contact" className="shrink-0 w-full md:w-auto">
-              <button className="w-full inline-flex items-center justify-center gap-2 px-6 py-3.5 rounded-xl bg-gradient-to-r from-brand-teal to-brand-sky hover:opacity-95 text-white font-bold text-sm sm:text-base shadow-lg shadow-brand-teal/15 hover:shadow-xl transition-all duration-300 group hover:-translate-y-0.5">
-                Talk to Sales
-                <ArrowRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
-              </button>
-            </Link>
-          </div>
-        </div>
+
 
         {/* Middle Section: Links Grid */}
         <div className="py-16 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-12 gap-10 md:gap-12">
           {/* Brand Info */}
           <div className="lg:col-span-4 space-y-6">
-            <Link href="/os" className="inline-flex items-center group">
+            <Link href="/business" className="inline-flex items-center group">
               <Logo textSize="text-2xl sm:text-3xl" textColor="text-white" />
             </Link>
             <p className="text-slate-400 text-sm leading-relaxed max-w-sm">

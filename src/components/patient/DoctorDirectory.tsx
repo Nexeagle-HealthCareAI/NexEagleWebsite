@@ -1,13 +1,13 @@
 "use client";
 
 import { useMemo, useState } from "react";
-import { SlidersHorizontal, Search, Frown, Loader2 } from "lucide-react";
+import { Frown, Loader2, MapPin, ChevronDown, SlidersHorizontal } from "lucide-react";
 import DoctorCard from "./DoctorCard";
-import LocationBanner from "./LocationBanner";
 import { doctors as mockDoctors, specialties, cityLabel } from "@/data/patient";
 import type { CityOption } from "@/data/patient";
 import { useDoctors } from "@/lib/api/hooks";
 import type { GeoStatus } from "@/lib/geo";
+import { cn } from "@/lib/utils";
 
 interface DoctorDirectoryProps {
   city: CityOption | null;
@@ -18,14 +18,13 @@ interface DoctorDirectoryProps {
   specialtyId: string;
 }
 
-// Rating-based sort/relevance is phase 2 (once the API returns real ratings).
-type SortKey = "relevance" | "experience" | "patients" | "fee";
+type SortKey = "relevance" | "experience" | "patients" | "fee" | "rating";
 
 const sortOptions: { key: SortKey; label: string }[] = [
   { key: "relevance", label: "Relevance" },
-  { key: "patients", label: "Most patients served" },
-  { key: "experience", label: "Most experienced" },
-  { key: "fee", label: "Lowest fee" },
+  { key: "rating", label: "Highest Rated" },
+  { key: "experience", label: "Most Experienced" },
+  { key: "fee", label: "Lowest Fee" },
 ];
 
 export default function DoctorDirectory({
@@ -38,8 +37,6 @@ export default function DoctorDirectory({
 }: DoctorDirectoryProps) {
   const [sort, setSort] = useState<SortKey>("relevance");
 
-  // Real doctors from the EasyHMS API; falls back to mock data until the API
-  // env is configured or if the request fails, so the portal always renders.
   const { data, isLoading } = useDoctors();
   const usingApi = Boolean(data && !data.notConfigured && data.doctors.length);
   const allDoctors = usingApi ? data!.doctors : mockDoctors;
@@ -48,11 +45,9 @@ export default function DoctorDirectory({
 
   const filtered = useMemo(() => {
     const q = query.trim().toLowerCase();
-    // No city selected (still detecting, denied, or explicitly "All locations")
-    // means no city filter at all — never narrow to an empty list by default.
-    // Match on (city, state) together — city name alone isn't unique (see
-    // src/data/patient.ts), so never compare `d.city === city.name` on its own.
-    let list = city ? allDoctors.filter((d) => d.city === city.name && d.state === city.state) : allDoctors;
+    let list = city
+      ? allDoctors.filter((d) => d.city === city.name && d.state === city.state)
+      : allDoctors;
 
     if (specialtyId) list = list.filter((d) => d.specialtyId === specialtyId);
     if (q) {
@@ -64,85 +59,105 @@ export default function DoctorDirectory({
       );
     }
 
-    // patientsServed/fee are undefined when using the real API (no per-doctor
-    // stats there) — fall back to experience so sorting still does something
-    // sensible instead of leaving the list in fetch order.
     const sorted = [...list];
     switch (sort) {
-      case "patients":
-        sorted.sort((a, b) => (b.patientsServed ?? b.experienceYears) - (a.patientsServed ?? a.experienceYears));
+      case "rating":
+        sorted.sort((a, b) => (b.rating ?? 0) - (a.rating ?? 0));
         break;
       case "experience":
         sorted.sort((a, b) => b.experienceYears - a.experienceYears);
         break;
       case "fee":
-        sorted.sort((a, b) => (a.fee ?? 0) - (b.fee ?? 0));
+        sorted.sort((a, b) => (a.fee ?? 9999) - (b.fee ?? 9999));
         break;
-      default:
-        // relevance: by patients served
-        sorted.sort((a, b) => (b.patientsServed ?? b.experienceYears) - (a.patientsServed ?? a.experienceYears));
+      default: // relevance (promoted first, then rating, then experience)
+        sorted.sort((a, b) => {
+          if (a.promoted && !b.promoted) return -1;
+          if (!a.promoted && b.promoted) return 1;
+          const scoreA = (a.rating ?? 0) * 10 + a.experienceYears;
+          const scoreB = (b.rating ?? 0) * 10 + b.experienceYears;
+          return scoreB - scoreA;
+        });
     }
     return sorted;
   }, [allDoctors, city, query, specialtyId, sort]);
 
   return (
-    <section id="doctors" className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-10 scroll-mt-20">
-      <LocationBanner status={geoStatus} city={city} cities={cities} onSelect={onCityChange} />
+    <section id="doctors" className="bg-slate-50/50 pb-24 pt-10 sm:pt-16 scroll-mt-20">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
 
-      {/* Heading + result count */}
-      <div className="flex flex-col sm:flex-row sm:items-end justify-between gap-3 mb-5 mt-4">
-        <div>
-          <h2 className="text-xl sm:text-2xl font-extrabold text-slate-900 tracking-tight">
-            {specialtyName ? `${specialtyName} doctors` : "Available doctors"}
-            {city ? ` in ${cityLabel(city)}` : " near you"}
-          </h2>
-          <p className="text-sm text-slate-500">
-            {filtered.length} verified {filtered.length === 1 ? "doctor" : "doctors"} ready to consult
-          </p>
-        </div>
+        {/* ── Premium Result Header ── */}
+        <div className="flex flex-col sm:flex-row sm:items-end justify-between gap-6 mb-10 pb-6 border-b border-slate-200/60">
+          <div>
+            <h2 className="font-display text-2xl sm:text-3xl font-extrabold text-slate-900 tracking-tight">
+              {specialtyName ? `${specialtyName} Specialists` : "Top Specialists"}
+              {city ? (
+                <span className="text-brand-teal"> in {cityLabel(city)}</span>
+              ) : (
+                <span className="text-slate-400 font-medium"> — All India</span>
+              )}
+            </h2>
+            <p className="text-base text-slate-500 mt-2 font-medium">
+              {isLoading ? (
+                <span className="animate-pulse">Loading top doctors…</span>
+              ) : (
+                <>
+                  <span className="font-bold text-slate-800">{filtered.length}</span>{" "}
+                  verified {filtered.length === 1 ? "expert" : "experts"} available
+                </>
+              )}
+            </p>
+          </div>
 
-        {/* Controls */}
-        <div className="flex items-center gap-2 flex-wrap">
-          <div className="inline-flex items-center gap-1.5 px-3 py-2 rounded-full bg-white border border-slate-200 text-xs font-bold text-slate-600">
-            <SlidersHorizontal className="w-3.5 h-3.5 text-slate-400" />
-            <select
-              value={sort}
-              onChange={(e) => setSort(e.target.value as SortKey)}
-              className="bg-transparent focus:outline-none cursor-pointer text-slate-700"
-            >
-              {sortOptions.map((o) => (
-                <option key={o.key} value={o.key}>
-                  {o.label}
-                </option>
-              ))}
-            </select>
+          {/* Premium Sort Dropdown */}
+          <div className="flex items-center gap-3">
+            <span className="hidden sm:inline text-sm font-semibold text-slate-400">Sort by:</span>
+            <div className="relative group">
+              <div className="flex items-center gap-2 px-4 py-2.5 rounded-xl bg-white border border-slate-200/80 shadow-sm hover:border-brand-teal/40 transition-colors cursor-pointer">
+                <SlidersHorizontal className="w-4 h-4 text-brand-teal" />
+                <select
+                  value={sort}
+                  onChange={(e) => setSort(e.target.value as SortKey)}
+                  className="bg-transparent text-sm font-bold text-slate-700 focus:outline-none cursor-pointer appearance-none pr-6"
+                >
+                  {sortOptions.map((o) => (
+                    <option key={o.key} value={o.key}>
+                      {o.label}
+                    </option>
+                  ))}
+                </select>
+                <div className="absolute right-4 pointer-events-none">
+                  <ChevronDown className="w-4 h-4 text-slate-400" />
+                </div>
+              </div>
+            </div>
           </div>
         </div>
+
+        {/* ── Grid ── */}
+        {isLoading ? (
+          <div className="flex flex-col items-center justify-center py-32 text-slate-400">
+            <Loader2 className="w-10 h-10 animate-spin text-brand-teal/50 mb-4" />
+            <p className="text-base font-semibold">Finding the best specialists for you…</p>
+          </div>
+        ) : filtered.length > 0 ? (
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 sm:gap-8">
+            {filtered.map((doctor) => (
+              <DoctorCard key={doctor.id} doctor={doctor} />
+            ))}
+          </div>
+        ) : (
+          <div className="text-center py-32 rounded-[2rem] border border-dashed border-slate-200 bg-white shadow-sm">
+            <div className="w-20 h-20 rounded-full bg-slate-50 border border-slate-100 text-slate-300 flex items-center justify-center mx-auto mb-5 shadow-inner">
+              <Frown className="w-10 h-10" />
+            </div>
+            <h3 className="font-display font-bold text-xl text-slate-900 mb-2">No doctors match your criteria</h3>
+            <p className="text-base text-slate-500 max-w-md mx-auto">
+              We couldn't find any specialists matching your search in this area. Try adjusting your filters or searching across All India.
+            </p>
+          </div>
+        )}
       </div>
-
-      {/* Grid */}
-      {isLoading ? (
-        <div className="flex flex-col items-center justify-center py-20 text-slate-400">
-          <Loader2 className="w-7 h-7 animate-spin text-brand-teal" />
-          <p className="text-sm font-semibold mt-3">Loading doctors…</p>
-        </div>
-      ) : filtered.length > 0 ? (
-        <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-5">
-          {filtered.map((doctor) => (
-            <DoctorCard key={doctor.id} doctor={doctor} />
-          ))}
-        </div>
-      ) : (
-        <div className="text-center py-16 rounded-3xl border border-dashed border-slate-200 bg-slate-50/50">
-          <div className="w-14 h-14 rounded-full bg-slate-100 text-slate-400 flex items-center justify-center mx-auto mb-3">
-            {query ? <Search className="w-6 h-6" /> : <Frown className="w-6 h-6" />}
-          </div>
-          <p className="font-bold text-slate-700">No doctors match your filters</p>
-          <p className="text-sm text-slate-500 mt-1">
-            Try a different specialty or city.
-          </p>
-        </div>
-      )}
     </section>
   );
 }

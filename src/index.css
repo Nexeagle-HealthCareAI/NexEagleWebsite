@@ -9,8 +9,8 @@
 @layer base {
   :root {
     /* Typography */
-  --font-sans: 'Open Sans', 'Roboto', 'Inter', 'Segoe UI', system-ui, -apple-system, sans-serif;
-  --font-display: 'Poppins', 'Montserrat', 'Space Grotesk', 'Inter', 'Segoe UI', system-ui, sans-serif;
+    --font-sans: var(--font-inter), 'Inter', system-ui, sans-serif;
+    --font-display: var(--font-poppins), 'Poppins', system-ui, sans-serif;
     --font-mono: 'JetBrains Mono', 'IBM Plex Mono', 'SFMono-Regular', Menlo, monospace;
     --heading-weight: 600;
     --body-weight: 400;
@@ -182,18 +182,22 @@
     line-height: 1.65;
     letter-spacing: 0.01em;
     color: hsl(var(--text-body));
-    background-image: radial-gradient(circle at 10% 20%, hsl(var(--brand-sand) / 0.8), transparent 45%),
-      radial-gradient(circle at 80% 0%, hsl(var(--brand-teal) / 0.08), transparent 55%);
-    background-attachment: fixed;
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
     text-rendering: optimizeLegibility;
-    padding-top: 5rem;
+  }
+
+  .main-site-wrapper {
+    background-image: radial-gradient(circle at 10% 20%, hsl(var(--brand-sand) / 0.8), transparent 45%),
+      radial-gradient(circle at 80% 0%, hsl(var(--brand-teal) / 0.08), transparent 55%);
+    background-attachment: fixed;
+    min-height: 100vh;
+    padding-top: 6.5rem;
   }
 
   @media (min-width: 768px) {
-    body {
-      padding-top: 5.5rem;
+    .main-site-wrapper {
+      padding-top: 7.5rem;
     }
   }
 
