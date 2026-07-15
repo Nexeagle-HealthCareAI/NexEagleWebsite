@@ -1,6 +1,6 @@
 import { Button } from "@/components/ui/button";
 import { ArrowRight, Calendar, Mail, CheckCircle } from "lucide-react";
-import { Link } from "react-router-dom";
+import Link from "next/link";
 
 const ProductsCTA = () => {
   return (
@@ -32,7 +32,7 @@ const ProductsCTA = () => {
                   size="lg"
                   className="px-8 py-6 h-auto text-base font-semibold bg-white text-blue-700 hover:bg-blue-50 shadow-xl shadow-blue-900/20"
                 >
-                  <Link to="/contact" className="flex items-center gap-2">
+                  <Link href="/contact" className="flex items-center gap-2">
                     <Calendar className="w-5 h-5" />
                     Schedule a Demo
                   </Link>

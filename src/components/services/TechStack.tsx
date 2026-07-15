@@ -124,7 +124,7 @@ const TechStack = () => {
             <div className="max-w-3xl mx-auto text-center space-y-6">
               <h3 className="text-3xl font-bold">Technology agnostic.<br />Results focused.</h3>
               <p className="text-xl text-slate-300 leading-relaxed">
-                We don't force technologies. We choose the best stack for your specific needs, team, and goals. 
+                We don&apos;t force technologies. We choose the best stack for your specific needs, team, and goals.
                 Modern, proven, and scalable.
               </p>
               <div className="flex flex-wrap justify-center gap-4 pt-4">

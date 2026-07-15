@@ -1,6 +1,6 @@
 import { Button } from "@/components/ui/button";
 import { ArrowRight, Briefcase } from "lucide-react";
-import { Link } from "react-router-dom";
+import Link from "next/link";
 
 const AboutCTA = () => {
   return (
@@ -20,7 +20,7 @@ const AboutCTA = () => {
             
             <h3 className="text-3xl font-extrabold tracking-tight">Join the NexEaglians</h3>
             <p className="text-teal-100 leading-relaxed font-light text-base sm:text-lg">
-              We're looking for ambitious engineers, product designers, and clinicians who want to build the future of automated, intelligent healthcare.
+              We&apos;re looking for ambitious engineers, product designers, and clinicians who want to build the future of automated, intelligent healthcare.
             </p>
           </div>
 
@@ -30,7 +30,7 @@ const AboutCTA = () => {
               size="lg"
               className="px-8 py-6 text-base font-semibold bg-white text-slate-900 hover:bg-slate-50 rounded-full shadow-lg shadow-black/5 hover:translate-y-[-2px] transition-all duration-300"
             >
-              <Link to="/careers">
+              <Link href="/careers">
                 View Open Positions
                 <ArrowRight className="w-5 h-5 ml-2" />
               </Link>

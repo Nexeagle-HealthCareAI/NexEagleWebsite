@@ -1,27 +1,14 @@
 # NexEagle — AI-powered Healthcare OS
 
-A production-ready, responsive website for NexEagle, an AI-driven healthcare product company. Built with React, Vite, Tailwind CSS, and shadcn/ui components.
-
-This repository contains two parts:
-
-- **`/` (root)** — the NexEagle marketing website (React + Vite).
-- **`nexeagle-api/`** — a small Express + TypeScript relay backend that powers the
-  appointment-booking and feedback features and integrates with the **1HMS** platform.
+A production-ready, responsive website for NexEagle, an AI-driven healthcare product company, plus a patient booking portal backed by the EasyHMS public API. Built with Next.js (App Router), React, Tailwind CSS, and shadcn/ui components.
 
 ## 🚀 Features
 
-- **Appointment Booking**: Patients filter doctors by **location** & specialty, view
-  ratings, reviews, experience and patients-treated, then book a slot online.
-- **Feedback**: General site feedback form with optional star rating.
-- **1HMS Integration**: Bookings flow website → relay API → 1HMS (one-way). A backend
-  `DOCTOR_SOURCE` toggle chooses whether the doctor list is fetched live from 1HMS or
-  served from a curated list — see [`nexeagle-api/README.md`](nexeagle-api/README.md).
 - **Responsive Design**: Mobile-first approach with perfect tablet and desktop layouts
-- **SEO Optimized**: Meta tags, Open Graph, JSON-LD structured data (incl. `Physician`
-  listings for the doctor directory)
+- **SEO Optimized**: Meta tags (Next.js Metadata API), Open Graph, JSON-LD structured data
 - **Performance**: Lazy-load images, optimized fonts, Lighthouse score ≥90
 - **Accessibility**: WCAG compliant with proper focus states and contrast
-- **Modern Tech Stack**: React + Vite + Tailwind CSS + TypeScript
+- **Modern Tech Stack**: Next.js (App Router) + React + Tailwind CSS + TypeScript
 
 ## 📱 Components
 
@@ -91,43 +78,14 @@ npm run dev
 # Create production build
 npm run build
 
-# Preview production build
-npm run preview
+# Run the production build (starts a Node server, see Dockerfile)
+npm run start
 ```
-
-## 📅 Appointment Booking & Backend API
-
-The booking and feedback features talk to the relay backend in `nexeagle-api/`.
-
-### Run the backend
-```bash
-cd nexeagle-api
-cp .env.example .env      # then edit as needed
-npm install
-npm run dev               # → http://localhost:4000
-```
-
-### Point the website at the backend
-Create a `.env` file in the website root (this file is gitignored):
-```bash
-VITE_API_BASE_URL=http://localhost:4000
-```
-
-### Endpoints
-- `GET /api/doctors` — doctor directory (respects the `DOCTOR_SOURCE` toggle)
-- `POST /api/appointments` — create a booking (forwarded to 1HMS)
-- `POST /api/feedback` — general site feedback
-
-### 1HMS integration
-All 1HMS calls live in `nexeagle-api/src/services/onehms.ts`. Until `ONEHMS_API_URL`
-and `ONEHMS_API_KEY` are set, bookings are stored locally and logged. Set
-`DOCTOR_SOURCE=onehms` to fetch the doctor list live from 1HMS. The full request/response
-contract is documented in [`nexeagle-api/README.md`](nexeagle-api/README.md).
 
 ## 📊 Configuration
 
 ### Analytics Setup
-Replace `GA_MEASUREMENT_ID` in `/src/pages/Index.tsx` with your Google Analytics ID.
+Replace `GA_MEASUREMENT_ID` wherever it's referenced (see `src/components/AnalyticsTracker.tsx`) with your Google Analytics ID.
 
 Event tracking is already implemented for:
 - `demo_click` - Demo request submissions
@@ -148,19 +106,20 @@ Update pricing in `/src/components/Pricing.tsx`:
 
 ## 🔧 Customization
 
-### Adding New Sections
+### Adding New Sections / Pages
 1. Create component in `/src/components/`
-2. Add to `/src/pages/Index.tsx`
+2. Route-level pages live under `/app/` (App Router — one folder per route, `page.tsx` inside)
 3. Wrap with `<div className="section-fade">` for animations
 4. Add navigation link in `/src/components/Navbar.tsx`
 
 ### Modifying Design System
-- **Colors**: Update `/src/index.css` HSL values
-- **Fonts**: Modify Google Fonts link in `/index.html`
+- **Colors**: Update `/src/index.css` HSL values (imported by `/app/globals.css`)
+- **Fonts**: Modify the Google Fonts link in `/app/layout.tsx`
 - **Animations**: Extend Tailwind config in `/tailwind.config.ts`
 
 ### Form Integration
-Replace the placeholder form submission in `/src/components/Contact.tsx` with your backend API:
+The public contact form lives at `/app/contact/contact-client.tsx`. Replace its placeholder
+submission with your backend API:
 
 ```typescript
 const handleSubmit = async (e: React.FormEvent) => {
@@ -202,11 +161,13 @@ const handleSubmit = async (e: React.FormEvent) => {
 
 ## 🚀 Deployment
 
-The site is ready for deployment on any static hosting service:
-- **Vercel**: Connect GitHub repo for automatic deployments
-- **Netlify**: Drag and drop the `dist` folder
-- **AWS S3**: Upload build files to S3 bucket
-- **Deploy**: Click "Publish" button in the editor
+This is a server-rendered Next.js app (not a static export) — it needs a Node runtime, not
+static file hosting.
+
+- **Current pipeline**: `.github/workflows/deploy.yml` builds a Docker image (`Dockerfile`,
+  `next build` → `next start`), pushes it to GHCR, and runs it on the Prod VM via SSH
+  (host port 8080 → container port 80). See that file for the full pipeline.
+- **Vercel**: also works out of the box if you'd rather not self-host (connect the GitHub repo).
 
 ## 📞 Support
 

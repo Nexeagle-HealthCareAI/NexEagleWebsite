@@ -1,5 +1,5 @@
 import { Mail, Phone, Linkedin, MapPin, ArrowRight, Sparkles } from "lucide-react";
-import { Link } from "react-router-dom";
+import Link from "next/link";
 import { Logo } from "./Logo";
 
 const Footer = () => {
@@ -14,14 +14,12 @@ const Footer = () => {
   ];
 
   const platformLinks = [
-    { name: "Why NexEagle", href: "/team" },
-    { name: "How It Works", href: "/team" },
+    { name: "Why NexEagle", href: "/why" },
+    { name: "How It Works", href: "/how-it-works" },
     { name: "Platform Overview", href: "/contact" },
   ];
 
   const resourceLinks = [
-    { name: "Book Appointment", href: "/book-appointment" },
-    { name: "Share Feedback", href: "/feedback" },
     { name: "FAQs & Support", href: "/faqs" },
     { name: "Privacy Policy", href: "/privacy" },
     { name: "Terms of Service", href: "/terms" },
@@ -47,35 +45,13 @@ const Footer = () => {
       </div>
 
       <div className="container relative z-10 px-4 sm:px-6 md:px-8 lg:px-12 mx-auto">
-        {/* Top Section: CTA Card */}
-        <div className="pt-16 pb-12 border-b border-slate-900">
-          <div className="relative p-8 md:p-10 rounded-3xl bg-slate-900/40 border border-slate-800/80 overflow-hidden flex flex-col md:flex-row items-center justify-between gap-6">
-            <div className="space-y-2 text-center md:text-left">
-              <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-brand-teal/10 border border-brand-teal/20 text-brand-sky text-xs font-semibold uppercase tracking-wider">
-                <Sparkles className="w-3 h-3 text-brand-sky" />
-                <span>Transparent Pricing</span>
-              </span>
-              <h3 className="text-2xl md:text-3xl font-bold tracking-tight text-white">
-                Transparent Pricing, No Hidden Charges
-              </h3>
-              <p className="text-slate-400 text-sm max-w-xl">
-                We believe in complete transparency. Our solutions feature upfront pricing with absolutely zero hidden fees. Contact our sales team to get started.
-              </p>
-            </div>
-            <Link to="/contact" className="shrink-0 w-full md:w-auto">
-              <button className="w-full inline-flex items-center justify-center gap-2 px-6 py-3.5 rounded-xl bg-gradient-to-r from-brand-teal to-brand-sky hover:opacity-95 text-white font-bold text-sm sm:text-base shadow-lg shadow-brand-teal/15 hover:shadow-xl transition-all duration-300 group hover:-translate-y-0.5">
-                Talk to Sales
-                <ArrowRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
-              </button>
-            </Link>
-          </div>
-        </div>
+
 
         {/* Middle Section: Links Grid */}
         <div className="py-16 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-12 gap-10 md:gap-12">
           {/* Brand Info */}
           <div className="lg:col-span-4 space-y-6">
-            <Link to="/" className="inline-flex items-center group">
+            <Link href="/business" className="inline-flex items-center group">
               <Logo textSize="text-2xl sm:text-3xl" textColor="text-white" />
             </Link>
             <p className="text-slate-400 text-sm leading-relaxed max-w-sm">
@@ -103,7 +79,7 @@ const Footer = () => {
               {solutionLinks.map((link) => (
                 <li key={link.name}>
                   <Link
-                    to={link.href}
+                    href={link.href}
                     className="text-slate-400 hover:text-brand-teal transition-colors text-sm font-medium"
                   >
                     {link.name}
@@ -122,7 +98,7 @@ const Footer = () => {
               {platformLinks.map((link) => (
                 <li key={link.name}>
                   <Link
-                    to={link.href}
+                    href={link.href}
                     className="text-slate-400 hover:text-brand-teal transition-colors text-sm font-medium"
                   >
                     {link.name}
@@ -141,7 +117,7 @@ const Footer = () => {
               {resourceLinks.map((link) => (
                 <li key={link.name}>
                   <Link
-                    to={link.href}
+                    href={link.href}
                     className="text-slate-400 hover:text-brand-teal transition-colors text-sm font-medium"
                   >
                     {link.name}
@@ -160,7 +136,7 @@ const Footer = () => {
               {companyLinks.map((link) => (
                 <li key={link.name}>
                   <Link
-                    to={link.href}
+                    href={link.href}
                     className="text-slate-400 hover:text-brand-teal transition-colors text-sm font-medium"
                   >
                     {link.name}
@@ -199,13 +175,13 @@ const Footer = () => {
         <div className="border-t border-slate-900 py-8 flex flex-col sm:flex-row justify-between items-center gap-4 text-xs text-slate-500 font-medium">
           <p>© {currentYear} NEXEAGLE. All rights reserved.</p>
           <div className="flex gap-6">
-            <Link to="/privacy" className="hover:text-slate-300 transition-colors">
+            <Link href="/privacy" className="hover:text-slate-300 transition-colors">
               Privacy Policy
             </Link>
-            <Link to="/terms" className="hover:text-slate-300 transition-colors">
+            <Link href="/terms" className="hover:text-slate-300 transition-colors">
               Terms of Service
             </Link>
-            <Link to="/security" className="hover:text-slate-300 transition-colors">
+            <Link href="/security" className="hover:text-slate-300 transition-colors">
               Security Standards
             </Link>
           </div>

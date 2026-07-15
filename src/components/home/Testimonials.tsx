@@ -189,7 +189,7 @@ export const Testimonials = () => {
                   
                   {/* Testimonial Quote */}
                   <p className="text-slate-700 font-light leading-relaxed mb-6 text-[15px] sm:text-base pr-4">
-                    "{item.text}"
+                    &quot;{item.text}&quot;
                   </p>
                 </div>
 

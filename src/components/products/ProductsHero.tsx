@@ -1,6 +1,6 @@
 import { Button } from "@/components/ui/button";
 import { ArrowRight } from "lucide-react";
-import { Link } from "react-router-dom";
+import Link from "next/link";
 
 const ProductsHero = () => {
   return (
@@ -53,7 +53,7 @@ const ProductsHero = () => {
               size="lg"
               className="px-10 py-7 h-auto text-lg font-black bg-slate-900 hover:bg-slate-800 text-white shadow-2xl"
             >
-              <Link to="/contact" className="flex items-center gap-3">
+              <Link href="/contact" className="flex items-center gap-3">
                 <span className="text-white">Request a Demo</span>
                 <ArrowRight className="w-6 h-6 text-white" />
               </Link>

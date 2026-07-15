@@ -1,7 +1,0 @@
-node_modules/
-dist/
-.env
-*.log
-
-# Local placeholder persistence (see src/services/store.ts)
-data/store.json

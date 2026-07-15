@@ -1,6 +1,6 @@
 import { Button } from "@/components/ui/button";
 import { ArrowRight, Calendar, Mail, MessageSquare, CheckCircle } from "lucide-react";
-import { Link } from "react-router-dom";
+import Link from "next/link";
 
 const ServicesCTA = () => {
   return (
@@ -17,12 +17,12 @@ const ServicesCTA = () => {
             <div className="relative z-10 space-y-8">
               <div className="space-y-4">
                 <h2 className="text-3xl md:text-4xl lg:text-5xl font-bold leading-tight text-white">
-                  Let's build something<br />
+                  Let&apos;s build something<br />
                   extraordinary together.
                 </h2>
                 
                 <p className="text-xl text-blue-100 max-w-2xl mx-auto leading-relaxed">
-                  Tell us about your project. We'll show you how we can help you succeed.
+                  Tell us about your project. We&apos;ll show you how we can help you succeed.
                 </p>
               </div>
 
@@ -32,7 +32,7 @@ const ServicesCTA = () => {
                   size="lg"
                   className="px-8 py-6 h-auto text-base font-semibold bg-white text-blue-700 hover:bg-blue-50 shadow-xl shadow-blue-900/20"
                 >
-                  <Link to="/contact" className="flex items-center gap-2">
+                  <Link href="/contact" className="flex items-center gap-2">
                     <Calendar className="w-5 h-5" />
                     Schedule a Call
                   </Link>
@@ -113,8 +113,8 @@ const ServicesCTA = () => {
             {/* Testimonial */}
             <div className="pt-8 max-w-2xl mx-auto">
               <blockquote className="text-lg text-slate-700 italic leading-relaxed">
-                "NexEagle didn't just build our product—they became our product team. 
-                Their strategic thinking and technical expertise were invaluable."
+                &quot;NexEagle didn&apos;t just build our product—they became our product team.
+                Their strategic thinking and technical expertise were invaluable.&quot;
               </blockquote>
               <p className="text-sm text-slate-600 font-medium mt-4">— Founder, Healthcare Startup</p>
             </div>

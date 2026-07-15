@@ -1,3 +1,5 @@
+"use client";
+
 import React, { useState, useEffect } from "react";
 import { 
   Stethoscope, Bed, FlaskConical, Receipt, Activity, CheckCircle2, ChevronRight, Play, RotateCcw

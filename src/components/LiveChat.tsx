@@ -1,3 +1,5 @@
+"use client";
+
 import { useState, useEffect, useRef } from "react";
 import { MessageCircle, X, Send, Minimize2 } from "lucide-react";
 import { Button } from "./ui/button";
@@ -5,13 +7,14 @@ import { Input } from "./ui/input";
 import * as signalR from "@microsoft/signalr";
 import { v4 as uuidv4 } from "uuid";
 
-// The SignalR hub lives at <api-origin>/chathub on the CMS API. Derive it from VITE_API_URL
-// (set per environment at build time; the /api/v1 suffix is stripped if present) so it works
-// in dev and prod instead of a hardcoded localhost. Falls back to the Dev CMS API VM.
-//   Dev build : VITE_API_URL=http://151.185.45.77:5002
-//   Prod build: VITE_API_URL=http://151.185.45.67:5002
+// The SignalR hub lives at <api-origin>/chathub on the CMS API. Derive it from
+// NEXT_PUBLIC_API_URL (set per environment, inlined into the client bundle at
+// build time since this reads it in the browser; the /api/v1 suffix is stripped
+// if present) so it works in dev and prod instead of a hardcoded localhost.
+//   Dev build : NEXT_PUBLIC_API_URL=http://151.185.45.77:5002
+//   Prod build: NEXT_PUBLIC_API_URL=http://151.185.45.67:5002
 const API_ORIGIN =
-  ((import.meta.env.VITE_API_URL as string | undefined)?.replace(/\/api\/v1\/?$/, "").replace(/\/$/, "")) ||
+  process.env.NEXT_PUBLIC_API_URL?.replace(/\/api\/v1\/?$/, "").replace(/\/$/, "") ||
   "http://151.185.47.77:5002";
 const CHAT_HUB_URL = `${API_ORIGIN}/chathub`;
 
@@ -155,7 +158,6 @@ const LiveChat = () => {
 
   const quickActions = [
     "Schedule a demo",
-    "See pricing",
     "Talk to sales",
     "Technical support"
   ];
@@ -196,7 +198,7 @@ const LiveChat = () => {
           </div>
           <div>
             <h3 className="font-bold text-white">NexEagle Support</h3>
-            <p className="text-xs text-blue-100">We're online • Reply in ~2 min</p>
+            <p className="text-xs text-blue-100">We&apos;re online • Reply in ~2 min</p>
           </div>
         </div>
 

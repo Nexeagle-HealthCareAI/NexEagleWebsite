@@ -122,7 +122,7 @@ const Culture = () => {
                   </div>
                   <div>
                     <h4 className="font-semibold mb-1">High Standards</h4>
-                    <p className="text-sm text-slate-300">Quality code. Thoughtful design. Products we're proud of.</p>
+                    <p className="text-sm text-slate-300">Quality code. Thoughtful design. Products we&apos;re proud of.</p>
                   </div>
                 </div>
 

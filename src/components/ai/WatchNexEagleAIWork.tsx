@@ -1,5 +1,7 @@
+"use client";
+
 import React, { useState, useEffect, useRef } from "react";
-import { Link } from "react-router-dom";
+import Link from "next/link";
 import { motion, AnimatePresence } from "framer-motion";
 import { 
   Mic, 
@@ -320,6 +322,11 @@ export const WatchNexEagleAIWork = () => {
       if (timerRef.current) clearTimeout(timerRef.current);
       if (typingIntervalRef.current) clearInterval(typingIntervalRef.current);
     };
+    // `startUseCaseAnimation` is intentionally excluded: it's redefined every
+    // render and closes over `isPaused`, so including it would restart the
+    // typing/status animation on every unrelated re-render instead of only
+    // when the use case actually changes.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [currentIdx]);
 
   // Handle Tab Click
@@ -442,8 +449,8 @@ export const WatchNexEagleAIWork = () => {
                       </div>
                       
                       <div className="bg-slate-50/60 border border-slate-200/50 rounded-2xl p-4 min-h-[140px] shadow-inner font-light text-slate-700 italic leading-relaxed text-sm sm:text-base">
-                        "{typedText}
-                        {isTyping && <span className="animate-pulse text-brand-teal font-bold ml-0.5">|</span>}"
+                        &quot;{typedText}
+                        {isTyping && <span className="animate-pulse text-brand-teal font-bold ml-0.5">|</span>}&quot;
                       </div>
                     </div>
                   </div>
@@ -596,7 +603,7 @@ export const WatchNexEagleAIWork = () => {
                       transition={{ duration: 0.7, delay: 0.2 }}
                       className="text-2xl sm:text-3xl font-black text-brand-sky tracking-tight uppercase"
                     >
-                      NexEagle AI Doesn't Sit Beside Your Workflow.
+                      NexEagle AI Doesn&apos;t Sit Beside Your Workflow.
                     </motion.h3>
 
                     <motion.h2 
@@ -638,8 +645,8 @@ export const WatchNexEagleAIWork = () => {
                     className="flex flex-col sm:flex-row items-center justify-center gap-4 pt-6"
                   >
                     <Link 
-                      to="/contact"
-                      className="w-full sm:w-auto inline-flex items-center justify-center gap-2 px-8 py-4 rounded-2xl bg-white hover:bg-slate-50 text-slate-950 font-bold text-sm sm:text-base shadow-lg hover:shadow-xl transition-all duration-300 group hover:-translate-y-0.5"
+                      href="/contact"
+                      className="w-full sm:w-auto inline-flex items-center justify-center gap-2 px-8 py-4 rounded-2xl bg-white hover:bg-slate-50 text-slate-955 font-bold text-sm sm:text-base shadow-lg hover:shadow-xl transition-all duration-300 group hover:-translate-y-0.5"
                     >
                       <span>See NexEagle AI In Action</span>
                       <ArrowRight className="w-5 h-5 text-slate-950 group-hover:translate-x-1 transition-transform" />

@@ -1,3 +1,5 @@
+"use client";
+
 import { lazy, Suspense, useState, useEffect } from "react";
 
 const LiveChatLazy = lazy(() => import("./LiveChat"));

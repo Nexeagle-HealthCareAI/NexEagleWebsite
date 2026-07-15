@@ -62,7 +62,7 @@ const CoreValues = () => {
             </h2>
             
             <p className="text-xl text-slate-600 max-w-3xl mx-auto">
-              These aren't just words on a wall. They guide every decision we make and every product we build.
+              These aren&apos;t just words on a wall. They guide every decision we make and every product we build.
             </p>
           </div>
 

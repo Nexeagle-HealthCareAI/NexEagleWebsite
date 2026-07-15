@@ -525,7 +525,7 @@ export const HealthcareChallenges = () => {
     return () => {
       if (timerRef.current) clearInterval(timerRef.current);
     };
-  }, [isExpandedTitleState, isPaused, activeIndex]);
+  }, [isExpandedTitleState, hasRevealedContent, isPaused, activeIndex]);
 
   const handleTabClick = (index: number) => {
     setIsPaused(true); // Stop auto-play when user manually clicks
