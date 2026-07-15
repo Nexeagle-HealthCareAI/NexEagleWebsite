@@ -2,7 +2,7 @@
 
 import { useMemo, useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { Frown, Loader2, ChevronDown, SlidersHorizontal } from "lucide-react";
+import { Frown, Loader2, ChevronDown, SlidersHorizontal, MapPin } from "lucide-react";
 import DoctorCard from "./DoctorCard";
 import { specialties, cityLabel } from "@/data/patient";
 import type { CityOption } from "@/data/patient";
@@ -40,6 +40,7 @@ export default function DoctorDirectory({
   specialtyId,
 }: DoctorDirectoryProps) {
   const [sort, setSort] = useState<SortKey>("relevance");
+  const [radius, setRadius] = useState<number>(100);
 
   const { data, isLoading } = useDoctors();
   const allDoctors = data?.doctors ?? [];
@@ -57,7 +58,7 @@ export default function DoctorDirectory({
           return { ...d, distanceKm: haversineDistance(coords.lat, coords.lon, d.latitude, d.longitude) };
         }
         return { ...d, distanceKm: 999999 };
-      }).filter(d => d.distanceKm! <= 100); // 100km radius default
+      }).filter(d => d.distanceKm! <= radius || d.distanceKm === 999999); // dynamic radius + include doctors missing GPS
     } else if (city) {
       list = list.filter((d) => d.city === city.name && d.state === city.state);
     }
@@ -133,9 +134,35 @@ export default function DoctorDirectory({
             </p>
           </div>
 
-          {/* Premium Sort Dropdown */}
+          {/* Controls Container */}
           <div className="flex items-center gap-3">
-            <span className="hidden sm:inline text-sm font-semibold text-slate-400">Sort by:</span>
+            
+            {/* Radius Dropdown (Only when GPS is active) */}
+            {coords && (
+              <div className="relative group">
+                <div className="flex items-center gap-2 px-4 py-2.5 rounded-xl bg-white border border-slate-200/80 shadow-sm hover:border-brand-teal/40 transition-colors cursor-pointer">
+                  <MapPin className="w-4 h-4 text-brand-teal" />
+                  <select
+                    value={radius}
+                    onChange={(e) => setRadius(Number(e.target.value))}
+                    className="bg-transparent text-sm font-bold text-slate-700 focus:outline-none cursor-pointer appearance-none pr-6"
+                  >
+                    <option value={5}>Within 5 km</option>
+                    <option value={10}>Within 10 km</option>
+                    <option value={25}>Within 25 km</option>
+                    <option value={50}>Within 50 km</option>
+                    <option value={100}>Within 100 km</option>
+                    <option value={250}>Within 250 km</option>
+                    <option value={500}>Within 500 km</option>
+                  </select>
+                  <div className="absolute right-3 pointer-events-none">
+                    <ChevronDown className="w-4 h-4 text-slate-400" />
+                  </div>
+                </div>
+              </div>
+            )}
+
+            {/* Premium Sort Dropdown */}
             <div className="relative group">
               <div className="flex items-center gap-2 px-4 py-2.5 rounded-xl bg-white border border-slate-200/80 shadow-sm hover:border-brand-teal/40 transition-colors cursor-pointer">
                 <SlidersHorizontal className="w-4 h-4 text-brand-teal" />
@@ -150,11 +177,12 @@ export default function DoctorDirectory({
                     </option>
                   ))}
                 </select>
-                <div className="absolute right-4 pointer-events-none">
+                <div className="absolute right-3 pointer-events-none">
                   <ChevronDown className="w-4 h-4 text-slate-400" />
                 </div>
               </div>
             </div>
+
           </div>
         </div>
 
