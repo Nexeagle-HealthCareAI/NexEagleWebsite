@@ -51,6 +51,7 @@ export interface Doctor {
   // convention as the KPI fields above.
   latitude?: number;
   longitude?: number;
+  distanceKm?: number;    // Computed by the frontend during spatial search
   nextAvailable: string;  // human label, e.g. "Today, 4:30 PM"
   verified: boolean;
   promoted: boolean;      // "featured" / top-of-list placement

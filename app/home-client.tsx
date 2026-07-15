@@ -93,6 +93,7 @@ export default function HomeClient() {
           city={city}
           cities={dynamicCities}
           geoStatus={geo.status}
+          coords={geo.coords}
           onCityChange={handleCityChange}
           query={query}
           specialtyId={specialtyId}

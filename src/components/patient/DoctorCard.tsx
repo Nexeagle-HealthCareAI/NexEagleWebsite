@@ -122,10 +122,15 @@ export default function DoctorCard({ doctor, index = 0 }: DoctorCardProps) {
                     {clinicLabel}
                   </p>
                 )}
-                {/* Line 2 — area, city, state */}
+                {/* Line 2 — area, city, state + Distance */}
                 {(doctor.area || doctor.city) && (
-                  <p className="text-[11px] text-slate-500 mt-0.5 leading-snug">
-                    {[doctor.area, doctor.city, doctor.state].filter(Boolean).join(", ")}
+                  <p className="text-[11px] text-slate-500 mt-0.5 leading-snug flex flex-wrap items-center gap-x-2 gap-y-1">
+                    <span>{[doctor.area, doctor.city, doctor.state].filter(Boolean).join(", ")}</span>
+                    {doctor.distanceKm !== undefined && doctor.distanceKm < 999999 && (
+                      <span className="inline-flex items-center font-bold text-brand-teal bg-teal-50 px-1.5 py-0.5 rounded-md border border-teal-100">
+                        🚗 {doctor.distanceKm < 1 ? "< 1" : doctor.distanceKm.toFixed(1)} km away
+                      </span>
+                    )}
                   </p>
                 )}
               </div>

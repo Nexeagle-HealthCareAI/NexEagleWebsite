@@ -7,22 +7,24 @@ import DoctorCard from "./DoctorCard";
 import { specialties, cityLabel } from "@/data/patient";
 import type { CityOption } from "@/data/patient";
 import { useDoctors } from "@/lib/api/hooks";
-import type { GeoStatus } from "@/lib/geo";
+import { haversineDistance, type GeoStatus } from "@/lib/geo";
 import { cn } from "@/lib/utils";
 
 interface DoctorDirectoryProps {
   city: CityOption | null;
   cities: CityOption[];
   geoStatus: GeoStatus;
+  coords?: { lat: number; lon: number } | null;
   onCityChange: (city: CityOption | null) => void;
   query: string;
   specialtyId: string;
 }
 
-type SortKey = "relevance" | "experience" | "patients" | "fee" | "rating";
+type SortKey = "relevance" | "distance" | "experience" | "patients" | "fee" | "rating";
 
 const sortOptions: { key: SortKey; label: string }[] = [
   { key: "relevance", label: "Relevance" },
+  { key: "distance", label: "Nearest First" },
   { key: "rating", label: "Highest Rated" },
   { key: "experience", label: "Most Experienced" },
   { key: "fee", label: "Lowest Fee" },
@@ -32,6 +34,7 @@ export default function DoctorDirectory({
   city,
   cities,
   geoStatus,
+  coords,
   onCityChange,
   query,
   specialtyId,
@@ -45,9 +48,19 @@ export default function DoctorDirectory({
 
   const filtered = useMemo(() => {
     const q = query.trim().toLowerCase();
-    let list = city
-      ? allDoctors.filter((d) => d.city === city.name && d.state === city.state)
-      : allDoctors;
+    let list = allDoctors;
+    
+    // Spatial search vs string match
+    if (coords) {
+      list = list.map(d => {
+        if (d.latitude != null && d.longitude != null) {
+          return { ...d, distanceKm: haversineDistance(coords.lat, coords.lon, d.latitude, d.longitude) };
+        }
+        return { ...d, distanceKm: 999999 };
+      }).filter(d => d.distanceKm! <= 100); // 100km radius default
+    } else if (city) {
+      list = list.filter((d) => d.city === city.name && d.state === city.state);
+    }
 
     if (specialtyId) list = list.filter((d) => d.specialtyId === specialtyId);
     if (q) {
@@ -61,6 +74,9 @@ export default function DoctorDirectory({
 
     const sorted = [...list];
     switch (sort) {
+      case "distance":
+        sorted.sort((a, b) => (a.distanceKm ?? 999999) - (b.distanceKm ?? 999999));
+        break;
       case "rating":
         sorted.sort((a, b) => (b.rating ?? 0) - (a.rating ?? 0));
         break;
@@ -80,7 +96,7 @@ export default function DoctorDirectory({
         });
     }
     return sorted;
-  }, [allDoctors, city, query, specialtyId, sort]);
+  }, [allDoctors, city, coords, query, specialtyId, sort]);
 
   return (
     <section id="doctors" className="bg-slate-50/50 pb-24 pt-10 sm:pt-16 scroll-mt-20">
