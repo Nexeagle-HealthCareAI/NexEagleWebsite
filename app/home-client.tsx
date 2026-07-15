@@ -11,7 +11,17 @@ import { CITIES, cityId as makeCityId, type CityOption } from "@/data/patient";
 import { useDoctors } from "@/lib/api/hooks";
 import { useGeolocatedCity } from "@/lib/geo";
 
-export default function HomeClient() {
+interface HomeClientProps {
+  initialSpecialtyId?: string;
+  initialCityId?: string;
+  initialQuery?: string;
+}
+
+export default function HomeClient({
+  initialSpecialtyId = "",
+  initialCityId = "",
+  initialQuery = "",
+}: HomeClientProps = {}) {
   const { data: doctorsData } = useDoctors();
 
   // Build city list from live API data; fall back to static list
@@ -28,7 +38,12 @@ export default function HomeClient() {
     return map.size > 0 ? Array.from(map.values()) : CITIES;
   }, [doctorsData]);
 
-  const [city, setCity] = useState<CityOption | null>(null);
+  const [city, setCity] = useState<CityOption | null>(() => {
+    if (initialCityId) {
+      return dynamicCities.find(c => c.id === initialCityId) || null;
+    }
+    return null;
+  });
   const [userPicked, setUserPicked] = useState(false);
   const geo = useGeolocatedCity(dynamicCities);
 
@@ -50,8 +65,8 @@ export default function HomeClient() {
   }, []);
 
   // Search + specialty state (shared between Hero and Directory)
-  const [query, setQuery] = useState("");
-  const [specialtyId, setSpecialtyId] = useState("");
+  const [query, setQuery] = useState(initialQuery);
+  const [specialtyId, setSpecialtyId] = useState(initialSpecialtyId);
 
   function handleSpecialtySelect(id: string) {
     setSpecialtyId(id);
