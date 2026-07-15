@@ -46,6 +46,11 @@ export interface Doctor {
   area: string;
   clinic: string;
   languages: string[];
+  // GPS pin for a "get directions" link — from the real API only (inherited from the
+  // doctor's hospital); undefined for mock data, same optional/hide-when-absent
+  // convention as the KPI fields above.
+  latitude?: number;
+  longitude?: number;
   nextAvailable: string;  // human label, e.g. "Today, 4:30 PM"
   verified: boolean;
   promoted: boolean;      // "featured" / top-of-list placement

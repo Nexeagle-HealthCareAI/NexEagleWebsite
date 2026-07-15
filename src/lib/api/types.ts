@@ -21,10 +21,19 @@ export interface DoctorDto {
   bio?: string | null;
   departmentName?: string | null;
   specializations?: string[] | null;
+  languages?: string[] | null;
   hospitalId: string;
   hospitalName?: string | null;
   city?: string | null;
   state?: string | null;
+  // GPS pin for a "get directions" link — inherited from the hospital, since a doctor
+  // doesn't have their own address.
+  latitude?: number | null;
+  longitude?: number | null;
+  // Computed from real, patient-submitted DoctorReviews — undefined/0 when the doctor
+  // has no reviews yet.
+  rating?: number | null;
+  reviewCount?: number | null;
 }
 
 export interface DoctorsResponseDto {
@@ -54,6 +63,44 @@ export interface CreateAppointmentResponseDto {
   message?: string | null;
   appointmentId?: string | null;
   patientId?: string | null;
+}
+
+// Matches GetPublicDoctorReviewsResponseModel / PublicReviewItem.
+export interface ReviewDto {
+  reviewId: string;
+  authorName?: string | null;
+  rating: number;
+  comment: string;
+  helpfulCount: number;
+  createdAt: string; // ISO
+}
+
+export interface ReviewsResponseDto {
+  success: boolean;
+  message?: string | null;
+  reviews: ReviewDto[];
+  averageRating: number;
+  reviewCount: number;
+}
+
+// Body sent to POST /public/doctors/{doctorId}/reviews — matches SubmitDoctorReviewRequestModel.
+// DoctorId/IpAddress come from the URL/connection server-side, never sent from here.
+export interface SubmitReviewRequest {
+  authorName?: string;
+  rating: number;
+  comment: string;
+}
+
+export interface SubmitReviewResponseDto {
+  success: boolean;
+  message?: string | null;
+  reviewId?: string | null;
+}
+
+export interface MarkReviewHelpfulResponseDto {
+  success: boolean;
+  message?: string | null;
+  helpfulCount: number;
 }
 
 // Body sent to POST /public/appointments — matches PublicBookAppointmentRequestModel.

@@ -1,27 +1,17 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useMemo, useState } from "react";
 import { MessageCircle, ThumbsUp, Send, UserCircle2 } from "lucide-react";
 import StarRating from "./StarRating";
-import { cn } from "@/lib/utils";
-
-interface Review {
-  id: string;
-  author: string;
-  rating: number;
-  comment: string;
-  date: string;   // ISO string
-  helpful: number;
-}
+import { useDoctorReviews, useMarkReviewHelpful, useSubmitReview } from "@/lib/api/hooks";
+import type { ReviewDto } from "@/lib/api/types";
 
 interface ReviewsSectionProps {
   doctorId: string;
   doctorName: string;
-  /** Seed reviews shown when LocalStorage is empty (mock/display data) */
-  seedReviews?: Review[];
+  /** Shown only when the real reviews API isn't configured (dev fallback). */
+  seedReviews?: ReviewDto[];
 }
-
-const STORAGE_KEY = (id: string) => `nexeagle_reviews_${id}`;
 
 function timeAgo(iso: string): string {
   const diff = Date.now() - new Date(iso).getTime();
@@ -40,7 +30,23 @@ export default function ReviewsSection({
   doctorName,
   seedReviews = [],
 }: ReviewsSectionProps) {
-  const [reviews, setReviews] = useState<Review[]>([]);
+  const { data } = useDoctorReviews(doctorId);
+  const submitMutation = useSubmitReview(doctorId);
+  const helpfulMutation = useMarkReviewHelpful(doctorId);
+
+  const notConfigured = data?.notConfigured ?? false;
+
+  // Dev-only fallback when the real API isn't configured — mirrors DoctorDirectory.tsx's
+  // notConfigured -> mock-data pattern. Real environments always use the live list below,
+  // which stays fresh via React Query's cache invalidation on submit/mark-helpful.
+  const [localReviews, setLocalReviews] = useState<ReviewDto[]>(seedReviews);
+
+  const reviews = notConfigured ? localReviews : data?.reviews ?? [];
+  const avg = useMemo(() => {
+    if (!notConfigured) return data?.averageRating ?? 0;
+    return localReviews.length ? localReviews.reduce((s, r) => s + r.rating, 0) / localReviews.length : 0;
+  }, [notConfigured, data?.averageRating, localReviews]);
+
   const [newRating, setNewRating] = useState(0);
   const [newComment, setNewComment] = useState("");
   const [newAuthor, setNewAuthor] = useState("");
@@ -48,62 +54,50 @@ export default function ReviewsSection({
   const [submitted, setSubmitted] = useState(false);
   const [error, setError] = useState("");
 
-  // Load from localStorage (merge with seed reviews on first load)
-  useEffect(() => {
-    try {
-      const stored = localStorage.getItem(STORAGE_KEY(doctorId));
-      if (stored) {
-        setReviews(JSON.parse(stored));
-      } else {
-        setReviews(seedReviews);
-      }
-    } catch {
-      setReviews(seedReviews);
-    }
-  }, [doctorId, seedReviews]);
-
-  function persist(updated: Review[]) {
-    try {
-      localStorage.setItem(STORAGE_KEY(doctorId), JSON.stringify(updated));
-    } catch { /* storage full / private mode */ }
-    setReviews(updated);
-  }
-
-  function handleSubmit(e: React.FormEvent) {
+  async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
     setError("");
     if (newRating === 0) { setError("Please select a star rating."); return; }
     if (!newComment.trim()) { setError("Please write a short comment."); return; }
 
     setSubmitting(true);
-    const review: Review = {
-      id: `${Date.now()}`,
-      author: newAuthor.trim() || "Anonymous",
-      rating: newRating,
-      comment: newComment.trim(),
-      date: new Date().toISOString(),
-      helpful: 0,
-    };
-    const updated = [review, ...reviews];
-    persist(updated);
-    setNewRating(0);
-    setNewComment("");
-    setNewAuthor("");
-    setSubmitting(false);
-    setSubmitted(true);
-    setTimeout(() => setSubmitted(false), 3000);
+    try {
+      if (notConfigured) {
+        const review: ReviewDto = {
+          reviewId: `${Date.now()}`,
+          authorName: newAuthor.trim() || undefined,
+          rating: newRating,
+          comment: newComment.trim(),
+          createdAt: new Date().toISOString(),
+          helpfulCount: 0,
+        };
+        setLocalReviews((prev) => [review, ...prev]);
+      } else {
+        await submitMutation.mutateAsync({
+          rating: newRating,
+          comment: newComment.trim(),
+          authorName: newAuthor.trim() || undefined,
+        });
+      }
+      setNewRating(0);
+      setNewComment("");
+      setNewAuthor("");
+      setSubmitted(true);
+      setTimeout(() => setSubmitted(false), 3000);
+    } catch {
+      setError("Couldn't submit your review — please try again.");
+    } finally {
+      setSubmitting(false);
+    }
   }
 
   function markHelpful(id: string) {
-    const updated = reviews.map((r) =>
-      r.id === id ? { ...r, helpful: r.helpful + 1 } : r
-    );
-    persist(updated);
+    if (notConfigured) {
+      setLocalReviews((prev) => prev.map((r) => (r.reviewId === id ? { ...r, helpfulCount: r.helpfulCount + 1 } : r)));
+    } else {
+      helpfulMutation.mutate(id);
+    }
   }
-
-  const avg = reviews.length
-    ? reviews.reduce((s, r) => s + r.rating, 0) / reviews.length
-    : 0;
 
   return (
     <section className="space-y-6">
@@ -136,7 +130,7 @@ export default function ReviewsSection({
         <div className="space-y-4">
           {reviews.map((r) => (
             <div
-              key={r.id}
+              key={r.reviewId}
               className="bg-white rounded-2xl border border-slate-200/80 p-4 space-y-2 shadow-sm"
             >
               <div className="flex items-start justify-between gap-2">
@@ -145,8 +139,8 @@ export default function ReviewsSection({
                     <UserCircle2 className="w-5 h-5 text-brand-teal" />
                   </div>
                   <div>
-                    <p className="text-sm font-bold text-slate-800">{r.author}</p>
-                    <p className="text-[11px] text-slate-400">{timeAgo(r.date)}</p>
+                    <p className="text-sm font-bold text-slate-800">{r.authorName || "Anonymous"}</p>
+                    <p className="text-[11px] text-slate-400">{timeAgo(r.createdAt)}</p>
                   </div>
                 </div>
                 <StarRating value={r.rating} size="sm" />
@@ -154,11 +148,11 @@ export default function ReviewsSection({
               <p className="text-sm text-slate-600 leading-relaxed pl-10">{r.comment}</p>
               <div className="pl-10">
                 <button
-                  onClick={() => markHelpful(r.id)}
+                  onClick={() => markHelpful(r.reviewId)}
                   className="inline-flex items-center gap-1 text-[11px] text-slate-400 hover:text-brand-teal transition"
                 >
                   <ThumbsUp className="w-3 h-3" />
-                  Helpful {r.helpful > 0 && `(${r.helpful})`}
+                  Helpful {r.helpfulCount > 0 && `(${r.helpfulCount})`}
                 </button>
               </div>
             </div>

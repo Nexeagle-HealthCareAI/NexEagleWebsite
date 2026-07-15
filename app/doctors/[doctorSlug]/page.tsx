@@ -90,27 +90,28 @@ export default async function DoctorDetailPage({ params }: PageProps) {
       : {}),
   };
 
-  // Seed reviews for mock doctors (real API doctors get no seeds)
-  const seedReviews = doctor.rating
-    ? [
-        {
-          id: "seed-1",
-          author: "Priya S.",
-          rating: 5,
-          comment: "Very thorough consultation. Explained everything clearly and patiently.",
-          date: new Date(Date.now() - 2 * 24 * 60 * 60 * 1000).toISOString(),
-          helpful: 4,
-        },
-        {
-          id: "seed-2",
-          author: "Rahul M.",
-          rating: 4,
-          comment: "Good doctor, short wait time. Highly recommend for follow-ups.",
-          date: new Date(Date.now() - 7 * 24 * 60 * 60 * 1000).toISOString(),
-          helpful: 2,
-        },
-      ]
-    : [];
+  // Fallback-only example reviews, shown by ReviewsSection just when the real reviews API
+  // isn't configured (dev environments without EASYHMS_API_BASE_URL/KEY) — real doctors now
+  // get genuine reviews/ratings from the backend, so this is no longer conditioned on
+  // doctor.rating (a real doctor can legitimately have a rating without being a mock).
+  const seedReviews = [
+    {
+      reviewId: "seed-1",
+      authorName: "Priya S.",
+      rating: 5,
+      comment: "Very thorough consultation. Explained everything clearly and patiently.",
+      createdAt: new Date(Date.now() - 2 * 24 * 60 * 60 * 1000).toISOString(),
+      helpfulCount: 4,
+    },
+    {
+      reviewId: "seed-2",
+      authorName: "Rahul M.",
+      rating: 4,
+      comment: "Good doctor, short wait time. Highly recommend for follow-ups.",
+      createdAt: new Date(Date.now() - 7 * 24 * 60 * 60 * 1000).toISOString(),
+      helpfulCount: 2,
+    },
+  ];
 
   return (
     <div className="min-h-screen bg-slate-50 flex flex-col font-sans text-slate-800">

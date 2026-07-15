@@ -10,7 +10,7 @@
 // can fall back to the local mock data in src/data/patient.ts.
 // ─────────────────────────────────────────────────────────────────────────────
 
-import { useMutation, useQuery } from "@tanstack/react-query";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import type { Doctor } from "@/data/patient";
 import {
   mapAvailability,
@@ -18,7 +18,7 @@ import {
   mapDoctors,
   type AvailabilityResult,
 } from "./mappers";
-import type { CreateAppointmentRequest } from "./types";
+import type { CreateAppointmentRequest, ReviewDto, SubmitReviewRequest } from "./types";
 
 async function getJson(url: string): Promise<any> {
   const res = await fetch(url);
@@ -83,6 +83,66 @@ export function useCreateAppointment() {
       const json = await res.json();
       if (json?.notConfigured) return { reference: null, notConfigured: true };
       return { reference: mapBookingReference(json), notConfigured: false };
+    },
+  });
+}
+
+// ── Reviews ──────────────────────────────────────────────────────────────────
+export interface ReviewsResult {
+  reviews: ReviewDto[];
+  averageRating: number;
+  reviewCount: number;
+  notConfigured: boolean;
+}
+
+export function useDoctorReviews(doctorId: string | undefined) {
+  return useQuery<ReviewsResult>({
+    queryKey: ["public", "reviews", doctorId],
+    enabled: Boolean(doctorId),
+    queryFn: async () => {
+      const json = await getJson(`/api/public/doctors/${doctorId}/reviews`);
+      if (json?.notConfigured) return { reviews: [], averageRating: 0, reviewCount: 0, notConfigured: true };
+      return {
+        reviews: json?.reviews ?? [],
+        averageRating: json?.averageRating ?? 0,
+        reviewCount: json?.reviewCount ?? 0,
+        notConfigured: false,
+      };
+    },
+  });
+}
+
+export function useSubmitReview(doctorId: string | undefined) {
+  const queryClient = useQueryClient();
+  return useMutation<{ success: boolean; notConfigured: boolean }, Error, SubmitReviewRequest>({
+    mutationFn: async (body) => {
+      const res = await fetch(`/api/public/doctors/${doctorId}/reviews`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(body),
+      });
+      const json = await res.json();
+      if (json?.notConfigured) return { success: false, notConfigured: true };
+      if (!res.ok || !json?.success) throw new Error(json?.message || `Review submission failed: ${res.status}`);
+      return { success: true, notConfigured: false };
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["public", "reviews", doctorId] });
+    },
+  });
+}
+
+export function useMarkReviewHelpful(doctorId: string | undefined) {
+  const queryClient = useQueryClient();
+  return useMutation<void, Error, string>({
+    mutationFn: async (reviewId) => {
+      const res = await fetch(`/api/public/doctors/${doctorId}/reviews/${reviewId}/helpful`, {
+        method: "POST",
+      });
+      if (!res.ok) throw new Error(`Marking helpful failed: ${res.status}`);
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["public", "reviews", doctorId] });
     },
   });
 }
