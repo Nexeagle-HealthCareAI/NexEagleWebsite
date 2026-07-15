@@ -47,6 +47,35 @@ export default function PatientFooter() {
         </div>
       </div>
 
+      {/* ── SEO Link Farm (Internal Silo) ── */}
+      <div className="border-t border-slate-800 pt-8 pb-4">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <h4 className="text-white text-sm font-bold mb-6">Top Specialties in Major Cities</h4>
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-4 text-xs font-light">
+            <div className="space-y-2 flex flex-col">
+              <Link href="/specialties/general/delhi-ncr-delhi" className="hover:text-white transition">General Physicians in Delhi NCR</Link>
+              <Link href="/specialties/cardiology/mumbai-maharashtra" className="hover:text-white transition">Cardiologists in Mumbai</Link>
+              <Link href="/specialties/pediatrics/bengaluru-karnataka" className="hover:text-white transition">Pediatricians in Bengaluru</Link>
+            </div>
+            <div className="space-y-2 flex flex-col">
+              <Link href="/specialties/dermatology/kolkata-west-bengal" className="hover:text-white transition">Dermatologists in Kolkata</Link>
+              <Link href="/specialties/orthopedics/hyderabad-telangana" className="hover:text-white transition">Orthopedists in Hyderabad</Link>
+              <Link href="/specialties/gynecology/chennai-tamil-nadu" className="hover:text-white transition">Gynecologists in Chennai</Link>
+            </div>
+            <div className="space-y-2 flex flex-col">
+              <Link href="/conditions/diabetes/delhi-ncr-delhi" className="hover:text-white transition">Diabetes Doctors in Delhi NCR</Link>
+              <Link href="/conditions/chest-pain/mumbai-maharashtra" className="hover:text-white transition">Chest Pain Treatment in Mumbai</Link>
+              <Link href="/conditions/hair-fall/bengaluru-karnataka" className="hover:text-white transition">Hair Fall Treatment in Bengaluru</Link>
+            </div>
+            <div className="space-y-2 flex flex-col">
+              <Link href="/conditions/pregnancy/kolkata-west-bengal" className="hover:text-white transition">Pregnancy Care in Kolkata</Link>
+              <Link href="/conditions/knee-pain/hyderabad-telangana" className="hover:text-white transition">Knee Pain Doctors in Hyderabad</Link>
+              <Link href="/conditions/toothache/chennai-tamil-nadu" className="hover:text-white transition">Toothache Treatment in Chennai</Link>
+            </div>
+          </div>
+        </div>
+      </div>
+
       <div className="border-t border-slate-800">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4 flex flex-col sm:flex-row items-center justify-between gap-2 text-[11px] text-slate-500">
           <span>© {new Date().getFullYear()} NexEagle. All rights reserved.</span>

@@ -167,3 +167,37 @@ export function useMarkReviewHelpful(doctorId: string | undefined) {
     },
   });
 }
+
+// ── AI search fallback ──────────────────────────────────────────────────────
+// Interprets free-text/voice-transcribed search into { specialtyId, city, keywords } —
+// see app/api/search/parse/route.ts. Only meant to be called when the plain keyword
+// search (DoctorDirectory.tsx) comes up empty; notConfigured lets the caller degrade to
+// "no results" silently when ANTHROPIC_API_KEY isn't set, same convention as the other
+// notConfigured-aware hooks above.
+export interface SmartSearchIntent {
+  specialtyId: string | null;
+  city: string | null;
+  keywords: string[];
+  notConfigured: boolean;
+}
+
+export function useSmartSearch() {
+  return useMutation<SmartSearchIntent, Error, string>({
+    mutationFn: async (query) => {
+      const res = await fetch("/api/search/parse", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ query }),
+      });
+      const json = await res.json();
+      if (json?.notConfigured) return { specialtyId: null, city: null, keywords: [], notConfigured: true };
+      if (!res.ok) throw new Error(json?.error || `Search interpretation failed: ${res.status}`);
+      return {
+        specialtyId: json?.specialtyId ?? null,
+        city: json?.city ?? null,
+        keywords: Array.isArray(json?.keywords) ? json.keywords : [],
+        notConfigured: false,
+      };
+    },
+  });
+}

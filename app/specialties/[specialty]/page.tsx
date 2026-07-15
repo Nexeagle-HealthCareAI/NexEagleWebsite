@@ -32,5 +32,36 @@ export default function SpecialtyPage({ params }: PageProps) {
   const specialty = specialties.find((s) => s.id === params.specialty);
   if (!specialty) notFound();
 
-  return <HomeClient initialSpecialtyId={specialty.id} />;
+  const faqSchema = {
+    "@context": "https://schema.org",
+    "@type": "FAQPage",
+    "mainEntity": [
+      {
+        "@type": "Question",
+        "name": `What does a ${specialty.name} do?`,
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": `A ${specialty.name} specializes in ${specialty.blurb.toLowerCase()}. They diagnose, treat, and help manage conditions related to this field.`
+        }
+      },
+      {
+        "@type": "Question",
+        "name": `How do I book an appointment with a ${specialty.name}?`,
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": `You can book an appointment instantly through NexEagle. Simply select your location, compare top ${specialty.name}s, and choose a time slot that works for you.`
+        }
+      }
+    ]
+  };
+
+  return (
+    <>
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(faqSchema) }}
+      />
+      <HomeClient initialSpecialtyId={specialty.id} />
+    </>
+  );
 }
