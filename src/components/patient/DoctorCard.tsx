@@ -122,24 +122,37 @@ export default function DoctorCard({ doctor, index = 0 }: DoctorCardProps) {
                     {clinicLabel}
                   </p>
                 )}
-                {/* Line 2 — area, city, state */}
+                {/* Line 2 — area, city, state + Distance */}
                 {(doctor.area || doctor.city) && (
-                  <p className="text-[11px] text-slate-500 mt-0.5 leading-snug">
-                    {[doctor.area, doctor.city, doctor.state].filter(Boolean).join(", ")}
+                  <p className="text-[11px] text-slate-500 mt-0.5 leading-snug flex flex-wrap items-center gap-x-2 gap-y-1">
+                    <span>{[doctor.area, doctor.city, doctor.state].filter(Boolean).join(", ")}</span>
+                    {doctor.distanceKm !== undefined && doctor.distanceKm < 999999 && (
+                      <span className="inline-flex items-center font-bold text-brand-teal bg-teal-50 px-1.5 py-0.5 rounded-md border border-teal-100">
+                        🚗 {doctor.distanceKm < 1 ? "< 1" : doctor.distanceKm.toFixed(1)} km away
+                      </span>
+                    )}
                   </p>
                 )}
               </div>
-              {/* Directions micro-link (only when GPS is available) */}
-              {doctor.latitude != null && doctor.longitude != null && (
+              {/* Directions micro-link */}
+              {doctor.latitude != null && doctor.longitude != null ? (
                 <a
                   href={`https://www.google.com/maps/dir/?api=1&destination=${doctor.latitude},${doctor.longitude}`}
                   target="_blank"
                   rel="noopener noreferrer"
                   onClick={(e) => e.stopPropagation()}
-                  className="shrink-0 text-[10px] font-bold text-brand-teal hover:text-teal-700 underline underline-offset-2 mt-0.5 whitespace-nowrap"
+                  className="shrink-0 text-[10px] font-bold text-brand-teal hover:text-teal-700 underline underline-offset-2 mt-0.5 whitespace-nowrap cursor-pointer"
+                  title="Get Directions"
                 >
                   Directions ↗
                 </a>
+              ) : (
+                <span
+                  className="shrink-0 text-[10px] font-semibold text-slate-400 mt-0.5 whitespace-nowrap cursor-not-allowed"
+                  title="GPS location not provided by the hospital"
+                >
+                  Map not set
+                </span>
               )}
             </div>
           )}

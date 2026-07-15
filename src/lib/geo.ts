@@ -15,10 +15,12 @@ export type GeoStatus = "idle" | "detecting" | "found" | "denied" | "unsupported
  * Resolves the visitor's real-time city via Geolocation + Reverse Geocoding.
  * Never blocks the page — starts at "idle"/"detecting" and settles to "found"
  * (with a city) or "denied"/"unsupported" (city stays null).
+ * Also returns the raw lat/lon coordinates for advanced spatial filtering.
  */
-export function useGeolocatedCity(candidates: CityOption[]): { status: GeoStatus; city: CityOption | null } {
+export function useGeolocatedCity(candidates: CityOption[]): { status: GeoStatus; city: CityOption | null; coords: { lat: number; lon: number } | null } {
   const [status, setStatus] = useState<GeoStatus>("idle");
   const [city, setCity] = useState<CityOption | null>(null);
+  const [coords, setCoords] = useState<{ lat: number; lon: number } | null>(null);
 
   useEffect(() => {
     if (typeof navigator === "undefined" || !navigator.geolocation) {
@@ -31,6 +33,7 @@ export function useGeolocatedCity(candidates: CityOption[]): { status: GeoStatus
         try {
           const lat = pos.coords.latitude;
           const lon = pos.coords.longitude;
+          setCoords({ lat, lon });
           
           // Free, no-auth reverse geocoding API for client side
           const res = await fetch(`https://api.bigdatacloud.net/data/reverse-geocode-client?latitude=${lat}&longitude=${lon}&localityLanguage=en`);
@@ -75,5 +78,25 @@ export function useGeolocatedCity(candidates: CityOption[]): { status: GeoStatus
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [candidates.length]);
 
-  return { status, city };
+  return { status, city, coords };
+}
+
+/**
+ * Calculates the exact distance in kilometers between two lat/lon coordinates
+ * using the Haversine formula.
+ */
+export function haversineDistance(lat1: number, lon1: number, lat2: number, lon2: number): number {
+  const toRad = (value: number) => (value * Math.PI) / 180;
+  const R = 6371; // Earth's radius in km
+  
+  const dLat = toRad(lat2 - lat1);
+  const dLon = toRad(lon2 - lon1);
+  
+  const a =
+    Math.sin(dLat / 2) * Math.sin(dLat / 2) +
+    Math.cos(toRad(lat1)) * Math.cos(toRad(lat2)) *
+    Math.sin(dLon / 2) * Math.sin(dLon / 2);
+    
+  const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+  return R * c;
 }
