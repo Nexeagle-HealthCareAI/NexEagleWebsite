@@ -250,8 +250,15 @@ export default async function DoctorDetailPage({ params }: PageProps) {
               </div>
             </div>
 
-            {/* ───────── RIGHT: Booking Panel (1/3) ───────── */}
-            <div id="book" className="lg:sticky lg:top-24">
+            {/* ───────── RIGHT: Booking Panel (1/3) ─────────
+                lg:max-h + overflow-y-auto so the panel scrolls WITHIN itself once its own
+                content (e.g. the multi-block "done" success state) is taller than the
+                viewport — otherwise the sticky positioning pins it in place with no way to
+                reach the rest of it, since the outer page has nowhere further to scroll. */}
+            <div
+              id="book"
+              className="lg:sticky lg:top-24 lg:max-h-[calc(100vh-7rem)] lg:overflow-y-auto lg:overscroll-contain"
+            >
               <BookingPanel doctor={doctor} />
             </div>
           </div>
