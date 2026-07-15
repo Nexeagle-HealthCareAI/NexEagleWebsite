@@ -115,6 +115,15 @@ export default async function DoctorDetailPage({ params }: PageProps) {
           },
         }
       : {}),
+    ...(doctor.rating && doctor.reviewCount
+      ? {
+          aggregateRating: {
+            "@type": "AggregateRating",
+            ratingValue: doctor.rating.toString(),
+            reviewCount: doctor.reviewCount.toString(),
+          },
+        }
+      : {}),
   };
 
   return (

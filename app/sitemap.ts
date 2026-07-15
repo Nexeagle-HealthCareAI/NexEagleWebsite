@@ -1,7 +1,7 @@
 import type { MetadataRoute } from "next";
 import { easyhmsFetch } from "@/lib/api/server";
 import { mapDoctors } from "@/lib/api/mappers";
-import { doctors as mockDoctors, doctorSlug } from "@/data/patient";
+import { doctors as mockDoctors, doctorSlug, specialties, CITIES } from "@/data/patient";
 import type { DoctorsResponseDto } from "@/lib/api/types";
 
 const BASE_URL = "https://nexeagle.com";
@@ -54,6 +54,8 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   }));
 
   let doctorEntries: MetadataRoute.Sitemap = [];
+  let pseoEntries: MetadataRoute.Sitemap = [];
+
   try {
     const slugs = await listDoctorSlugs();
     doctorEntries = slugs.map((slug) => ({
@@ -62,9 +64,47 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
       changeFrequency: "weekly",
       priority: 0.7,
     }));
+
+    // Generate Programmatic SEO links (Specialties, Cities, Conditions)
+    const conditionSet = new Set<string>();
+    for (const d of mockDoctors) {
+      for (const f of d.focusAreas) {
+        conditionSet.add(f.toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/(^-|-$)/g, ""));
+      }
+    }
+
+    const conditions = Array.from(conditionSet);
+
+    for (const s of specialties) {
+      pseoEntries.push({
+        url: `${BASE_URL}/specialties/${s.id}`,
+        lastModified: now,
+        changeFrequency: "weekly",
+        priority: 0.8,
+      });
+      for (const c of CITIES) {
+        pseoEntries.push({
+          url: `${BASE_URL}/specialties/${s.id}/${c.id}`,
+          lastModified: now,
+          changeFrequency: "weekly",
+          priority: 0.8,
+        });
+      }
+    }
+
+    for (const cond of conditions) {
+      for (const c of CITIES) {
+        pseoEntries.push({
+          url: `${BASE_URL}/conditions/${cond}/${c.id}`,
+          lastModified: now,
+          changeFrequency: "weekly",
+          priority: 0.8,
+        });
+      }
+    }
   } catch {
     // Sitemap generation must never fail the build over a flaky upstream call.
   }
 
-  return [...staticEntries, ...doctorEntries];
+  return [...staticEntries, ...doctorEntries, ...pseoEntries];
 }
