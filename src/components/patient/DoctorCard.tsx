@@ -134,17 +134,25 @@ export default function DoctorCard({ doctor, index = 0 }: DoctorCardProps) {
                   </p>
                 )}
               </div>
-              {/* Directions micro-link (only when GPS is available) */}
-              {doctor.latitude != null && doctor.longitude != null && (
+              {/* Directions micro-link */}
+              {doctor.latitude != null && doctor.longitude != null ? (
                 <a
                   href={`https://www.google.com/maps/dir/?api=1&destination=${doctor.latitude},${doctor.longitude}`}
                   target="_blank"
                   rel="noopener noreferrer"
                   onClick={(e) => e.stopPropagation()}
-                  className="shrink-0 text-[10px] font-bold text-brand-teal hover:text-teal-700 underline underline-offset-2 mt-0.5 whitespace-nowrap"
+                  className="shrink-0 text-[10px] font-bold text-brand-teal hover:text-teal-700 underline underline-offset-2 mt-0.5 whitespace-nowrap cursor-pointer"
+                  title="Get Directions"
                 >
                   Directions ↗
                 </a>
+              ) : (
+                <span
+                  className="shrink-0 text-[10px] font-semibold text-slate-400 mt-0.5 whitespace-nowrap cursor-not-allowed"
+                  title="GPS location not provided by the hospital"
+                >
+                  Map not set
+                </span>
               )}
             </div>
           )}
