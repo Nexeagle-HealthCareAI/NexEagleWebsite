@@ -1,9 +1,9 @@
 "use client";
 
 import { useState } from "react";
-import { MessageCircle, ThumbsUp, Send, UserCircle2 } from "lucide-react";
+import { MessageCircle, ThumbsUp, Send, UserCircle2, CheckCircle2 } from "lucide-react";
 import StarRating from "./StarRating";
-import { useDoctorReviews, useMarkReviewHelpful, useSubmitReview } from "@/lib/api/hooks";
+import { useDoctorReviews, useMarkReviewHelpful, useSubmitReview, useUpdateReviewComment } from "@/lib/api/hooks";
 
 interface ReviewsSectionProps {
   doctorId: string;
@@ -28,40 +28,53 @@ export default function ReviewsSection({
 }: ReviewsSectionProps) {
   const { data } = useDoctorReviews(doctorId);
   const submitMutation = useSubmitReview(doctorId);
+  const updateCommentMutation = useUpdateReviewComment(doctorId);
   const helpfulMutation = useMarkReviewHelpful(doctorId);
 
   const reviews = data?.reviews ?? [];
   const avg = data?.averageRating ?? 0;
 
   const [newRating, setNewRating] = useState(0);
-  const [newComment, setNewComment] = useState("");
-  const [newAuthor, setNewAuthor] = useState("");
-  const [submitting, setSubmitting] = useState(false);
-  const [submitted, setSubmitted] = useState(false);
+  const [ratingSaving, setRatingSaving] = useState(false);
+  const [savedReviewId, setSavedReviewId] = useState<string | null>(null);
+  const [comment, setComment] = useState("");
+  const [commentSaving, setCommentSaving] = useState(false);
+  const [commentSaved, setCommentSaved] = useState(false);
   const [error, setError] = useState("");
 
-  async function handleSubmit(e: React.FormEvent) {
-    e.preventDefault();
+  // Tapping a star saves immediately — no comment, no submit button, no form to fill in.
+  // The reviewId comes back so an optional comment can be attached afterward.
+  async function handleRate(value: number) {
     setError("");
-    if (newRating === 0) { setError("Please select a star rating."); return; }
-    if (!newComment.trim()) { setError("Please write a short comment."); return; }
-
-    setSubmitting(true);
+    setNewRating(value);
+    setRatingSaving(true);
     try {
-      await submitMutation.mutateAsync({
-        rating: newRating,
-        comment: newComment.trim(),
-        authorName: newAuthor.trim() || undefined,
-      });
-      setNewRating(0);
-      setNewComment("");
-      setNewAuthor("");
-      setSubmitted(true);
-      setTimeout(() => setSubmitted(false), 3000);
+      const res = await submitMutation.mutateAsync({ rating: value });
+      setSavedReviewId(res.reviewId);
     } catch {
-      setError("Couldn't submit your review — please try again.");
+      setError("Couldn't save your rating — please try again.");
+      setNewRating(0);
     } finally {
-      setSubmitting(false);
+      setRatingSaving(false);
+    }
+  }
+
+  async function handleAddComment() {
+    if (!savedReviewId || !comment.trim()) return;
+    setCommentSaving(true);
+    try {
+      await updateCommentMutation.mutateAsync({ reviewId: savedReviewId, comment: comment.trim() });
+      setCommentSaved(true);
+      setTimeout(() => {
+        setCommentSaved(false);
+        setNewRating(0);
+        setSavedReviewId(null);
+        setComment("");
+      }, 2500);
+    } catch {
+      setError("Couldn't save your comment — please try again.");
+    } finally {
+      setCommentSaving(false);
     }
   }
 
@@ -115,7 +128,9 @@ export default function ReviewsSection({
                 </div>
                 <StarRating value={r.rating} size="sm" />
               </div>
-              <p className="text-sm text-slate-600 leading-relaxed pl-10">{r.comment}</p>
+              {r.comment && (
+                <p className="text-sm text-slate-600 leading-relaxed pl-10">{r.comment}</p>
+              )}
               <div className="pl-10">
                 <button
                   onClick={() => markHelpful(r.reviewId)}
@@ -137,75 +152,63 @@ export default function ReviewsSection({
         </div>
       )}
 
-      {/* ── Write a review ── */}
+      {/* ── Rate this doctor — tap a star, it saves instantly ── */}
       <div className="bg-gradient-to-br from-teal-50/60 to-white rounded-2xl border border-teal-100 p-5">
-        <h3 className="text-sm font-extrabold text-slate-800 mb-4">
-          Leave a Review
-        </h3>
-        {submitted ? (
+        {commentSaved ? (
           <div className="text-center py-4">
             <div className="w-10 h-10 rounded-full bg-teal-100 text-brand-teal flex items-center justify-center mx-auto mb-2">
-              <Send className="w-5 h-5" />
+              <CheckCircle2 className="w-5 h-5" />
             </div>
-            <p className="text-sm font-bold text-teal-700">
-              Thank you for your review!
-            </p>
+            <p className="text-sm font-bold text-teal-700">Thanks for the extra detail!</p>
           </div>
-        ) : (
-          <form onSubmit={handleSubmit} className="space-y-3">
-            {/* Star picker */}
-            <div>
-              <label className="block text-[11px] font-bold text-slate-400 uppercase tracking-wide mb-1.5">
-                Your Rating
-              </label>
-              <StarRating
-                value={newRating}
-                size="lg"
-                interactive
-                onChange={setNewRating}
-              />
+        ) : savedReviewId ? (
+          <>
+            <div className="flex items-center gap-2 mb-4">
+              <CheckCircle2 className="w-5 h-5 text-brand-teal shrink-0" />
+              <div>
+                <p className="text-sm font-bold text-teal-700">Rating saved!</p>
+                <StarRating value={newRating} size="sm" />
+              </div>
             </div>
-
-            {/* Comment */}
-            <div>
-              <label className="block text-[11px] font-bold text-slate-400 uppercase tracking-wide mb-1.5">
-                Your Comment
+            <div className="space-y-2">
+              <label className="block text-[11px] font-bold text-slate-400 uppercase tracking-wide">
+                Add a comment (optional)
               </label>
               <textarea
-                value={newComment}
-                onChange={(e) => setNewComment(e.target.value)}
+                value={comment}
+                onChange={(e) => setComment(e.target.value)}
                 placeholder={`Share your experience with ${doctorName}…`}
                 rows={3}
                 className="w-full px-3.5 py-2.5 bg-white border border-slate-200 rounded-xl text-sm text-slate-800 shadow-sm focus:outline-none focus:ring-1 focus:border-brand-teal/40 focus:ring-brand-teal/10 transition resize-none"
               />
+              {error && <p className="text-[11px] font-bold text-rose-500">{error}</p>}
+              {comment.trim() && (
+                <button
+                  onClick={handleAddComment}
+                  disabled={commentSaving}
+                  className="w-full py-2.5 rounded-xl bg-brand-teal hover:bg-brand-teal/90 text-white font-bold text-sm transition flex items-center justify-center gap-2 shadow-md shadow-teal-500/20 disabled:opacity-50"
+                >
+                  <Send className="w-4 h-4" />
+                  {commentSaving ? "Saving…" : "Add comment"}
+                </button>
+              )}
             </div>
-
-            {/* Name (optional) */}
-            <div>
-              <label className="block text-[11px] font-bold text-slate-400 uppercase tracking-wide mb-1.5">
-                Your Name (optional)
-              </label>
-              <input
-                value={newAuthor}
-                onChange={(e) => setNewAuthor(e.target.value)}
-                placeholder="Anonymous"
-                className="w-full px-3.5 py-2.5 bg-white border border-slate-200 rounded-xl text-sm text-slate-800 shadow-sm focus:outline-none focus:ring-1 focus:border-brand-teal/40 focus:ring-brand-teal/10 transition"
-              />
-            </div>
-
-            {error && (
-              <p className="text-[11px] font-bold text-rose-500">{error}</p>
-            )}
-
-            <button
-              type="submit"
-              disabled={submitting}
-              className="w-full py-2.5 rounded-xl bg-brand-teal hover:bg-brand-teal/90 text-white font-bold text-sm transition flex items-center justify-center gap-2 shadow-md shadow-teal-500/20 disabled:opacity-50"
-            >
-              <Send className="w-4 h-4" />
-              Submit Review
-            </button>
-          </form>
+          </>
+        ) : (
+          <>
+            <h3 className="text-sm font-extrabold text-slate-800 mb-1">
+              Rate {doctorName}
+            </h3>
+            <p className="text-xs text-slate-500 mb-3">Tap a star — it saves right away.</p>
+            <StarRating
+              value={newRating}
+              size="lg"
+              interactive={!ratingSaving}
+              onChange={handleRate}
+              className={ratingSaving ? "opacity-50 pointer-events-none" : undefined}
+            />
+            {error && <p className="text-[11px] font-bold text-rose-500 mt-2">{error}</p>}
+          </>
         )}
       </div>
     </section>

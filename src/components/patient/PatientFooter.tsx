@@ -27,8 +27,8 @@ export default function PatientFooter() {
           <a href="tel:+918074906808" className="flex items-center gap-2 text-xs hover:text-white transition">
             <Phone className="w-3.5 h-3.5" /> +91 80749 06808
           </a>
-          <a href="mailto:care@nexeagle.com" className="flex items-center gap-2 text-xs hover:text-white transition">
-            <Mail className="w-3.5 h-3.5" /> care@nexeagle.com
+          <a href="mailto:info@nexeagle.com" className="flex items-center gap-2 text-xs hover:text-white transition">
+            <Mail className="w-3.5 h-3.5" /> info@nexeagle.com
           </a>
         </div>
 

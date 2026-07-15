@@ -4,6 +4,7 @@ import Link from "next/link";
 import {
   ChevronLeft,
   MapPin,
+  Navigation,
   Award,
   BadgeCheck,
   Users2,
@@ -19,6 +20,7 @@ import { getDoctorById } from "@/lib/api/server";
 import {
   doctorSlug,
   parseDoctorIdFromSlug,
+  getDirectionsUrl,
   type Doctor,
 } from "@/data/patient";
 
@@ -186,7 +188,7 @@ export default async function DoctorDetailPage({ params }: PageProps) {
                     <div className="w-10 h-10 rounded-xl bg-teal-50 text-brand-teal flex items-center justify-center shrink-0">
                       <MapPin className="w-5 h-5" />
                     </div>
-                    <div className="min-w-0">
+                    <div className="min-w-0 flex-1">
                       {doctor.hospitalName && (
                         <p className="font-bold text-sm text-slate-900 truncate">{doctor.hospitalName}</p>
                       )}
@@ -196,6 +198,20 @@ export default async function DoctorDetailPage({ params }: PageProps) {
                         </p>
                       )}
                     </div>
+                    {(() => {
+                      const directionsUrl = getDirectionsUrl(doctor);
+                      return directionsUrl ? (
+                        <a
+                          href={directionsUrl}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="inline-flex items-center gap-1.5 shrink-0 px-3.5 py-2 rounded-xl bg-brand-teal text-white text-xs font-bold shadow-sm hover:bg-brand-teal/90 active:scale-[0.98] transition"
+                        >
+                          <Navigation className="w-3.5 h-3.5" />
+                          Directions
+                        </a>
+                      ) : null;
+                    })()}
                   </div>
                 </div>
               )}

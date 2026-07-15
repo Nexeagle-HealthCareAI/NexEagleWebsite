@@ -11,14 +11,26 @@ import {
   CalendarX,
   MessageCircle,
   Mail,
+  Navigation,
   Sun,
   Sunset,
   Moon,
   Star,
 } from "lucide-react";
-import type { Doctor } from "@/data/patient";
-import { useCreateAppointment, useDoctorAvailability } from "@/lib/api/hooks";
+import { getDirectionsUrl, type Doctor } from "@/data/patient";
+import { useCreateAppointment, useDoctorAvailability, useSubmitReview } from "@/lib/api/hooks";
 import { cn } from "@/lib/utils";
+
+// 5-point emoji scale for the post-booking service rating — a quick, no-comment tap that
+// feeds the SAME doctor rating shown publicly (just a friendlier entry point than stars,
+// right when the patient has just finished booking).
+const SERVICE_RATINGS = [
+  { value: 1, emoji: "😞", label: "Bad" },
+  { value: 2, emoji: "😕", label: "Poor" },
+  { value: 3, emoji: "😐", label: "Okay" },
+  { value: 4, emoji: "🙂", label: "Good" },
+  { value: 5, emoji: "😃", label: "Very Good" },
+];
 
 interface BookingPanelProps {
   doctor: Doctor;
@@ -65,6 +77,24 @@ export default function BookingPanel({ doctor }: BookingPanelProps) {
   const availability = useDoctorAvailability(doctor.id, date || undefined);
   const apiActive = Boolean(availability.data && !availability.data.notConfigured);
   const createAppointment = useCreateAppointment();
+  const submitReview = useSubmitReview(doctor.id);
+
+  // Post-booking emoji rating — a quick tap, no comment, submitted straight to the doctor's
+  // rating (see SERVICE_RATINGS above).
+  const [serviceRating, setServiceRating] = useState(0);
+  const [serviceRatingSaving, setServiceRatingSaving] = useState(false);
+
+  async function handleServiceRate(value: number) {
+    setServiceRating(value);
+    setServiceRatingSaving(true);
+    try {
+      await submitReview.mutateAsync({ rating: value });
+    } catch {
+      /* best-effort — not worth blocking or alarming the patient over a failed rating tap */
+    } finally {
+      setServiceRatingSaving(false);
+    }
+  }
 
   // 7-day date strip
   const dates = useMemo(() => {
@@ -123,6 +153,7 @@ export default function BookingPanel({ doctor }: BookingPanelProps) {
     setName(""); setAge(""); setSex(""); setPhone(""); setEmail(""); setReason("");
     setErrors({}); setExpectedOtp(""); setOtp(""); setOtpError(""); setResendIn(0);
     setSubmitting(false); setServerRef(null);
+    setServiceRating(0); setServiceRatingSaving(false);
   }
 
   const selectedDateLabel = dates.find((d) => d.key === date)
@@ -130,6 +161,7 @@ export default function BookingPanel({ doctor }: BookingPanelProps) {
     : "";
   const selectedRange = TIME_RANGES.find((r) => r.id === timeRange);
   const locationLine = [doctor.hospitalName, doctor.city].filter(Boolean).join(", ") || doctor.clinic;
+  const directionsUrl = getDirectionsUrl(doctor);
   const stepIdx = STEP_ORDER.indexOf(step);
 
   // WhatsApp pre-filled message
@@ -387,20 +419,59 @@ export default function BookingPanel({ doctor }: BookingPanelProps) {
             </p>
           </div>
 
-          {/* WhatsApp + Email buttons */}
-          <div className="grid grid-cols-2 gap-2">
+          {/* Quick service rating — tap an emoji, it saves right away */}
+          <div className="rounded-2xl border border-teal-100 bg-gradient-to-br from-teal-50/60 to-white p-4 text-center">
+            {serviceRating ? (
+              <p className="text-sm font-bold text-teal-700">
+                {SERVICE_RATINGS.find((r) => r.value === serviceRating)?.emoji} Thanks for rating your experience!
+              </p>
+            ) : (
+              <>
+                <p className="text-xs font-bold text-slate-600 mb-3">How was booking with us?</p>
+                <div className="flex items-center justify-center gap-1.5">
+                  {SERVICE_RATINGS.map((r) => (
+                    <button
+                      key={r.value}
+                      type="button"
+                      disabled={serviceRatingSaving}
+                      onClick={() => handleServiceRate(r.value)}
+                      title={r.label}
+                      className="flex flex-col items-center gap-1 px-1.5 py-2 rounded-xl hover:bg-teal-50 active:scale-90 transition disabled:opacity-40"
+                    >
+                      <span className="text-2xl leading-none">{r.emoji}</span>
+                      <span className="text-[9px] font-bold text-slate-400">{r.label}</span>
+                    </button>
+                  ))}
+                </div>
+              </>
+            )}
+          </div>
+
+          {/* Directions + WhatsApp + Email buttons */}
+          <div className={cn("grid gap-2", directionsUrl ? "grid-cols-3" : "grid-cols-2")}>
+            {directionsUrl && (
+              <a
+                href={directionsUrl}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="flex flex-col items-center justify-center gap-1 py-3 rounded-2xl bg-brand-teal hover:bg-brand-teal/90 text-white font-bold text-xs transition shadow-md"
+              >
+                <Navigation className="w-4 h-4" />
+                Directions
+              </a>
+            )}
             <a
               href={whatsappUrl}
               target="_blank"
               rel="noopener noreferrer"
-              className="flex items-center justify-center gap-2 py-3 rounded-2xl bg-[#25D366] hover:bg-[#22c55e] text-white font-bold text-xs transition shadow-md"
+              className="flex flex-col items-center justify-center gap-1 py-3 rounded-2xl bg-[#25D366] hover:bg-[#22c55e] text-white font-bold text-xs transition shadow-md"
             >
               <MessageCircle className="w-4 h-4" />
               WhatsApp
             </a>
             <a
               href={mailtoUrl}
-              className="flex items-center justify-center gap-2 py-3 rounded-2xl bg-slate-800 hover:bg-slate-700 text-white font-bold text-xs transition shadow-md"
+              className="flex flex-col items-center justify-center gap-1 py-3 rounded-2xl bg-slate-800 hover:bg-slate-700 text-white font-bold text-xs transition shadow-md"
             >
               <Mail className="w-4 h-4" />
               {email ? "Email me" : "Email"}

@@ -79,6 +79,20 @@ export function parseDoctorIdFromSlug(slug: string): string {
   return idx === -1 ? slug : slug.slice(idx + 2);
 }
 
+// Google Maps "get directions" link — no API key needed, this is just the public
+// maps.google.com URL scheme (opens the Google Maps app on mobile, or maps.google.com
+// on desktop). Prefers the hospital's GPS pin when available; falls back to a text
+// search on hospital name + city/state so the link still works for mock/incomplete
+// data. Returns null only when there's truly nothing to search for.
+export function getDirectionsUrl(doctor: Pick<Doctor, "latitude" | "longitude" | "hospitalName" | "city" | "state">): string | null {
+  if (doctor.latitude != null && doctor.longitude != null) {
+    return `https://www.google.com/maps/dir/?api=1&destination=${doctor.latitude},${doctor.longitude}`;
+  }
+  const query = [doctor.hospitalName, doctor.city, doctor.state].filter(Boolean).join(", ");
+  if (!query) return null;
+  return `https://www.google.com/maps/dir/?api=1&destination=${encodeURIComponent(query)}`;
+}
+
 export interface Specialty {
   id: string;
   name: string;
