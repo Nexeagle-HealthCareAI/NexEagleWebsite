@@ -34,6 +34,9 @@ export interface DoctorDto {
   // has no reviews yet.
   rating?: number | null;
   reviewCount?: number | null;
+  // OPD_CONSULT DoctorFees.Amount at this doctor's hospital — null when no active fee is
+  // configured, in which case the UI falls back to "Accepting patients".
+  fee?: number | null;
 }
 
 export interface DoctorsResponseDto {

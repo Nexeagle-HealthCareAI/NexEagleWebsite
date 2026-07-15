@@ -66,17 +66,17 @@ export function mapDoctor(dto: DoctorDto): Doctor {
     verified: true,
     promoted: false,
 
-    // The real public API doesn't return per-doctor patient counts, fee, sub-locality
-    // (area), or clinic branch name. Left undefined/empty so the UI hides these
-    // sections instead of showing fake zero values — see DoctorCard.tsx's conditional
-    // rendering. hospitalName/city/state/languages/latitude/longitude/rating/
-    // reviewCount ARE real, now backed by actual submitted DoctorReviews.
+    // The real public API doesn't return per-doctor patient counts, sub-locality (area),
+    // or clinic branch name. Left undefined/empty so the UI hides these sections instead
+    // of showing fake zero values — see DoctorCard.tsx's conditional rendering.
+    // hospitalName/city/state/languages/latitude/longitude/rating/reviewCount/fee ARE
+    // real, backed by actual submitted DoctorReviews / DoctorFees.
     rating: dto.rating ?? undefined,
     reviewCount: dto.reviewCount ?? undefined,
     patientsServed: undefined,
     recommendationPct: undefined,
     waitTimeMins: undefined,
-    fee: undefined,
+    fee: dto.fee ?? undefined,
     hospitalName: dto.hospitalName ?? undefined,
     city: dto.city ?? "",
     state: dto.state ?? "",
