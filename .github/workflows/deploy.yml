@@ -202,7 +202,7 @@ jobs:
                docker rm -f nexeagle-website 2>/dev/null || true; \
                docker run -d --name nexeagle-website --restart unless-stopped \
                  -p 8080:80 \
-                 -e EASYHMS_API_BASE_URL='http://151.185.45.67:5001' \
+                 -e EASYHMS_API_BASE_URL='https://1hms-api.nexeagle.com' \
                  -e EASYHMS_API_KEY='$EASYHMS_API_KEY' \
                  -e EASYHMS_API_KEY_HEADER='X-Api-Key' \
                  '$IMAGE_LC' && \
