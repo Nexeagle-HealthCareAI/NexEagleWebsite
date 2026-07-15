@@ -1,16 +1,13 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { useState } from "react";
 import { MessageCircle, ThumbsUp, Send, UserCircle2 } from "lucide-react";
 import StarRating from "./StarRating";
 import { useDoctorReviews, useMarkReviewHelpful, useSubmitReview } from "@/lib/api/hooks";
-import type { ReviewDto } from "@/lib/api/types";
 
 interface ReviewsSectionProps {
   doctorId: string;
   doctorName: string;
-  /** Shown only when the real reviews API isn't configured (dev fallback). */
-  seedReviews?: ReviewDto[];
 }
 
 function timeAgo(iso: string): string {
@@ -28,24 +25,13 @@ function timeAgo(iso: string): string {
 export default function ReviewsSection({
   doctorId,
   doctorName,
-  seedReviews = [],
 }: ReviewsSectionProps) {
   const { data } = useDoctorReviews(doctorId);
   const submitMutation = useSubmitReview(doctorId);
   const helpfulMutation = useMarkReviewHelpful(doctorId);
 
-  const notConfigured = data?.notConfigured ?? false;
-
-  // Dev-only fallback when the real API isn't configured — mirrors DoctorDirectory.tsx's
-  // notConfigured -> mock-data pattern. Real environments always use the live list below,
-  // which stays fresh via React Query's cache invalidation on submit/mark-helpful.
-  const [localReviews, setLocalReviews] = useState<ReviewDto[]>(seedReviews);
-
-  const reviews = notConfigured ? localReviews : data?.reviews ?? [];
-  const avg = useMemo(() => {
-    if (!notConfigured) return data?.averageRating ?? 0;
-    return localReviews.length ? localReviews.reduce((s, r) => s + r.rating, 0) / localReviews.length : 0;
-  }, [notConfigured, data?.averageRating, localReviews]);
+  const reviews = data?.reviews ?? [];
+  const avg = data?.averageRating ?? 0;
 
   const [newRating, setNewRating] = useState(0);
   const [newComment, setNewComment] = useState("");
@@ -62,23 +48,11 @@ export default function ReviewsSection({
 
     setSubmitting(true);
     try {
-      if (notConfigured) {
-        const review: ReviewDto = {
-          reviewId: `${Date.now()}`,
-          authorName: newAuthor.trim() || undefined,
-          rating: newRating,
-          comment: newComment.trim(),
-          createdAt: new Date().toISOString(),
-          helpfulCount: 0,
-        };
-        setLocalReviews((prev) => [review, ...prev]);
-      } else {
-        await submitMutation.mutateAsync({
-          rating: newRating,
-          comment: newComment.trim(),
-          authorName: newAuthor.trim() || undefined,
-        });
-      }
+      await submitMutation.mutateAsync({
+        rating: newRating,
+        comment: newComment.trim(),
+        authorName: newAuthor.trim() || undefined,
+      });
       setNewRating(0);
       setNewComment("");
       setNewAuthor("");
@@ -92,11 +66,7 @@ export default function ReviewsSection({
   }
 
   function markHelpful(id: string) {
-    if (notConfigured) {
-      setLocalReviews((prev) => prev.map((r) => (r.reviewId === id ? { ...r, helpfulCount: r.helpfulCount + 1 } : r)));
-    } else {
-      helpfulMutation.mutate(id);
-    }
+    helpfulMutation.mutate(id);
   }
 
   return (
