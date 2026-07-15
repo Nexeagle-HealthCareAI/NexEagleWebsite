@@ -91,9 +91,9 @@ export default function DoctorCard({ doctor, index = 0 }: DoctorCardProps) {
 
           {/* ─────────────────────────────────────
               § 2  QUICK-SCAN ROW
-              Exp · Wait time · Clinic
+              Exp · Wait time
           ───────────────────────────────────── */}
-          <div className="flex flex-wrap items-center gap-x-4 gap-y-1.5 mt-5 pb-4 border-b border-slate-100/80">
+          <div className="flex flex-wrap items-center gap-x-4 gap-y-1.5 mt-4">
             {doctor.experienceYears > 0 && (
               <span className="flex items-center gap-1 text-[11px] text-slate-500 font-medium">
                 <Award className="w-3.5 h-3.5 text-brand-teal" />
@@ -106,13 +106,44 @@ export default function DoctorCard({ doctor, index = 0 }: DoctorCardProps) {
                 ~<b className="text-slate-800">{doctor.waitTimeMins}</b> min wait
               </span>
             )}
-            {clinicLabel && (
-              <span className="flex items-center gap-1 text-[11px] text-slate-500 font-medium min-w-0">
-                <MapPin className="w-3.5 h-3.5 text-slate-400 shrink-0" />
-                <span className="truncate">{clinicLabel}</span>
-              </span>
-            )}
           </div>
+
+          {/* ─────────────────────────────────────
+              § 2b  FULL ADDRESS BLOCK
+              Clinic · Area, City, State · Directions
+          ───────────────────────────────────── */}
+          {(clinicLabel || doctor.area || doctor.city) && (
+            <div className="mt-3 mb-1 flex items-start gap-2 rounded-xl bg-slate-50 border border-slate-100 px-3 py-2.5">
+              <MapPin className="w-3.5 h-3.5 text-brand-teal shrink-0 mt-0.5" />
+              <div className="min-w-0 flex-1">
+                {/* Line 1 — clinic / hospital name */}
+                {clinicLabel && (
+                  <p className="text-[11.5px] font-bold text-slate-800 leading-snug truncate">
+                    {clinicLabel}
+                  </p>
+                )}
+                {/* Line 2 — area, city, state */}
+                {(doctor.area || doctor.city) && (
+                  <p className="text-[11px] text-slate-500 mt-0.5 leading-snug">
+                    {[doctor.area, doctor.city, doctor.state].filter(Boolean).join(", ")}
+                  </p>
+                )}
+              </div>
+              {/* Directions micro-link (only when GPS is available) */}
+              {doctor.latitude != null && doctor.longitude != null && (
+                <a
+                  href={`https://www.google.com/maps/dir/?api=1&destination=${doctor.latitude},${doctor.longitude}`}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  onClick={(e) => e.stopPropagation()}
+                  className="shrink-0 text-[10px] font-bold text-brand-teal hover:text-teal-700 underline underline-offset-2 mt-0.5 whitespace-nowrap"
+                >
+                  Directions ↗
+                </a>
+              )}
+            </div>
+          )}
+
 
           {/* ─────────────────────────────────────
               § 3  SOCIAL PROOF
