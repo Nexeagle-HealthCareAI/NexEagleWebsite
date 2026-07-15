@@ -114,7 +114,7 @@ export function useDoctorReviews(doctorId: string | undefined) {
 
 export function useSubmitReview(doctorId: string | undefined) {
   const queryClient = useQueryClient();
-  return useMutation<{ success: boolean; notConfigured: boolean }, Error, SubmitReviewRequest>({
+  return useMutation<{ success: boolean; reviewId: string | null; notConfigured: boolean }, Error, SubmitReviewRequest>({
     mutationFn: async (body) => {
       const res = await fetch(`/api/public/doctors/${doctorId}/reviews`, {
         method: "POST",
@@ -122,9 +122,30 @@ export function useSubmitReview(doctorId: string | undefined) {
         body: JSON.stringify(body),
       });
       const json = await res.json();
-      if (json?.notConfigured) return { success: false, notConfigured: true };
+      if (json?.notConfigured) return { success: false, reviewId: null, notConfigured: true };
       if (!res.ok || !json?.success) throw new Error(json?.message || `Review submission failed: ${res.status}`);
-      return { success: true, notConfigured: false };
+      return { success: true, reviewId: json?.reviewId ?? null, notConfigured: false };
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["public", "reviews", doctorId] });
+    },
+  });
+}
+
+// Attaches a comment to a review already submitted via useSubmitReview — the reviewId returned
+// from that call is the only thing needed (no login, matches the "anyone can submit" model).
+export function useUpdateReviewComment(doctorId: string | undefined) {
+  const queryClient = useQueryClient();
+  return useMutation<{ success: boolean }, Error, { reviewId: string; comment: string }>({
+    mutationFn: async ({ reviewId, comment }) => {
+      const res = await fetch(`/api/public/doctors/${doctorId}/reviews/${reviewId}`, {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ comment }),
+      });
+      const json = await res.json();
+      if (!res.ok || !json?.success) throw new Error(json?.message || `Comment update failed: ${res.status}`);
+      return { success: true };
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["public", "reviews", doctorId] });

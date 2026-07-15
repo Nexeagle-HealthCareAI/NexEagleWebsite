@@ -65,12 +65,13 @@ export interface CreateAppointmentResponseDto {
   patientId?: string | null;
 }
 
-// Matches GetPublicDoctorReviewsResponseModel / PublicReviewItem.
+// Matches GetPublicDoctorReviewsResponseModel / PublicReviewItem. comment is optional — a
+// quick "tap a star" rating has none until (optionally) attached via updateReviewComment.
 export interface ReviewDto {
   reviewId: string;
   authorName?: string | null;
   rating: number;
-  comment: string;
+  comment?: string | null;
   helpfulCount: number;
   createdAt: string; // ISO
 }
@@ -84,17 +85,30 @@ export interface ReviewsResponseDto {
 }
 
 // Body sent to POST /public/doctors/{doctorId}/reviews — matches SubmitDoctorReviewRequestModel.
-// DoctorId/IpAddress come from the URL/connection server-side, never sent from here.
+// DoctorId/IpAddress come from the URL/connection server-side, never sent from here. comment is
+// optional — a quick star/emoji tap submits rating-only.
 export interface SubmitReviewRequest {
   authorName?: string;
   rating: number;
-  comment: string;
+  comment?: string;
 }
 
 export interface SubmitReviewResponseDto {
   success: boolean;
   message?: string | null;
   reviewId?: string | null;
+}
+
+// Body sent to PATCH /public/doctors/{doctorId}/reviews/{reviewId} — matches
+// UpdateReviewCommentRequestModel. Attaches a comment to an already-submitted rating-only
+// review; the reviewId is the only "ownership" proof, same trust model as submitting.
+export interface UpdateReviewCommentRequest {
+  comment: string;
+}
+
+export interface UpdateReviewCommentResponseDto {
+  success: boolean;
+  message?: string | null;
 }
 
 export interface MarkReviewHelpfulResponseDto {
