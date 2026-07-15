@@ -4,6 +4,7 @@ import { useState } from "react";
 import { MessageCircle, ThumbsUp, Send, UserCircle2, CheckCircle2 } from "lucide-react";
 import StarRating from "./StarRating";
 import { useDoctorReviews, useMarkReviewHelpful, useSubmitReview, useUpdateReviewComment } from "@/lib/api/hooks";
+import { getSavedRating, markRated } from "@/lib/ratingGuard";
 
 interface ReviewsSectionProps {
   doctorId: string;
@@ -34,6 +35,10 @@ export default function ReviewsSection({
   const reviews = data?.reviews ?? [];
   const avg = data?.averageRating ?? 0;
 
+  // Persisted per-browser (localStorage) — sourced once at mount so a returning visitor who
+  // already rated this doctor sees that state immediately, not the interactive picker again.
+  const [priorRating, setPriorRating] = useState<number | null>(() => getSavedRating(doctorId));
+
   const [newRating, setNewRating] = useState(0);
   const [ratingSaving, setRatingSaving] = useState(false);
   const [savedReviewId, setSavedReviewId] = useState<string | null>(null);
@@ -51,8 +56,10 @@ export default function ReviewsSection({
     try {
       const res = await submitMutation.mutateAsync({ rating: value });
       setSavedReviewId(res.reviewId);
-    } catch {
-      setError("Couldn't save your rating — please try again.");
+      markRated(doctorId, value);
+      setPriorRating(value);
+    } catch (e) {
+      setError(e instanceof Error ? e.message : "Couldn't save your rating — please try again.");
       setNewRating(0);
     } finally {
       setRatingSaving(false);
@@ -194,6 +201,14 @@ export default function ReviewsSection({
               )}
             </div>
           </>
+        ) : priorRating ? (
+          <div className="flex items-center gap-2">
+            <CheckCircle2 className="w-5 h-5 text-brand-teal shrink-0" />
+            <div>
+              <p className="text-sm font-bold text-teal-700">You already rated this doctor</p>
+              <StarRating value={priorRating} size="sm" />
+            </div>
+          </div>
         ) : (
           <>
             <h3 className="text-sm font-extrabold text-slate-800 mb-1">

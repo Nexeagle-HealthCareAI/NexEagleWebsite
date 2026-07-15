@@ -1,6 +1,7 @@
 "use client";
 
 import Link from "next/link";
+import Image from "next/image";
 import { motion } from "framer-motion";
 import {
   BadgeCheck, MapPin, Award, CalendarCheck, Star,
@@ -48,10 +49,12 @@ export default function DoctorCard({ doctor, index = 0 }: DoctorCardProps) {
             {/* Avatar */}
             <div className="relative shrink-0">
               {doctor.photo ? (
-                <img
+                <Image
                   src={doctor.photo}
                   alt={doctor.name}
-                  className="w-20 h-20 rounded-2xl object-cover shadow-[0_6px_18px_rgba(0,0,0,0.08)] border border-slate-100"
+                  width={80}
+                  height={80}
+                  className="w-20 h-20 rounded-2xl object-cover shadow-[0_6px_18px_rgba(0,0,0,0.08)] border border-slate-100 bg-slate-100"
                 />
               ) : (
                 <div className={`w-20 h-20 rounded-2xl bg-gradient-to-br ${doctor.gradient} text-white flex items-center justify-center font-display font-bold text-2xl shadow-[0_6px_18px_rgba(0,0,0,0.10)] border border-white/20`}>

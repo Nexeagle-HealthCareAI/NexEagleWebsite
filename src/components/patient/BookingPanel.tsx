@@ -19,6 +19,7 @@ import {
 } from "lucide-react";
 import { getDirectionsUrl, type Doctor } from "@/data/patient";
 import { useCreateAppointment, useDoctorAvailability, useSubmitReview } from "@/lib/api/hooks";
+import { getSavedRating, markRated } from "@/lib/ratingGuard";
 import { cn } from "@/lib/utils";
 
 // 5-point emoji scale for the post-booking service rating — a quick, no-comment tap that
@@ -80,15 +81,20 @@ export default function BookingPanel({ doctor }: BookingPanelProps) {
   const submitReview = useSubmitReview(doctor.id);
 
   // Post-booking emoji rating — a quick tap, no comment, submitted straight to the doctor's
-  // rating (see SERVICE_RATINGS above).
-  const [serviceRating, setServiceRating] = useState(0);
+  // rating (see SERVICE_RATINGS above). Seeded from localStorage so re-booking the same
+  // doctor (via "Book Another Slot") doesn't show the picker again if already rated.
+  const [serviceRating, setServiceRating] = useState(() => getSavedRating(doctor.id) ?? 0);
   const [serviceRatingSaving, setServiceRatingSaving] = useState(false);
 
   async function handleServiceRate(value: number) {
     setServiceRating(value);
     setServiceRatingSaving(true);
     try {
-      await submitReview.mutateAsync({ rating: value });
+      // patientMobile: the number just used to book — not OTP-verified, so this is only a
+      // soft server-side dedup signal layered on top of the localStorage guard, not real
+      // identity verification (see SubmitDoctorReviewHandler).
+      await submitReview.mutateAsync({ rating: value, patientMobile: phone || undefined });
+      markRated(doctor.id, value);
     } catch {
       /* best-effort — not worth blocking or alarming the patient over a failed rating tap */
     } finally {
@@ -153,7 +159,7 @@ export default function BookingPanel({ doctor }: BookingPanelProps) {
     setName(""); setAge(""); setSex(""); setPhone(""); setEmail(""); setReason("");
     setErrors({}); setExpectedOtp(""); setOtp(""); setOtpError(""); setResendIn(0);
     setSubmitting(false); setServerRef(null);
-    setServiceRating(0); setServiceRatingSaving(false);
+    setServiceRating(getSavedRating(doctor.id) ?? 0); setServiceRatingSaving(false);
   }
 
   const selectedDateLabel = dates.find((d) => d.key === date)

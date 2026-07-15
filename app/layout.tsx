@@ -20,6 +20,7 @@ export const metadata: Metadata = {
     template: "%s | NexEagle"
   },
   description: "NexEagle builds modern, AI-powered healthcare software for hospitals & clinics: 1HMS EMR, 1Rad Cloud PACS, 1Lab LIS diagnostics, and 1Pharma inventory systems.",
+  keywords: ["NexEagle", "Healthcare software", "EMR", "Cloud PACS", "LIS diagnostics", "Doctor Dekho", "find doctors near me"],
   metadataBase: new URL("https://nexeagle.com"),
   openGraph: {
     title: "NexEagle — AI-Powered Healthcare Operating System",
