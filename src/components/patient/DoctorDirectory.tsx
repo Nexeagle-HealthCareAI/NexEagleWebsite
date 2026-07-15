@@ -97,7 +97,7 @@ export default function DoctorDirectory({
         });
     }
     return sorted;
-  }, [allDoctors, city, coords, query, specialtyId, sort]);
+  }, [allDoctors, city, coords, query, specialtyId, sort, radius]);
 
   return (
     <section id="doctors" className="bg-slate-50/50 pb-24 pt-10 sm:pt-16 scroll-mt-20">
@@ -215,7 +215,7 @@ export default function DoctorDirectory({
             </div>
             <h3 className="font-display font-bold text-xl text-slate-900 mb-2">No doctors match your criteria</h3>
             <p className="text-base text-slate-500 max-w-md mx-auto">
-              We couldn't find any specialists matching your search in this area. Try adjusting your filters or searching across All India.
+              We couldn&apos;t find any specialists matching your search in this area. Try adjusting your filters or searching across All India.
             </p>
           </motion.div>
         )}

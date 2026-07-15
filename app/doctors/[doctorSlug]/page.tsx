@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import Image from "next/image";
 import { notFound } from "next/navigation";
 import Link from "next/link";
 import {
@@ -19,8 +20,11 @@ import PatientFooter from "@/components/patient/PatientFooter";
 import BookingPanel from "@/components/patient/BookingPanel";
 import ReviewsSection from "@/components/patient/ReviewsSection";
 import { RatingBadge } from "@/components/patient/StarRating";
-import { getDoctorById } from "@/lib/api/server";
+import { getDoctorById, easyhmsFetch } from "@/lib/api/server";
+import { mapDoctors } from "@/lib/api/mappers";
+import type { DoctorsResponseDto } from "@/lib/api/types";
 import {
+  doctors as mockDoctors,
   doctorSlug,
   parseDoctorIdFromSlug,
   getDirectionsUrl,
@@ -36,6 +40,26 @@ async function resolveDoctor(slug: string): Promise<Doctor | null> {
   const doctorId = parseDoctorIdFromSlug(slug);
   const { doctor } = await getDoctorById(doctorId);
   return doctor;
+}
+
+export async function generateStaticParams() {
+  let slugs: string[] = [];
+  try {
+    const result = await easyhmsFetch<DoctorsResponseDto>("/public/doctors");
+    if (result.notConfigured || !result.data) {
+      slugs = mockDoctors.map((d) => doctorSlug(d, d.city));
+    } else {
+      const doctors = mapDoctors(result.data.doctors);
+      slugs = doctors.map((d) => doctorSlug(d, d.city));
+    }
+  } catch {
+    // If the API fails at build time, gracefully fall back to empty
+    // and let Next.js generate pages dynamically on-demand.
+  }
+  
+  return slugs.map((slug) => ({
+    doctorSlug: slug,
+  }));
 }
 
 export async function generateMetadata({ params }: PageProps): Promise<Metadata> {
@@ -126,10 +150,12 @@ export default async function DoctorDetailPage({ params }: PageProps) {
                 <div className="flex gap-5 items-start">
                   {/* Avatar */}
                   {doctor.photo ? (
-                    <img
+                    <Image
                       src={doctor.photo}
                       alt={doctor.name}
-                      className="w-24 h-24 sm:w-28 sm:h-28 rounded-3xl object-cover shadow-md shrink-0"
+                      width={112}
+                      height={112}
+                      className="w-24 h-24 sm:w-28 sm:h-28 rounded-3xl object-cover shadow-md shrink-0 bg-slate-100"
                     />
                   ) : (
                     <div

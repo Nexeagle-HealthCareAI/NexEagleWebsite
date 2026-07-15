@@ -84,10 +84,13 @@ export default function PatientHero({
 
       <div className="relative z-10 max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
         {/* Title */}
-        <h1 className="font-display text-5xl sm:text-6xl md:text-7xl font-extrabold text-slate-900 tracking-tight leading-[1.1] mb-6">
-          Doctor{" "}
-          <span className="text-transparent bg-clip-text bg-gradient-to-r from-brand-teal to-sky-500">
-            Dekho
+        <h1 className="font-display text-5xl sm:text-6xl md:text-7xl font-extrabold text-slate-900 tracking-tight leading-[1.1] mb-6 flex flex-col items-center">
+          <span className="sr-only">Find & Book Top Specialists Near You on </span>
+          <span>
+            Doctor{" "}
+            <span className="text-transparent bg-clip-text bg-gradient-to-r from-brand-teal to-sky-500">
+              Dekho
+            </span>
           </span>
         </h1>
         <p className="max-w-2xl mx-auto text-base sm:text-lg text-slate-500 font-medium mb-12">

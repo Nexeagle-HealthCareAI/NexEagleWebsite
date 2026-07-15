@@ -94,6 +94,10 @@ export interface SubmitReviewRequest {
   authorName?: string;
   rating: number;
   comment?: string;
+  // Only sent by the post-booking rating flow (already collects a phone number for
+  // booking, NOT OTP-verified) — hashed server-side, used as a soft one-rating-per-doctor
+  // guard for that flow. Never sent by the anonymous doctor-page quick-rate flow.
+  patientMobile?: string;
 }
 
 export interface SubmitReviewResponseDto {
