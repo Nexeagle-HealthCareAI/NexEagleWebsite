@@ -15,16 +15,16 @@
 #   PROD_SSH_HOST         151.185.45.67
 #   PROD_SSH_USER         root
 #   PROD_SSH_KEY_B64      base64-encoded SSH private key for Prod App VM
-#   EASYHMS_PROD_API_KEY  Platform-wide public API key for easyHMSAPI prod, injected
-#                         into the running container at deploy time — never committed.
-#                         Issued via easyHMSAPI's tools/IssuePublicApiKey console tool
-#                         (see easyHMSAPI/docs/OPS-ISSUE-PUBLIC-API-KEY.md) — deliberately
-#                         no HTTP endpoint for this; a self-issued key would be a
-#                         privilege escalation across every publicly-listed hospital.
+#   EASYHMS_PROD_API_KEY  OPTIONAL — the public API doesn't require a key (see
+#                         PublicApiKeyFilter), so this can be left unset and the site
+#                         still works fully. Only set it if this deployment's traffic
+#                         should be identified/revocable separately from anonymous
+#                         callers. Issued via easyHMSAPI's tools/IssuePublicApiKey
+#                         console tool (see easyHMSAPI/docs/OPS-ISSUE-PUBLIC-API-KEY.md).
 #   DEV_SSH_HOST          151.185.45.77
 #   DEV_SSH_USER          root
 #   DEV_SSH_KEY_B64       base64-encoded SSH private key for Dev App VM
-#   EASYHMS_DEV_API_KEY   Same as EASYHMS_PROD_API_KEY, issued for the dev environment.
+#   EASYHMS_DEV_API_KEY   OPTIONAL, same as EASYHMS_PROD_API_KEY, for the dev environment.
 # ═══════════════════════════════════════════════════════════════════════════════
 
 name: NexEagle Website — CI/CD

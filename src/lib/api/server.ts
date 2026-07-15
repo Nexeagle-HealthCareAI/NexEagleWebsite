@@ -11,12 +11,14 @@ import { mapDoctor } from "./mappers";
 import type { DoctorsResponseDto } from "./types";
 
 const BASE_URL = process.env.EASYHMS_API_BASE_URL ?? "";
+// Optional — the public API doesn't require a key (see PublicApiKeyFilter). Only set this if
+// this deployment's traffic should be identified/revocable separately from anonymous callers.
 const API_KEY = process.env.EASYHMS_API_KEY ?? "";
 const KEY_HEADER = process.env.EASYHMS_API_KEY_HEADER ?? "X-Api-Key";
 
-/** True once both the API root and a key are configured in env. */
+/** True once the API root is configured in env — a key is optional. */
 export function isConfigured(): boolean {
-  return Boolean(BASE_URL && API_KEY);
+  return Boolean(BASE_URL);
 }
 
 export interface UpstreamResult<T = unknown> {
@@ -40,7 +42,7 @@ export async function easyhmsFetch<T = unknown>(
     ...init,
     headers: {
       "Content-Type": "application/json",
-      [KEY_HEADER]: API_KEY,
+      ...(API_KEY ? { [KEY_HEADER]: API_KEY } : {}),
       ...(init?.headers ?? {}),
     },
     cache: "no-store",
