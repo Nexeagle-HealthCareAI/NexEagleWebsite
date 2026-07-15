@@ -3,24 +3,37 @@
 # ═══════════════════════════════════════════════════════════════════════════════
 #
 #   Stage 1 — Build       npm ci + next build  (runs on push + PRs)
-#   Stage 2 — Deploy Prod build Node image (next start) → push GHCR → run on Prod VM :80
+#   Stage 2 — Deploy      build Node image (next start) → push GHCR → run on VM :8080
+#             dev branch  -> Dev VM   (151.185.45.77)
+#             main branch -> Prod VM  (151.185.45.67)
 #
-# The site is served on host port 8080 (port 80 is used by 1Rad easyrad UI).
+# The site is served on host port 8080 on both VMs (port 80 is used by 1Rad
+# easyrad UI on Prod; kept the same port on Dev for consistency).
 #
 # ─────────────────────────────────────────────────────────────────────────────
 # SECRETS (Settings → Secrets → Actions):
-#   PROD_SSH_HOST     151.185.45.67
-#   PROD_SSH_USER     root
-#   PROD_SSH_KEY_B64  base64-encoded SSH private key for Prod App VM
+#   PROD_SSH_HOST         151.185.45.67
+#   PROD_SSH_USER         root
+#   PROD_SSH_KEY_B64      base64-encoded SSH private key for Prod App VM
+#   EASYHMS_PROD_API_KEY  Platform-wide public API key for easyHMSAPI prod, injected
+#                         into the running container at deploy time — never committed.
+#                         Issued via easyHMSAPI's tools/IssuePublicApiKey console tool
+#                         (see easyHMSAPI/docs/OPS-ISSUE-PUBLIC-API-KEY.md) — deliberately
+#                         no HTTP endpoint for this; a self-issued key would be a
+#                         privilege escalation across every publicly-listed hospital.
+#   DEV_SSH_HOST          151.185.45.77
+#   DEV_SSH_USER          root
+#   DEV_SSH_KEY_B64       base64-encoded SSH private key for Dev App VM
+#   EASYHMS_DEV_API_KEY   Same as EASYHMS_PROD_API_KEY, issued for the dev environment.
 # ═══════════════════════════════════════════════════════════════════════════════
 
 name: NexEagle Website — CI/CD
 
 on:
   push:
-    branches: [main]
+    branches: [main, dev]
   pull_request:
-    branches: [main]
+    branches: [main, dev]
   workflow_dispatch:
 
 concurrency:
@@ -48,6 +61,90 @@ jobs:
 
       - name: Build (validation)
         run: npm run build
+
+# ═══════════════════════════════════════════════════════════════════════════════
+  deploy-dev:
+    name: "Stage 2 — Deploy → Dev"
+    runs-on: ubuntu-latest
+    needs: build
+    if: github.ref == 'refs/heads/dev' && github.event_name != 'pull_request'
+    environment: development
+
+    steps:
+      - uses: actions/checkout@v4
+      - uses: docker/setup-buildx-action@v3
+
+      - name: Login to GHCR
+        uses: docker/login-action@v3
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Image vars
+        id: vars
+        run: |
+          echo "image=ghcr.io/$(echo '${{ github.repository_owner }}' | tr '[:upper:]' '[:lower:]')/nexeagle-website" >> "$GITHUB_OUTPUT"
+          echo "tag=dev-${GITHUB_SHA::7}" >> "$GITHUB_OUTPUT"
+
+      - name: Build & push image
+        uses: docker/build-push-action@v5
+        with:
+          context: .
+          push: true
+          tags: |
+            ${{ steps.vars.outputs.image }}:${{ steps.vars.outputs.tag }}
+            ${{ steps.vars.outputs.image }}:dev-latest
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
+
+      - name: Prepare SSH key
+        run: |
+          echo "${{ secrets.DEV_SSH_KEY_B64 }}" | base64 -d > /tmp/deploy_key
+          chmod 600 /tmp/deploy_key
+
+      - name: Deploy to Dev VM
+        env:
+          IMAGE: ${{ steps.vars.outputs.image }}:${{ steps.vars.outputs.tag }}
+          PULL_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          ACTOR: ${{ github.actor }}
+          EASYHMS_API_KEY: ${{ secrets.EASYHMS_DEV_API_KEY }}
+        run: |
+          IMAGE_LC=$(printf '%s' "$IMAGE" | tr '[:upper:]' '[:lower:]')
+          ssh -i /tmp/deploy_key -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null \
+              ${{ secrets.DEV_SSH_USER }}@${{ secrets.DEV_SSH_HOST }} \
+              "echo '$PULL_TOKEN' | docker login ghcr.io -u '$ACTOR' --password-stdin && \
+               docker pull '$IMAGE_LC' && \
+               docker rm -f nexeagle-website-dev 2>/dev/null || true; \
+               docker run -d --name nexeagle-website-dev --restart unless-stopped \
+                 -p 8080:80 \
+                 -e EASYHMS_API_BASE_URL='http://151.185.45.77:5001' \
+                 -e EASYHMS_API_KEY='$EASYHMS_API_KEY' \
+                 -e EASYHMS_API_KEY_HEADER='X-Api-Key' \
+                 '$IMAGE_LC' && \
+               docker image prune -f"
+
+      - name: Health check
+        run: |
+          sleep 5
+          for i in 1 2 3 4 5; do
+            S=$(curl -s -o /dev/null -w '%{http_code}' \
+                http://${{ secrets.DEV_SSH_HOST }}:8080 2>/dev/null || echo 000)
+            echo "Attempt $i — HTTP $S"
+            [ "$S" = "200" ] && echo "✅ NexEagle Website (dev) is live" && exit 0
+            sleep 5
+          done
+          echo "⚠️ Health check inconclusive — check: docker logs nexeagle-website-dev"
+          exit 0
+
+      - name: Write summary
+        if: always()
+        run: |
+          echo "## 🌐 NexEagle Website — Dev" >> $GITHUB_STEP_SUMMARY
+          [ "${{ job.status }}" = "success" ] \
+            && echo "**Status:** ✅ Live at http://${{ secrets.DEV_SSH_HOST }}:8080" >> $GITHUB_STEP_SUMMARY \
+            || echo "**Status:** ❌ Failed" >> $GITHUB_STEP_SUMMARY
+          echo "| Commit | \`${{ github.sha }}\` |" >> $GITHUB_STEP_SUMMARY
 
 # ═══════════════════════════════════════════════════════════════════════════════
   deploy-prod:
@@ -95,6 +192,7 @@ jobs:
           IMAGE: ${{ steps.vars.outputs.image }}:${{ steps.vars.outputs.tag }}
           PULL_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           ACTOR: ${{ github.actor }}
+          EASYHMS_API_KEY: ${{ secrets.EASYHMS_PROD_API_KEY }}
         run: |
           IMAGE_LC=$(printf '%s' "$IMAGE" | tr '[:upper:]' '[:lower:]')
           ssh -i /tmp/deploy_key -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null \
@@ -103,7 +201,11 @@ jobs:
                docker pull '$IMAGE_LC' && \
                docker rm -f nexeagle-website 2>/dev/null || true; \
                docker run -d --name nexeagle-website --restart unless-stopped \
-                 -p 8080:80 '$IMAGE_LC' && \
+                 -p 8080:80 \
+                 -e EASYHMS_API_BASE_URL='http://151.185.45.67:5001' \
+                 -e EASYHMS_API_KEY='$EASYHMS_API_KEY' \
+                 -e EASYHMS_API_KEY_HEADER='X-Api-Key' \
+                 '$IMAGE_LC' && \
                docker image prune -f"
 
       - name: Health check
