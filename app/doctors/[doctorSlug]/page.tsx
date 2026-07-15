@@ -9,6 +9,9 @@ import {
   BadgeCheck,
   Users2,
   ShieldCheck,
+  Clock,
+  ThumbsUp,
+  Languages,
 } from "lucide-react";
 import AnalyticsTracker from "@/components/AnalyticsTracker";
 import PatientTopBar from "@/components/patient/PatientTopBar";
@@ -21,6 +24,7 @@ import {
   doctorSlug,
   parseDoctorIdFromSlug,
   getDirectionsUrl,
+  formatCount,
   type Doctor,
 } from "@/data/patient";
 
@@ -163,15 +167,46 @@ export default async function DoctorDetailPage({ params }: PageProps) {
                           <b className="text-slate-800">{doctor.experienceYears}</b> years experience
                         </span>
                       )}
-                      <span className="inline-flex items-center gap-1.5 text-xs text-slate-500">
-                        <Users2 className="w-3.5 h-3.5 text-slate-400" />
-                        Accepting patients
-                      </span>
+                      {doctor.patientsServed !== undefined && (
+                        <span className="inline-flex items-center gap-1.5 text-xs text-slate-500">
+                          <Users2 className="w-3.5 h-3.5 text-brand-teal" />
+                          <b className="text-slate-800">{formatCount(doctor.patientsServed)}</b> patients
+                        </span>
+                      )}
+                      {doctor.recommendationPct !== undefined && (
+                        <span className="inline-flex items-center gap-1.5 text-xs text-slate-500">
+                          <ThumbsUp className="w-3.5 h-3.5 text-emerald-500" />
+                          <b className="text-slate-800">{doctor.recommendationPct}%</b> recommend
+                        </span>
+                      )}
+                      {doctor.waitTimeMins !== undefined && (
+                        <span className="inline-flex items-center gap-1.5 text-xs text-slate-500">
+                          <Clock className="w-3.5 h-3.5 text-sky-400" />
+                          ~<b className="text-slate-800">{doctor.waitTimeMins} min</b> wait
+                        </span>
+                      )}
                       <span className="inline-flex items-center gap-1.5 text-xs font-bold text-slate-600">
                         <ShieldCheck className="w-3.5 h-3.5 text-brand-teal" />
                         Verified profile
                       </span>
                     </div>
+
+                    {/* Languages */}
+                    {doctor.languages && doctor.languages.length > 0 && (
+                      <div className="flex items-center gap-2 mt-3">
+                        <Languages className="w-3.5 h-3.5 text-slate-400 shrink-0" />
+                        <div className="flex flex-wrap gap-1.5">
+                          {doctor.languages.map((lang) => (
+                            <span
+                              key={lang}
+                              className="px-2 py-0.5 rounded-md bg-slate-100 text-slate-500 text-[10px] font-semibold"
+                            >
+                              {lang}
+                            </span>
+                          ))}
+                        </div>
+                      </div>
+                    )}
                   </div>
                 </div>
 

@@ -168,15 +168,28 @@ export const AREAS_BY_CITY: Record<string, string[]> = {
 };
 
 export const specialties: Specialty[] = [
-  { id: "general", name: "General Physician", icon: "stethoscope", blurb: "Fever, cold, infections & checkups", accent: "text-teal-600 bg-teal-50" },
-  { id: "pediatrics", name: "Pediatrics", icon: "baby", blurb: "Child health, vaccination & growth", accent: "text-amber-600 bg-amber-50" },
-  { id: "cardiology", name: "Cardiology", icon: "heartPulse", blurb: "Heart, BP & chest concerns", accent: "text-rose-600 bg-rose-50" },
-  { id: "dermatology", name: "Dermatology", icon: "sparkles", blurb: "Skin, hair & nail conditions", accent: "text-fuchsia-600 bg-fuchsia-50" },
-  { id: "orthopedics", name: "Orthopedics", icon: "bone", blurb: "Joints, bones & sports injuries", accent: "text-sky-600 bg-sky-50" },
-  { id: "gynecology", name: "Gynecology", icon: "flower", blurb: "Women's health & pregnancy care", accent: "text-pink-600 bg-pink-50" },
-  { id: "dentistry", name: "Dentistry", icon: "smile", blurb: "Teeth, gums & oral care", accent: "text-indigo-600 bg-indigo-50" },
-  { id: "ent", name: "ENT", icon: "ear", blurb: "Ear, nose & throat issues", accent: "text-violet-600 bg-violet-50" },
+  { id: "general",        name: "General Physician",  icon: "stethoscope",  blurb: "Fever, cold, infections & checkups",       accent: "text-teal-600 bg-teal-50"     },
+  { id: "pediatrics",     name: "Pediatrics",          icon: "baby",         blurb: "Child health, vaccination & growth",       accent: "text-amber-600 bg-amber-50"   },
+  { id: "cardiology",     name: "Cardiology",          icon: "heartPulse",   blurb: "Heart, BP & chest concerns",              accent: "text-rose-600 bg-rose-50"     },
+  { id: "dermatology",    name: "Dermatology",          icon: "sparkles",     blurb: "Skin, hair & nail conditions",            accent: "text-fuchsia-600 bg-fuchsia-50"},
+  { id: "orthopedics",    name: "Orthopedics",          icon: "bone",         blurb: "Joints, bones & sports injuries",         accent: "text-sky-600 bg-sky-50"       },
+  { id: "gynecology",     name: "Gynecology",           icon: "flower",       blurb: "Women's health & pregnancy care",         accent: "text-pink-600 bg-pink-50"     },
+  { id: "dentistry",      name: "Dentistry",            icon: "smile",        blurb: "Teeth, gums & oral care",                 accent: "text-indigo-600 bg-indigo-50" },
+  { id: "ent",            name: "ENT",                  icon: "ear",          blurb: "Ear, nose & throat issues",              accent: "text-violet-600 bg-violet-50" },
+  { id: "ophthalmology",  name: "Ophthalmology",        icon: "eye",          blurb: "Eye care, vision & spectacles",           accent: "text-cyan-600 bg-cyan-50"     },
+  { id: "neurology",      name: "Neurology",            icon: "brain",        blurb: "Headache, seizures & nerve disorders",    accent: "text-purple-600 bg-purple-50" },
+  { id: "psychiatry",     name: "Psychiatry",           icon: "brain",        blurb: "Mental health, anxiety & depression",     accent: "text-blue-600 bg-blue-50"     },
+  { id: "urology",        name: "Urology",              icon: "droplets",     blurb: "Kidney, bladder & urinary tract",         accent: "text-teal-700 bg-teal-50"     },
+  { id: "gastroenterology",name: "Gastroenterology",   icon: "activity",     blurb: "Stomach, liver & digestive issues",       accent: "text-orange-600 bg-orange-50" },
+  { id: "endocrinology",  name: "Endocrinology",        icon: "zap",          blurb: "Diabetes, thyroid & hormones",            accent: "text-yellow-600 bg-yellow-50" },
+  { id: "pulmonology",    name: "Pulmonology",          icon: "wind",         blurb: "Lungs, asthma & breathing",              accent: "text-sky-700 bg-sky-50"       },
+  { id: "nephrology",     name: "Nephrology",           icon: "droplets",     blurb: "Kidney disease & dialysis care",          accent: "text-blue-700 bg-blue-50"     },
+  { id: "oncology",       name: "Oncology",             icon: "shield",       blurb: "Cancer diagnosis & treatment",            accent: "text-red-600 bg-red-50"       },
+  { id: "rheumatology",   name: "Rheumatology",         icon: "activity",     blurb: "Arthritis, lupus & autoimmune disease",  accent: "text-emerald-600 bg-emerald-50"},
+  { id: "physiotherapy",  name: "Physiotherapy",        icon: "dumbbell",     blurb: "Rehabilitation, pain & mobility",         accent: "text-lime-600 bg-lime-50"     },
+  { id: "dietetics",      name: "Dietetics & Nutrition",icon: "apple",        blurb: "Diet, weight & lifestyle diseases",      accent: "text-green-600 bg-green-50"   },
 ];
+
 
 export const doctors: Doctor[] = [
   {

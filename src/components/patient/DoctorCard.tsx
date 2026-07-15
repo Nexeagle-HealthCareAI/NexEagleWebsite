@@ -1,156 +1,274 @@
 "use client";
 
 import Link from "next/link";
-import { BadgeCheck, MapPin, Award, CalendarCheck, Star } from "lucide-react";
+import { motion } from "framer-motion";
+import {
+  BadgeCheck, MapPin, Award, CalendarCheck, Star,
+  Clock, Users, ThumbsUp, Languages, ArrowRight,
+} from "lucide-react";
 import type { Doctor } from "@/data/patient";
-import { doctorSlug } from "@/data/patient";
+import { doctorSlug, formatCount } from "@/data/patient";
 
 interface DoctorCardProps {
   doctor: Doctor;
+  /** Grid index — used to stagger entrance animations. */
+  index?: number;
 }
 
-export default function DoctorCard({ doctor }: DoctorCardProps) {
+export default function DoctorCard({ doctor, index = 0 }: DoctorCardProps) {
+  const clinicLabel = doctor.hospitalName ?? doctor.clinic;
+
   return (
-    <Link
-      href={`/doctors/${doctorSlug(doctor, doctor.city)}`}
-      className="group relative bg-white rounded-[2rem] border border-slate-200/60 shadow-[0_8px_30px_rgb(0,0,0,0.04)] hover:shadow-[0_20px_40px_-15px_rgba(20,184,166,0.15)] hover:border-brand-teal/40 active:scale-[0.98] active:shadow-inner transition-all duration-500 flex flex-col overflow-hidden hover:-translate-y-1"
+    <motion.div
+      initial={{ opacity: 0, y: 28 }}
+      animate={{ opacity: 1, y: 0 }}
+      transition={{ duration: 0.42, delay: index * 0.07, ease: [0.22, 1, 0.36, 1] }}
     >
-      {/* Promoted badge */}
-      {doctor.promoted && (
-        <div className="absolute top-4 right-4 z-10 px-3 py-1 rounded-full bg-slate-900/90 backdrop-blur-sm text-white text-[10px] font-bold tracking-widest uppercase shadow-md flex items-center gap-1.5">
-          <Star className="w-3 h-3 text-amber-400 fill-amber-400" />
-          Featured
-        </div>
-      )}
-
-      {/* Optional: Add a subtle gradient mesh at the top of the card */}
-      <div className="absolute top-0 left-0 right-0 h-32 bg-gradient-to-b from-slate-50/80 to-transparent pointer-events-none" />
-
-      <div className="p-6 sm:p-7 flex flex-col flex-1 relative z-10">
-        {/* ── Header: avatar + identity ── */}
-        <div className="flex items-start gap-5">
-          <div className="relative shrink-0">
-            {doctor.photo ? (
-              <img
-                src={doctor.photo}
-                alt={doctor.name}
-                className="w-[88px] h-[88px] rounded-[1.5rem] object-cover shadow-[0_8px_20px_rgba(0,0,0,0.08)] border border-slate-100"
-              />
-            ) : (
-              <div
-                className={`w-[88px] h-[88px] rounded-[1.5rem] bg-gradient-to-br ${doctor.gradient} text-white flex items-center justify-center font-display font-bold text-3xl shadow-[0_8px_20px_rgba(0,0,0,0.08)] border border-white/20`}
-              >
-                {doctor.initials}
-              </div>
-            )}
-            {/* Verified ring */}
-            {doctor.verified && (
-              <span className="absolute -bottom-2 -right-2 w-7 h-7 rounded-full bg-white border-[3px] border-white shadow-sm flex items-center justify-center">
-                <BadgeCheck className="w-4 h-4 text-brand-teal" />
-              </span>
-            )}
-          </div>
-
-          <div className="min-w-0 flex-1 pt-1">
-            <h3 className="font-display font-bold text-slate-900 text-lg leading-tight truncate group-hover:text-brand-teal transition-colors duration-300">
-              {doctor.name}
-            </h3>
-            <p className="text-sm font-semibold text-brand-teal mt-1 tracking-wide">
-              {doctor.specialty}
-            </p>
-            {doctor.qualifications && (
-              <p className="text-xs text-slate-500 mt-1 truncate">
-                {doctor.qualifications}
-              </p>
-            )}
-
-            {/* Premium Rating Display */}
-            {doctor.rating !== undefined && (
-              <div className="flex items-center gap-1.5 mt-2.5">
-                <div className="flex items-center bg-amber-50 px-2 py-0.5 rounded-md border border-amber-100/50">
-                  <Star className="w-3.5 h-3.5 text-amber-500 fill-amber-500 mr-1" />
-                  <span className="font-bold text-amber-700 text-xs">{doctor.rating.toFixed(1)}</span>
-                </div>
-                {doctor.reviewCount !== undefined && (
-                  <span className="text-[11px] font-medium text-slate-400">({doctor.reviewCount} reviews)</span>
-                )}
-              </div>
-            )}
-          </div>
-        </div>
-
-        {/* ── Stats strip ── */}
-        <div className="flex flex-wrap items-center gap-4 mt-6 text-xs text-slate-600 bg-slate-50/50 p-3 rounded-2xl border border-slate-100/80">
-          {doctor.experienceYears > 0 && (
-            <span className="flex items-center gap-1.5 font-medium">
-              <Award className="w-4 h-4 text-brand-teal shrink-0" />
-              <span>
-                <b className="text-slate-900 font-bold">{doctor.experienceYears}+</b> yrs exp
-              </span>
-            </span>
-          )}
-          {(doctor.hospitalName || doctor.clinic) && (
-            <span className="flex items-center gap-1.5 min-w-0 font-medium">
-              <MapPin className="w-4 h-4 text-slate-400 shrink-0" />
-              <span className="truncate">{doctor.hospitalName ?? doctor.clinic}</span>
-            </span>
-          )}
-        </div>
-
-        {/* ── About (2-line clamp) ── */}
-        {doctor.about && (
-          <p className="mt-5 text-sm text-slate-500 leading-relaxed line-clamp-2">
-            {doctor.about}
-          </p>
-        )}
-
-        {/* ── Focus area tags ── */}
-        {doctor.focusAreas.length > 0 && (
-          <div className="flex flex-wrap gap-2 mt-4">
-            {doctor.focusAreas.slice(0, 3).map((area) => (
-              <span
-                key={area}
-                className="px-3 py-1 rounded-full bg-white border border-slate-200/80 text-slate-600 text-[11px] font-semibold shadow-sm"
-              >
-                {area}
-              </span>
-            ))}
-            {doctor.focusAreas.length > 3 && (
-              <span className="px-3 py-1 rounded-full bg-slate-50 border border-slate-100 text-slate-400 text-[11px] font-semibold">
-                +{doctor.focusAreas.length - 3}
-              </span>
-            )}
+      <Link
+        href={`/doctors/${doctorSlug(doctor, doctor.city)}`}
+        className="group relative bg-white rounded-[2rem] border border-slate-200/60 shadow-[0_8px_30px_rgb(0,0,0,0.04)] hover:shadow-[0_20px_40px_-15px_rgba(20,184,166,0.18)] hover:border-brand-teal/40 active:scale-[0.98] transition-all duration-500 flex flex-col overflow-hidden hover:-translate-y-1"
+      >
+        {/* Promoted badge */}
+        {doctor.promoted && (
+          <div className="absolute top-4 right-4 z-10 px-3 py-1 rounded-full bg-slate-900/90 backdrop-blur-sm text-white text-[10px] font-bold tracking-widest uppercase shadow-md flex items-center gap-1.5">
+            <Star className="w-3 h-3 text-amber-400 fill-amber-400" />
+            Featured
           </div>
         )}
+        {/* Gradient mesh */}
+        <div className="absolute top-0 left-0 right-0 h-28 bg-gradient-to-b from-slate-50/80 to-transparent pointer-events-none" />
 
-        {/* ── Footer: Full width CTA ── */}
-        <div className="mt-auto pt-6">
-          <div className="flex items-end justify-between gap-3 mb-4">
-            <div>
-              <span className="block text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-0.5">
-                Consultation Fee
-              </span>
-              {doctor.fee !== undefined ? (
-                <span className="font-display text-xl font-bold text-slate-900">
-                  ₹{doctor.fee}
-                </span>
+        <div className="p-6 sm:p-7 flex flex-col flex-1 relative z-10">
+
+          {/* ─────────────────────────────────────
+              § 1  IDENTITY
+              Avatar · Name · Specialty · Quals · Rating
+          ───────────────────────────────────── */}
+          <div className="flex items-start gap-4">
+            {/* Avatar */}
+            <div className="relative shrink-0">
+              {doctor.photo ? (
+                <img
+                  src={doctor.photo}
+                  alt={doctor.name}
+                  className="w-20 h-20 rounded-2xl object-cover shadow-[0_6px_18px_rgba(0,0,0,0.08)] border border-slate-100"
+                />
               ) : (
-                <span className="text-sm font-semibold text-emerald-600 flex items-center gap-1.5">
-                  <CalendarCheck className="w-4 h-4" />
-                  Accepting patients
+                <div className={`w-20 h-20 rounded-2xl bg-gradient-to-br ${doctor.gradient} text-white flex items-center justify-center font-display font-bold text-2xl shadow-[0_6px_18px_rgba(0,0,0,0.10)] border border-white/20`}>
+                  {doctor.initials}
+                </div>
+              )}
+              {doctor.verified && (
+                <span className="absolute -bottom-2 -right-2 w-6 h-6 rounded-full bg-white border-2 border-white shadow flex items-center justify-center">
+                  <BadgeCheck className="w-3.5 h-3.5 text-brand-teal" />
                 </span>
               )}
             </div>
-            {doctor.fee !== undefined && (
-              <span className="text-[10px] font-semibold text-slate-400 bg-slate-100 px-2 py-1 rounded-md">At Clinic</span>
+
+            {/* Text block */}
+            <div className="min-w-0 flex-1 pt-0.5">
+              <h3 className="font-display font-bold text-slate-900 text-base leading-snug group-hover:text-brand-teal transition-colors duration-300 line-clamp-1">
+                {doctor.name}
+              </h3>
+              <p className="text-[11px] font-bold text-brand-teal mt-0.5 tracking-wide">{doctor.specialty}</p>
+              {doctor.qualifications && (
+                <p className="text-[10px] text-slate-400 mt-0.5 truncate">{doctor.qualifications}</p>
+              )}
+              {/* Rating */}
+              {doctor.rating !== undefined && (
+                <div className="flex items-center gap-1.5 mt-1.5">
+                  <div className="flex items-center gap-1 bg-amber-50 px-1.5 py-0.5 rounded-md border border-amber-100/60">
+                    <Star className="w-3 h-3 text-amber-500 fill-amber-500" />
+                    <span className="font-bold text-amber-700 text-[11px]">{doctor.rating.toFixed(1)}</span>
+                  </div>
+                  {doctor.reviewCount !== undefined && (
+                    <span className="text-[10px] text-slate-400">({doctor.reviewCount.toLocaleString()})</span>
+                  )}
+                </div>
+              )}
+            </div>
+          </div>
+
+          {/* ─────────────────────────────────────
+              § 2  QUICK-SCAN ROW
+              Exp · Wait time
+          ───────────────────────────────────── */}
+          <div className="flex flex-wrap items-center gap-x-4 gap-y-1.5 mt-4">
+            {doctor.experienceYears > 0 && (
+              <span className="flex items-center gap-1 text-[11px] text-slate-500 font-medium">
+                <Award className="w-3.5 h-3.5 text-brand-teal" />
+                <b className="text-slate-800">{doctor.experienceYears}+</b> yrs exp
+              </span>
+            )}
+            {doctor.waitTimeMins !== undefined && (
+              <span className="flex items-center gap-1 text-[11px] text-slate-500 font-medium">
+                <Clock className="w-3.5 h-3.5 text-sky-400" />
+                ~<b className="text-slate-800">{doctor.waitTimeMins}</b> min wait
+              </span>
             )}
           </div>
 
-          <div className="w-full py-3.5 rounded-xl bg-slate-900 group-hover:bg-brand-teal text-white text-center text-sm font-bold shadow-[0_4px_14px_0_rgba(15,23,42,0.2)] group-hover:shadow-[0_8px_25px_-5px_rgba(20,184,166,0.4)] transition-all duration-500">
-            Book Appointment
+          {/* ─────────────────────────────────────
+              § 2b  FULL ADDRESS BLOCK
+              Clinic · Area, City, State · Directions
+          ───────────────────────────────────── */}
+          {(clinicLabel || doctor.area || doctor.city) && (
+            <div className="mt-3 mb-1 flex items-start gap-2 rounded-xl bg-slate-50 border border-slate-100 px-3 py-2.5">
+              <MapPin className="w-3.5 h-3.5 text-brand-teal shrink-0 mt-0.5" />
+              <div className="min-w-0 flex-1">
+                {/* Line 1 — clinic / hospital name */}
+                {clinicLabel && (
+                  <p className="text-[11.5px] font-bold text-slate-800 leading-snug truncate">
+                    {clinicLabel}
+                  </p>
+                )}
+                {/* Line 2 — area, city, state */}
+                {(doctor.area || doctor.city) && (
+                  <p className="text-[11px] text-slate-500 mt-0.5 leading-snug">
+                    {[doctor.area, doctor.city, doctor.state].filter(Boolean).join(", ")}
+                  </p>
+                )}
+              </div>
+              {/* Directions micro-link (only when GPS is available) */}
+              {doctor.latitude != null && doctor.longitude != null && (
+                <a
+                  href={`https://www.google.com/maps/dir/?api=1&destination=${doctor.latitude},${doctor.longitude}`}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  onClick={(e) => e.stopPropagation()}
+                  className="shrink-0 text-[10px] font-bold text-brand-teal hover:text-teal-700 underline underline-offset-2 mt-0.5 whitespace-nowrap"
+                >
+                  Directions ↗
+                </a>
+              )}
+            </div>
+          )}
+
+
+          {/* ─────────────────────────────────────
+              § 3  SOCIAL PROOF
+              Patients served · Recommendation bar
+          ───────────────────────────────────── */}
+          {(doctor.patientsServed !== undefined || doctor.recommendationPct !== undefined) && (
+            <div className="mt-4 space-y-2.5">
+              {doctor.patientsServed !== undefined && (
+                <div className="flex items-center gap-1.5">
+                  <Users className="w-3.5 h-3.5 text-brand-teal shrink-0" />
+                  <span className="text-[11px] text-slate-500">
+                    <b className="text-slate-800">{formatCount(doctor.patientsServed)}</b> patients treated
+                  </span>
+                </div>
+              )}
+              {doctor.recommendationPct !== undefined && (
+                <div>
+                  <div className="flex items-center justify-between mb-1">
+                    <span className="flex items-center gap-1 text-[10px] text-slate-500 font-semibold">
+                      <ThumbsUp className="w-3 h-3 text-emerald-500" />
+                      Patient recommendation
+                    </span>
+                    <span className="text-[11px] font-bold text-emerald-700">{doctor.recommendationPct}%</span>
+                  </div>
+                  <div className="h-1.5 w-full bg-slate-100 rounded-full overflow-hidden">
+                    <motion.div
+                      className="h-full bg-gradient-to-r from-emerald-400 to-teal-500 rounded-full"
+                      initial={{ width: "0%" }}
+                      animate={{ width: `${doctor.recommendationPct}%` }}
+                      transition={{ duration: 0.9, delay: index * 0.07 + 0.35, ease: "easeOut" }}
+                    />
+                  </div>
+                </div>
+              )}
+            </div>
+          )}
+
+          {/* ─────────────────────────────────────
+              § 4  ABOUT SNIPPET
+          ───────────────────────────────────── */}
+          {doctor.about && (
+            <p className="mt-4 text-[11.5px] text-slate-500 leading-relaxed line-clamp-2">
+              {doctor.about}
+            </p>
+          )}
+
+          {/* ─────────────────────────────────────
+              § 5  TAGS + LANGUAGES
+          ───────────────────────────────────── */}
+          <div className="mt-4 space-y-2">
+            {doctor.focusAreas.length > 0 && (
+              <div className="flex flex-wrap gap-1.5">
+                {doctor.focusAreas.slice(0, 3).map((area) => (
+                  <span
+                    key={area}
+                    className="px-2.5 py-0.5 rounded-full bg-slate-50 border border-slate-200/80 text-slate-500 text-[10px] font-semibold"
+                  >
+                    {area}
+                  </span>
+                ))}
+                {doctor.focusAreas.length > 3 && (
+                  <span className="px-2.5 py-0.5 rounded-full bg-slate-100 border border-slate-200 text-slate-400 text-[10px] font-semibold">
+                    +{doctor.focusAreas.length - 3}
+                  </span>
+                )}
+              </div>
+            )}
+            {doctor.languages && doctor.languages.length > 0 && (
+              <div className="flex items-center gap-1.5 flex-wrap">
+                <Languages className="w-3 h-3 text-slate-300 shrink-0" />
+                <span className="text-[10px] text-slate-400 font-medium">
+                  {doctor.languages.join(" · ")}
+                </span>
+              </div>
+            )}
           </div>
+
+          {/* ─────────────────────────────────────
+              § 6  FOOTER
+              Next-available · Fee · CTA
+          ───────────────────────────────────── */}
+          <div className="mt-auto pt-5">
+            {/* Next-available + fee */}
+            <div className="flex items-center justify-between gap-3 mb-3">
+              {doctor.nextAvailable ? (
+                <span className="inline-flex items-center gap-1.5 text-[11px] font-bold text-emerald-700">
+                  {/* Pulsing live dot */}
+                  <span className="relative flex h-2 w-2">
+                    <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75" />
+                    <span className="relative inline-flex rounded-full h-2 w-2 bg-emerald-500" />
+                  </span>
+                  {doctor.nextAvailable}
+                </span>
+              ) : (
+                <span className="inline-flex items-center gap-1 text-[11px] font-semibold text-emerald-600">
+                  <CalendarCheck className="w-3.5 h-3.5" />
+                  Accepting patients
+                </span>
+              )}
+
+              <div className="text-right shrink-0">
+                <span className="block text-[9px] font-bold text-slate-400 uppercase tracking-widest leading-none mb-0.5">Fee</span>
+                {doctor.fee !== undefined ? (
+                  <span className="font-display text-base font-bold text-slate-900">₹{doctor.fee}</span>
+                ) : (
+                  <span className="text-xs text-slate-400 font-medium">—</span>
+                )}
+              </div>
+            </div>
+
+            {/* CTA */}
+            <div className="w-full py-3 rounded-xl bg-slate-900 group-hover:bg-brand-teal text-white text-sm font-bold shadow-[0_4px_14px_0_rgba(15,23,42,0.18)] group-hover:shadow-[0_8px_25px_-5px_rgba(20,184,166,0.4)] transition-all duration-500 flex items-center justify-center gap-2">
+              Book Appointment
+              <motion.span
+                animate={{ x: [0, 4, 0] }}
+                transition={{ repeat: Infinity, duration: 1.8, ease: "easeInOut", repeatDelay: 0.4 }}
+                className="opacity-50 group-hover:opacity-100 transition-opacity duration-300"
+              >
+                <ArrowRight className="w-4 h-4" />
+              </motion.span>
+            </div>
+          </div>
+
         </div>
-      </div>
-    </Link>
+      </Link>
+    </motion.div>
   );
 }

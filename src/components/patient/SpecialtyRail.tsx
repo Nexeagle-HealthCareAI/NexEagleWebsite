@@ -1,27 +1,31 @@
 "use client";
 
+import { motion } from "framer-motion";
 import {
-  Stethoscope,
-  Baby,
-  HeartPulse,
-  Sparkles,
-  Bone,
-  Flower2,
-  Smile,
-  Ear,
+  Stethoscope, Baby, HeartPulse, Sparkles, Bone, Flower2, Smile, Ear,
+  Eye, Brain, Droplets, Activity, Zap, Wind, Shield, Dumbbell, Apple,
   type LucideIcon,
 } from "lucide-react";
 import { specialties } from "@/data/patient";
 
 const iconMap: Record<string, LucideIcon> = {
   stethoscope: Stethoscope,
-  baby: Baby,
-  heartPulse: HeartPulse,
-  sparkles: Sparkles,
-  bone: Bone,
-  flower: Flower2,
-  smile: Smile,
-  ear: Ear,
+  baby:        Baby,
+  heartPulse:  HeartPulse,
+  sparkles:    Sparkles,
+  bone:        Bone,
+  flower:      Flower2,
+  smile:       Smile,
+  ear:         Ear,
+  eye:         Eye,
+  brain:       Brain,
+  droplets:    Droplets,
+  activity:    Activity,
+  zap:         Zap,
+  wind:        Wind,
+  shield:      Shield,
+  dumbbell:    Dumbbell,
+  apple:       Apple,
 };
 
 interface SpecialtyRailProps {
@@ -33,12 +37,14 @@ interface SpecialtyRailProps {
 export default function SpecialtyRail({ selected, onSelect }: SpecialtyRailProps) {
   return (
     <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-10">
-      <div className="flex items-end justify-between mb-4">
+      <div className="flex items-end justify-between mb-5">
         <div>
           <h2 className="text-xl sm:text-2xl font-extrabold text-slate-900 tracking-tight">
-            Consult by specialty
+            Consult by Speciality
           </h2>
-          <p className="text-sm text-slate-500">Pick a department to see doctors</p>
+          <p className="text-sm text-slate-500 mt-0.5">
+            {specialties.length} specialities · pick one to filter doctors
+          </p>
         </div>
         {selected && (
           <button
@@ -50,32 +56,39 @@ export default function SpecialtyRail({ selected, onSelect }: SpecialtyRailProps
         )}
       </div>
 
-      <div className="grid grid-cols-4 sm:grid-cols-4 md:grid-cols-8 gap-3 sm:gap-4">
-        {specialties.map((spec) => {
+      {/* 4 cols → 5 → 10 — fits 20 tiles in exactly 2 rows on desktop */}
+      <div className="grid grid-cols-4 sm:grid-cols-5 md:grid-cols-10 gap-2 sm:gap-3">
+        {specialties.map((spec, i) => {
           const Icon = iconMap[spec.icon] ?? Stethoscope;
           const isActive = selected === spec.id;
           return (
-            <button
+            <motion.button
               key={spec.id}
+              initial={{ opacity: 0, y: 16 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.3, delay: i * 0.03, ease: "easeOut" }}
               onClick={() => onSelect(isActive ? "" : spec.id)}
-              className={`group flex flex-col items-center gap-2 p-3 rounded-2xl border transition-all duration-300 ${
+              title={spec.blurb}
+              className={`group flex flex-col items-center gap-1.5 p-2.5 rounded-2xl border transition-all duration-300 ${
                 isActive
-                  ? "border-brand-teal bg-teal-50/60 shadow-md"
+                  ? "border-brand-teal bg-teal-50/60 shadow-md shadow-teal-100"
                   : "border-transparent hover:border-slate-200 hover:bg-slate-50"
               }`}
             >
               <span
-                className={`w-14 h-14 rounded-2xl flex items-center justify-center transition-transform group-hover:scale-105 ${spec.accent}`}
+                className={`w-11 h-11 rounded-xl flex items-center justify-center transition-transform duration-300 group-hover:scale-110 ${spec.accent}`}
               >
-                <Icon className="w-6 h-6" />
+                <Icon className="w-5 h-5" />
               </span>
-              <span className="text-[11px] sm:text-xs font-bold text-slate-700 text-center leading-tight">
+              <span className="text-[10px] sm:text-[11px] font-bold text-slate-700 text-center leading-tight line-clamp-2">
                 {spec.name}
               </span>
-            </button>
+            </motion.button>
           );
         })}
       </div>
     </section>
   );
 }
+
+

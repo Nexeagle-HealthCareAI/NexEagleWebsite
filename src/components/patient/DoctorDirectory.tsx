@@ -1,7 +1,8 @@
 "use client";
 
 import { useMemo, useState } from "react";
-import { Frown, Loader2, MapPin, ChevronDown, SlidersHorizontal } from "lucide-react";
+import { motion, AnimatePresence } from "framer-motion";
+import { Frown, Loader2, ChevronDown, SlidersHorizontal } from "lucide-react";
 import DoctorCard from "./DoctorCard";
 import { specialties, cityLabel } from "@/data/patient";
 import type { CityOption } from "@/data/patient";
@@ -101,7 +102,15 @@ export default function DoctorDirectory({
                 <span className="animate-pulse">Loading top doctors…</span>
               ) : (
                 <>
-                  <span className="font-bold text-slate-800">{filtered.length}</span>{" "}
+                  <motion.span
+                    key={filtered.length}
+                    initial={{ opacity: 0, y: -6 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ duration: 0.25 }}
+                    className="font-bold text-slate-800 inline-block"
+                  >
+                    {filtered.length}
+                  </motion.span>{" "}
                   verified {filtered.length === 1 ? "expert" : "experts"} available
                 </>
               )}
@@ -140,13 +149,23 @@ export default function DoctorDirectory({
             <p className="text-base font-semibold">Finding the best specialists for you…</p>
           </div>
         ) : filtered.length > 0 ? (
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 sm:gap-8">
-            {filtered.map((doctor) => (
-              <DoctorCard key={doctor.id} doctor={doctor} />
-            ))}
-          </div>
+          <motion.div
+            layout
+            className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 sm:gap-8"
+          >
+            <AnimatePresence mode="popLayout">
+              {filtered.map((doctor, i) => (
+                <DoctorCard key={doctor.id} doctor={doctor} index={i} />
+              ))}
+            </AnimatePresence>
+          </motion.div>
         ) : (
-          <div className="text-center py-32 rounded-[2rem] border border-dashed border-slate-200 bg-white shadow-sm">
+          <motion.div
+            initial={{ opacity: 0, scale: 0.97 }}
+            animate={{ opacity: 1, scale: 1 }}
+            transition={{ duration: 0.3 }}
+            className="text-center py-32 rounded-[2rem] border border-dashed border-slate-200 bg-white shadow-sm"
+          >
             <div className="w-20 h-20 rounded-full bg-slate-50 border border-slate-100 text-slate-300 flex items-center justify-center mx-auto mb-5 shadow-inner">
               <Frown className="w-10 h-10" />
             </div>
@@ -154,7 +173,7 @@ export default function DoctorDirectory({
             <p className="text-base text-slate-500 max-w-md mx-auto">
               We couldn't find any specialists matching your search in this area. Try adjusting your filters or searching across All India.
             </p>
-          </div>
+          </motion.div>
         )}
       </div>
     </section>

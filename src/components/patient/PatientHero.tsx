@@ -173,11 +173,11 @@ export default function PatientHero({
           </button>
         </div>
 
-        {/* Quick specialty chips (Visual Carousel) */}
+        {/* Quick specialty chips — all specialities */}
         <div className="mt-8 flex flex-col items-center">
-          <p className="text-xs font-bold text-slate-400 uppercase tracking-widest mb-4">Popular Specialities</p>
-          <div className="flex flex-wrap justify-center gap-3">
-            {specialties.slice(0, 5).map((s) => (
+          <p className="text-xs font-bold text-slate-400 uppercase tracking-widest mb-4">Browse All Specialities</p>
+          <div className="flex flex-wrap justify-center gap-2.5">
+            {specialties.map((s) => (
               <button
                 key={s.id}
                 onClick={() => {
@@ -185,7 +185,7 @@ export default function PatientHero({
                   scrollToDoctors();
                 }}
                 className={cn(
-                  "px-5 py-2.5 rounded-full text-sm font-semibold transition-all duration-300 border backdrop-blur-sm",
+                  "px-4 py-2 rounded-full text-sm font-semibold transition-all duration-300 border backdrop-blur-sm",
                   specialtyId === s.id
                     ? "bg-slate-900 border-slate-900 text-white shadow-md shadow-slate-900/20"
                     : "bg-white/60 border-slate-200/60 text-slate-600 hover:bg-white hover:border-brand-teal/30 hover:text-brand-teal hover:shadow-sm"
@@ -194,15 +194,6 @@ export default function PatientHero({
                 {s.name}
               </button>
             ))}
-            <button
-              onClick={() => {
-                onSpecialtyChange("");
-                scrollToDoctors();
-              }}
-              className="px-5 py-2.5 rounded-full text-sm font-semibold bg-white/40 border border-slate-200/40 text-slate-500 hover:bg-white hover:text-slate-800 transition-all duration-300"
-            >
-              View All →
-            </button>
           </div>
         </div>
       </div>
