@@ -19,6 +19,7 @@ import PatientTopBar from "@/components/patient/PatientTopBar";
 import PatientFooter from "@/components/patient/PatientFooter";
 import BookingPanel from "@/components/patient/BookingPanel";
 import ReviewsSection from "@/components/patient/ReviewsSection";
+import DoctorCard from "@/components/patient/DoctorCard";
 import { RatingBadge } from "@/components/patient/StarRating";
 import { getDoctorById, easyhmsFetch } from "@/lib/api/server";
 import { mapDoctors } from "@/lib/api/mappers";
@@ -40,6 +41,22 @@ async function resolveDoctor(slug: string): Promise<Doctor | null> {
   const doctorId = parseDoctorIdFromSlug(slug);
   const { doctor } = await getDoctorById(doctorId);
   return doctor;
+}
+
+async function getSimilarDoctors(doctor: Doctor): Promise<Doctor[]> {
+  try {
+    const result = await easyhmsFetch<DoctorsResponseDto>("/public/doctors");
+    let allDoctors = mockDoctors;
+    if (!result.notConfigured && result.data) {
+      allDoctors = mapDoctors(result.data.doctors);
+    }
+    
+    return allDoctors
+      .filter((d) => d.id !== doctor.id && d.specialtyId === doctor.specialtyId && d.city === doctor.city)
+      .slice(0, 3); // Get top 3
+  } catch {
+    return [];
+  }
 }
 
 export async function generateStaticParams() {
@@ -104,6 +121,8 @@ export default async function DoctorDetailPage({ params }: PageProps) {
   const doctor = await resolveDoctor(params.doctorSlug);
   if (!doctor) notFound();
 
+  const similarDoctors = await getSimilarDoctors(doctor);
+
   const locationLine =
     [doctor.hospitalName, doctor.city].filter(Boolean).join(", ") || doctor.clinic;
 
@@ -125,6 +144,16 @@ export default async function DoctorDetailPage({ params }: PageProps) {
               addressRegion: doctor.state || undefined,
               addressCountry: "IN",
             },
+            ...(doctor.latitude && doctor.longitude ? {
+              location: {
+                "@type": "Place",
+                geo: {
+                  "@type": "GeoCoordinates",
+                  latitude: doctor.latitude.toString(),
+                  longitude: doctor.longitude.toString()
+                }
+              }
+            } : {})
           },
         }
       : {}),
@@ -375,6 +404,28 @@ export default async function DoctorDetailPage({ params }: PageProps) {
             </div>
           </div>
         </div>
+
+        {/* ── SEO Semantic Silo: Similar Doctors ── */}
+        {similarDoctors.length > 0 && (
+          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12 border-t border-slate-200 mt-12">
+            <h3 className="font-display text-2xl font-extrabold text-slate-900 mb-6">
+              Similar {doctor.specialty}s in {doctor.city}
+            </h3>
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+              {similarDoctors.map((doc) => (
+                <DoctorCard key={doc.id} doctor={doc} geoStatus="prompt" />
+              ))}
+            </div>
+            <div className="mt-8">
+              <Link 
+                href={`/specialties/${doctor.specialtyId}/${doctor.city.toLowerCase().replace(/[^a-z0-9]+/g, "-")}`}
+                className="inline-flex items-center text-brand-teal font-bold hover:underline"
+              >
+                View all {doctor.specialty}s in {doctor.city} &rarr;
+              </Link>
+            </div>
+          </div>
+        )}
       </main>
 
       <PatientFooter />

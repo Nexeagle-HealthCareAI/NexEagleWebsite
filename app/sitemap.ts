@@ -124,6 +124,24 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
         }
       }
     }
+
+    // Generate Hospital paths
+    const hospitalSet = new Set<string>();
+    for (const d of mockDoctors) {
+      if (d.hospitalName) {
+        hospitalSet.add(d.hospitalName.toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/(^-|-$)/g, ""));
+      }
+    }
+
+    for (const hospital of Array.from(hospitalSet)) {
+      pseoEntries.push({
+        url: `${BASE_URL}/hospitals/${hospital}`,
+        lastModified: now,
+        changeFrequency: "weekly",
+        priority: 0.8,
+      });
+    }
+
   } catch {
     // Sitemap generation must never fail the build over a flaky upstream call.
   }
