@@ -17,7 +17,6 @@ import ReviewsSection from "@/components/patient/ReviewsSection";
 import { RatingBadge } from "@/components/patient/StarRating";
 import { getDoctorById } from "@/lib/api/server";
 import {
-  doctors as mockDoctors,
   doctorSlug,
   parseDoctorIdFromSlug,
   type Doctor,
@@ -29,10 +28,8 @@ interface PageProps {
 
 async function resolveDoctor(slug: string): Promise<Doctor | null> {
   const doctorId = parseDoctorIdFromSlug(slug);
-  const { doctor, notConfigured } = await getDoctorById(doctorId);
-  if (doctor) return doctor;
-  if (notConfigured) return mockDoctors.find((d) => d.id === doctorId) ?? null;
-  return null;
+  const { doctor } = await getDoctorById(doctorId);
+  return doctor;
 }
 
 export async function generateMetadata({ params }: PageProps): Promise<Metadata> {

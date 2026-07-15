@@ -3,7 +3,7 @@
 import { useMemo, useState } from "react";
 import { Frown, Loader2, MapPin, ChevronDown, SlidersHorizontal } from "lucide-react";
 import DoctorCard from "./DoctorCard";
-import { doctors as mockDoctors, specialties, cityLabel } from "@/data/patient";
+import { specialties, cityLabel } from "@/data/patient";
 import type { CityOption } from "@/data/patient";
 import { useDoctors } from "@/lib/api/hooks";
 import type { GeoStatus } from "@/lib/geo";
@@ -38,8 +38,7 @@ export default function DoctorDirectory({
   const [sort, setSort] = useState<SortKey>("relevance");
 
   const { data, isLoading } = useDoctors();
-  const usingApi = Boolean(data && !data.notConfigured && data.doctors.length);
-  const allDoctors = usingApi ? data!.doctors : mockDoctors;
+  const allDoctors = data?.doctors ?? [];
 
   const specialtyName = specialties.find((s) => s.id === specialtyId)?.name;
 
