@@ -14,12 +14,14 @@ import { useGeolocatedCity } from "@/lib/geo";
 interface HomeClientProps {
   initialSpecialtyId?: string;
   initialCityId?: string;
+  initialArea?: string;
   initialQuery?: string;
 }
 
 export default function HomeClient({
   initialSpecialtyId = "",
   initialCityId = "",
+  initialArea = "",
   initialQuery = "",
 }: HomeClientProps = {}) {
   const { data: doctorsData } = useDoctors();
@@ -107,6 +109,7 @@ export default function HomeClient({
         <DoctorDirectory
           city={city}
           cities={dynamicCities}
+          area={initialArea}
           geoStatus={geo.status}
           coords={geo.coords}
           onCityChange={handleCityChange}

@@ -78,12 +78,25 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
     ". Verify by OTP. No login required.",
   ].filter(Boolean).join("");
   const canonicalSlug = doctorSlug(doctor, doctor.city);
+  const ogImageUrl = `https://nexeagle.com/api/og?title=${encodeURIComponent(doctor.name)}&subtitle=${encodeURIComponent(doctor.specialty)}&rating=${doctor.rating || ""}`;
+
   return {
     title,
     description,
     alternates: { canonical: `/doctors/${canonicalSlug}` },
-    openGraph: { title, description, url: `/doctors/${canonicalSlug}`, type: "profile", images: doctor.photo ? [{ url: doctor.photo }] : undefined },
-    twitter: { card: "summary", title, description, images: doctor.photo ? [doctor.photo] : undefined },
+    openGraph: { 
+      title, 
+      description, 
+      url: `/doctors/${canonicalSlug}`, 
+      type: "profile", 
+      images: [{ url: ogImageUrl, width: 1200, height: 630 }] 
+    },
+    twitter: { 
+      card: "summary_large_image", 
+      title, 
+      description, 
+      images: [ogImageUrl] 
+    },
   };
 }
 
@@ -126,11 +139,40 @@ export default async function DoctorDetailPage({ params }: PageProps) {
       : {}),
   };
 
+  const breadcrumbs = {
+    "@context": "https://schema.org",
+    "@type": "BreadcrumbList",
+    "itemListElement": [
+      {
+        "@type": "ListItem",
+        "position": 1,
+        "name": "Home",
+        "item": "https://nexeagle.com"
+      },
+      ...(doctor.city ? [{
+        "@type": "ListItem",
+        "position": 2,
+        "name": `Doctors in ${doctor.city}`,
+        "item": `https://nexeagle.com/specialties/general/${doctor.city.toLowerCase().replace(/[^a-z0-9]+/g, "-")}`
+      }] : []),
+      {
+        "@type": "ListItem",
+        "position": doctor.city ? 3 : 2,
+        "name": doctor.name,
+        "item": `https://nexeagle.com/doctors/${canonicalSlug}`
+      }
+    ]
+  };
+
   return (
     <div className="min-h-screen bg-slate-50 flex flex-col font-sans text-slate-800">
       <script
         type="application/ld+json"
         dangerouslySetInnerHTML={{ __html: JSON.stringify(structuredData) }}
+      />
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(breadcrumbs) }}
       />
       <AnalyticsTracker title={`${doctor.name} — ${doctor.specialty} | NexEagle Doctor Dekho`} />
 

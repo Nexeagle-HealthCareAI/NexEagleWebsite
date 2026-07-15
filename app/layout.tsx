@@ -7,11 +7,12 @@ import { Inter, Poppins } from "next/font/google";
 import LayoutWrapper from "./layout-wrapper";
 import "./globals.css";
 
-const inter = Inter({ subsets: ["latin"], variable: "--font-inter" });
+const inter = Inter({ subsets: ["latin"], variable: "--font-inter", display: "swap" });
 const poppins = Poppins({
   weight: ["400", "500", "600", "700", "800"],
   subsets: ["latin"],
   variable: "--font-poppins",
+  display: "swap"
 });
 
 export const metadata: Metadata = {
@@ -53,7 +54,11 @@ export default function RootLayout({
   children: React.ReactNode;
 }) {
   return (
-    <html lang="en" className={`${inter.variable} ${poppins.variable}`}>
+    <html lang="en-IN" className={`${inter.variable} ${poppins.variable}`}>
+      <head>
+        <link rel="preconnect" href="https://1hms-api.nexeagle.com" crossOrigin="anonymous" />
+        <link rel="dns-prefetch" href="https://1hms-api.nexeagle.com" />
+      </head>
       <body className="min-h-screen bg-white">
         <Providers>
           <CursorGlow />

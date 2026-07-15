@@ -1,18 +1,19 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { Frown, Loader2, ChevronDown, SlidersHorizontal, MapPin } from "lucide-react";
+import { Frown, Loader2, ChevronDown, SlidersHorizontal, MapPin, Sparkles } from "lucide-react";
 import DoctorCard from "./DoctorCard";
 import { specialties, cityLabel } from "@/data/patient";
 import type { CityOption } from "@/data/patient";
-import { useDoctors } from "@/lib/api/hooks";
+import { useDoctors, useSmartSearch, type SmartSearchIntent } from "@/lib/api/hooks";
 import { haversineDistance, type GeoStatus } from "@/lib/geo";
 import { cn } from "@/lib/utils";
 
 interface DoctorDirectoryProps {
   city: CityOption | null;
   cities: CityOption[];
+  area?: string;
   geoStatus: GeoStatus;
   coords?: { lat: number; lon: number } | null;
   onCityChange: (city: CityOption | null) => void;
@@ -33,6 +34,7 @@ const sortOptions: { key: SortKey; label: string }[] = [
 export default function DoctorDirectory({
   city,
   cities,
+  area,
   geoStatus,
   coords,
   onCityChange,
@@ -47,11 +49,11 @@ export default function DoctorDirectory({
 
   const specialtyName = specialties.find((s) => s.id === specialtyId)?.name;
 
-  const filtered = useMemo(() => {
-    const q = query.trim().toLowerCase();
+  // Location (coords/city/area) + specialty-chip filtering — everything except the free-text
+  // query, since the AI fallback below needs to re-filter from this same base rather than
+  // the literal keyword match.
+  const baseFiltered = useMemo(() => {
     let list = allDoctors;
-    
-    // Spatial search vs string match
     if (coords) {
       list = list.map(d => {
         if (d.latitude != null && d.longitude != null) {
@@ -61,19 +63,82 @@ export default function DoctorDirectory({
       }).filter(d => d.distanceKm! <= radius || d.distanceKm === 999999); // dynamic radius + include doctors missing GPS
     } else if (city) {
       list = list.filter((d) => d.city === city.name && d.state === city.state);
+      if (area) {
+        list = list.filter((d) => d.area === area);
+      }
     }
-
     if (specialtyId) list = list.filter((d) => d.specialtyId === specialtyId);
-    if (q) {
-      list = list.filter(
-        (d) =>
-          d.name.toLowerCase().includes(q) ||
-          d.specialty.toLowerCase().includes(q) ||
-          d.focusAreas.some((a) => a.toLowerCase().includes(q))
+    return list;
+  }, [allDoctors, city, area, coords, specialtyId, radius]);
+
+  // Plain literal keyword match — instant, free, handles most real searches (doctor name,
+  // specialty name, a focus-area word) with zero network cost.
+  const keywordFiltered = useMemo(() => {
+    const q = query.trim().toLowerCase();
+    if (!q) return baseFiltered;
+    return baseFiltered.filter(
+      (d) =>
+        d.name.toLowerCase().includes(q) ||
+        d.specialty.toLowerCase().includes(q) ||
+        d.focusAreas.some((a) => a.toLowerCase().includes(q))
+    );
+  }, [baseFiltered, query]);
+
+  // ── AI search fallback ──────────────────────────────────────────────────
+  // Only fires when the literal keyword match above comes up empty AND the query looks
+  // like more than a stray keystroke — i.e. exactly the "typed/spoke a symptom description
+  // instead of a doctor/specialty name" case a plain substring match can't handle.
+  const smartSearch = useSmartSearch();
+  const [aiIntent, setAiIntent] = useState<SmartSearchIntent | null>(null);
+  const [aiTriedForQuery, setAiTriedForQuery] = useState<string | null>(null);
+
+  useEffect(() => {
+    const q = query.trim();
+    if (q.length < 4 || keywordFiltered.length > 0) {
+      if (aiIntent) setAiIntent(null);
+      return;
+    }
+    if (aiTriedForQuery === q) return;
+    setAiTriedForQuery(q);
+    smartSearch.mutate(q, {
+      onSuccess: (intent) => {
+        if (!intent.notConfigured) setAiIntent(intent);
+      },
+    });
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [query, keywordFiltered.length]);
+
+  const aiFiltered = useMemo(() => {
+    if (!aiIntent) return null;
+    let list = baseFiltered;
+    if (aiIntent.specialtyId) {
+      list = list.filter((d) => d.specialtyId === aiIntent.specialtyId);
+    }
+    if (aiIntent.city && aiIntent.city !== "NEAR_ME") {
+      const cityQ = aiIntent.city.toLowerCase();
+      const cityMatched = list.filter((d) => d.city?.toLowerCase().includes(cityQ));
+      if (cityMatched.length > 0) list = cityMatched;
+    }
+    if (list.length === 0 && aiIntent.keywords.length > 0) {
+      const kws = aiIntent.keywords.map((k) => k.toLowerCase());
+      list = baseFiltered.filter((d) =>
+        kws.some(
+          (k) =>
+            d.specialty.toLowerCase().includes(k) ||
+            d.focusAreas.some((a) => a.toLowerCase().includes(k)) ||
+            (d.about ?? "").toLowerCase().includes(k)
+        )
       );
     }
+    return list;
+  }, [baseFiltered, aiIntent]);
 
-    const sorted = [...list];
+  const usingAiResults = keywordFiltered.length === 0 && aiFiltered !== null && aiFiltered.length > 0;
+  const aiSpecialtyName = aiIntent?.specialtyId ? specialties.find((s) => s.id === aiIntent.specialtyId)?.name : undefined;
+
+  const filtered = useMemo(() => {
+    const base = usingAiResults && aiFiltered ? aiFiltered : keywordFiltered;
+    const sorted = [...base];
     switch (sort) {
       case "distance":
         sorted.sort((a, b) => (a.distanceKm ?? 999999) - (b.distanceKm ?? 999999));
@@ -97,7 +162,7 @@ export default function DoctorDirectory({
         });
     }
     return sorted;
-  }, [allDoctors, city, coords, query, specialtyId, sort, radius]);
+  }, [keywordFiltered, aiFiltered, usingAiResults, sort]);
 
   return (
     <section id="doctors" className="bg-slate-50/50 pb-24 pt-10 sm:pt-16 scroll-mt-20">
@@ -186,11 +251,26 @@ export default function DoctorDirectory({
           </div>
         </div>
 
+        {/* ── AI-enhanced results hint ── */}
+        {usingAiResults && (
+          <div className="flex items-center gap-2 mb-6 -mt-4 text-sm text-brand-teal font-semibold">
+            <Sparkles className="w-4 h-4 shrink-0" />
+            <span>
+              Showing {aiSpecialtyName ?? "matching"} specialists based on &quot;{query.trim()}&quot;
+            </span>
+          </div>
+        )}
+
         {/* ── Grid ── */}
         {isLoading ? (
           <div className="flex flex-col items-center justify-center py-32 text-slate-400">
             <Loader2 className="w-10 h-10 animate-spin text-brand-teal/50 mb-4" />
             <p className="text-base font-semibold">Finding the best specialists for you…</p>
+          </div>
+        ) : filtered.length === 0 && smartSearch.isPending ? (
+          <div className="flex flex-col items-center justify-center py-32 text-slate-400">
+            <Sparkles className="w-10 h-10 animate-pulse text-brand-teal/50 mb-4" />
+            <p className="text-base font-semibold">Looking a little more broadly for you…</p>
           </div>
         ) : filtered.length > 0 ? (
           <motion.div

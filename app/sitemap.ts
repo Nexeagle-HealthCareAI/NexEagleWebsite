@@ -1,7 +1,7 @@
 import type { MetadataRoute } from "next";
 import { easyhmsFetch } from "@/lib/api/server";
 import { mapDoctors } from "@/lib/api/mappers";
-import { doctors as mockDoctors, doctorSlug, specialties, CITIES } from "@/data/patient";
+import { doctors as mockDoctors, doctorSlug, specialties, CITIES, AREAS_BY_CITY } from "@/data/patient";
 import type { DoctorsResponseDto } from "@/lib/api/types";
 
 const BASE_URL = "https://nexeagle.com";
@@ -89,6 +89,17 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
           changeFrequency: "weekly",
           priority: 0.8,
         });
+
+        const areas = AREAS_BY_CITY[c.id] || [];
+        for (const a of areas) {
+          const areaSlug = a.toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/(^-|-$)/g, "");
+          pseoEntries.push({
+            url: `${BASE_URL}/specialties/${s.id}/${c.id}/${areaSlug}`,
+            lastModified: now,
+            changeFrequency: "weekly",
+            priority: 0.9, // Higher priority for hyper-local intent
+          });
+        }
       }
     }
 
@@ -100,6 +111,17 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
           changeFrequency: "weekly",
           priority: 0.8,
         });
+        
+        const areas = AREAS_BY_CITY[c.id] || [];
+        for (const a of areas) {
+          const areaSlug = a.toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/(^-|-$)/g, "");
+          pseoEntries.push({
+            url: `${BASE_URL}/conditions/${cond}/${c.id}/${areaSlug}`,
+            lastModified: now,
+            changeFrequency: "weekly",
+            priority: 0.9, // Higher priority for hyper-local intent
+          });
+        }
       }
     }
   } catch {
