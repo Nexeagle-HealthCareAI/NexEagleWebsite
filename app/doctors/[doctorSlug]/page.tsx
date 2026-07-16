@@ -20,6 +20,7 @@ import PatientFooter from "@/components/patient/PatientFooter";
 import BookingPanel from "@/components/patient/BookingPanel";
 import ReviewsSection from "@/components/patient/ReviewsSection";
 import DoctorCard from "@/components/patient/DoctorCard";
+import ShareButton from "@/components/patient/ShareButton";
 import { RatingBadge } from "@/components/patient/StarRating";
 import { getDoctorById, easyhmsFetch } from "@/lib/api/server";
 import { mapDoctors } from "@/lib/api/mappers";
@@ -247,12 +248,19 @@ export default async function DoctorDetailPage({ params }: PageProps) {
 
                   {/* Identity */}
                   <div className="min-w-0 flex-1">
-                    <h1 className="text-xl sm:text-2xl font-extrabold text-slate-900 tracking-tight flex items-center gap-2 flex-wrap">
-                      {doctor.name}
-                      {doctor.verified && (
-                        <BadgeCheck className="w-5 h-5 text-brand-teal shrink-0" />
-                      )}
-                    </h1>
+                    <div className="flex items-start justify-between gap-4 flex-wrap">
+                      <h1 className="text-xl sm:text-2xl font-extrabold text-slate-900 tracking-tight flex items-center gap-2 flex-wrap">
+                        {doctor.name}
+                        {doctor.verified && (
+                          <BadgeCheck className="w-5 h-5 text-brand-teal shrink-0" />
+                        )}
+                      </h1>
+                      <ShareButton 
+                        title={`Book Appointment with ${doctor.name}`} 
+                        text={`Book an appointment with ${doctor.name}, ${doctor.specialty} in ${doctor.city} on NexEagle Doctor Dekho.`}
+                        url={`https://nexeagle.com/doctors/${canonicalSlug}`}
+                      />
+                    </div>
                     <p className="text-sm font-bold text-brand-teal mt-1">{doctor.specialty}</p>
                     {doctor.qualifications && (
                       <p className="text-sm text-slate-500 mt-0.5">{doctor.qualifications}</p>

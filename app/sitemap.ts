@@ -2,6 +2,7 @@ import type { MetadataRoute } from "next";
 import { easyhmsFetch } from "@/lib/api/server";
 import { mapDoctors } from "@/lib/api/mappers";
 import { doctors as mockDoctors, doctorSlug, specialties, CITIES, AREAS_BY_CITY } from "@/data/patient";
+import { medicalArticles } from "@/data/wiki";
 import type { DoctorsResponseDto } from "@/lib/api/types";
 
 const BASE_URL = "https://nexeagle.com";
@@ -139,6 +140,16 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
         lastModified: now,
         changeFrequency: "weekly",
         priority: 0.8,
+      });
+    }
+
+    // Generate Health Wiki paths
+    for (const article of medicalArticles) {
+      pseoEntries.push({
+        url: `${BASE_URL}/health/conditions/${article.id}`,
+        lastModified: article.updatedAt ? new Date(article.updatedAt) : now,
+        changeFrequency: "monthly",
+        priority: 0.8, // High priority for YMYL informational content
       });
     }
 
