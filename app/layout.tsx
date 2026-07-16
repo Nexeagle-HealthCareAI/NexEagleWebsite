@@ -36,7 +36,7 @@ export const metadata: Metadata = {
         alt: "NexEagle - Healthcare AI Solutions",
       },
     ],
-    locale: "en_US",
+    locale: "en_IN",
     type: "website",
   },
   twitter: {

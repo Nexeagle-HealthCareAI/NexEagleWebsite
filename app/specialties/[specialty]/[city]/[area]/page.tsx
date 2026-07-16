@@ -62,7 +62,7 @@ export default function SpecialtyCityAreaPage({ params }: PageProps) {
         "name": `What is the consultation fee for a ${specialty.name} in ${areaName}, ${city.name}?`,
         "acceptedAnswer": {
           "@type": "Answer",
-          "text": `Consultation fees for a ${specialty.name} in ${areaName}, ${city.name} typically range between ₹500 and ₹1500, depending on the doctor's experience and hospital affiliation.`
+          "text": `Consultation fees vary by doctor, experience, and hospital affiliation. NexEagle shows each ${specialty.name}'s actual fee upfront on their profile before you book, so there are no surprises.`
         }
       },
       {
