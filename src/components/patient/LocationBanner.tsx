@@ -4,6 +4,7 @@ import { MapPin } from "lucide-react";
 import type { CityOption } from "@/data/patient";
 import { cityLabel } from "@/data/patient";
 import type { GeoStatus } from "@/lib/geo";
+import { useTranslation } from "@/lib/i18n/I18nContext";
 
 interface LocationBannerProps {
   status: GeoStatus;
@@ -20,6 +21,8 @@ const ALL_VALUE = "__all__";
  * location isn't available — never narrows the list without a resolved city.
  */
 export default function LocationBanner({ status, city, cities, onSelect }: LocationBannerProps) {
+  const { t } = useTranslation();
+
   function handleChange(e: React.ChangeEvent<HTMLSelectElement>) {
     if (e.target.value === ALL_VALUE) {
       onSelect(null);
@@ -40,22 +43,31 @@ export default function LocationBanner({ status, city, cities, onSelect }: Locat
       )}
       <span className="min-w-0 truncate">
         {detecting ? (
-          "Detecting your location…"
+          t("location.detecting")
         ) : city ? (
-          <>
-            Showing doctors near <b className="font-bold text-slate-900">{cityLabel(city)}</b>
-          </>
+          (() => {
+            // Split the raw template (no vars passed, so "{city}" stays literal) around the
+            // placeholder so the city name itself can be its own bold element.
+            const [before, after] = t("location.showingNear").split("{city}");
+            return (
+              <>
+                {before}
+                <b className="font-bold text-slate-900">{cityLabel(city)}</b>
+                {after}
+              </>
+            );
+          })()
         ) : (
-          "Showing all doctors"
+          t("location.showingAll")
         )}
       </span>
       <select
         value={city?.id ?? ALL_VALUE}
         onChange={handleChange}
-        aria-label="Choose your location"
+        aria-label={t("location.allLocations")}
         className="ml-auto shrink-0 bg-transparent text-xs font-bold text-brand-teal focus:outline-none cursor-pointer"
       >
-        <option value={ALL_VALUE}>All locations</option>
+        <option value={ALL_VALUE}>{t("location.allLocations")}</option>
         {cities.map((c) => (
           <option key={c.id} value={c.id}>
             {cityLabel(c)}

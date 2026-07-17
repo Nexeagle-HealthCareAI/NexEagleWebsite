@@ -1,0 +1,165 @@
+// ─────────────────────────────────────────────────────────────────────────────
+// Canonical English dictionary — the source of truth for every translation key.
+// hi.ts / bn.ts / hinglish.ts are each typed as Record<keyof typeof en, string>,
+// so TypeScript errors if any of them is missing a key added here.
+//
+// Scope: the patient booking flow only (home search, doctor directory, doctor
+// profile, booking form, reviews) — the strings an elderly Hindi/Bengali-speaking
+// patient actually needs to read doctor profiles and book a visit. The corporate/
+// marketing site (careers, security, solutions/*, etc.) stays English-only; that's
+// a much larger, separate effort if wanted later.
+// ─────────────────────────────────────────────────────────────────────────────
+
+export const en = {
+  // ── Top bar ──────────────────────────────────────────────────────────────
+  "topbar.forHospitals": "For Hospitals",
+  "topbar.allIndia": "All India",
+  "topbar.detecting": "Detecting…",
+  "topbar.allowLocationPill": "Allow Location",
+  "topbar.findDoctorsNearYou": "Find doctors near you",
+  "topbar.allowLocationDesc": "Allow location access to automatically show the best specialists in your city. You can always pick a city manually later.",
+  "topbar.allowLocationConfirm": "Allow Location",
+  "topbar.chooseCityManually": "Choose City Manually",
+
+  // ── Location banner ──────────────────────────────────────────────────────
+  "location.detecting": "Detecting your location…",
+  "location.showingNear": "Showing doctors near {city}",
+  "location.showingAll": "Showing all doctors",
+  "location.allLocations": "All locations",
+
+  // ── Hero / search ────────────────────────────────────────────────────────
+  "hero.subtitle": "Find the care you deserve. Book verified top specialists near you instantly. No login, no app downloads—just seamless healthcare access.",
+  "hero.searchPlaceholder": "Doctor, hospital, or symptom...",
+  "hero.allSpecialities": "All Specialities",
+  "hero.search": "Search",
+  "hero.browseAll": "Browse All Specialities",
+  "hero.voiceNotSupported": "Voice search is not supported in this browser. Please try Chrome, Edge, or Safari.",
+  "hero.voiceSearchTitle": "Search by voice",
+
+  // ── Specialty rail ───────────────────────────────────────────────────────
+  "specialtyRail.heading": "Consult by Speciality",
+  "specialtyRail.subtitle": "{n} specialities · pick one to filter doctors",
+  "specialtyRail.clearFilter": "Clear filter",
+
+  // ── Doctor directory ─────────────────────────────────────────────────────
+  "directory.specialists": "Specialists",
+  "directory.topSpecialists": "Top Specialists",
+  "directory.inCity": "in {city}",
+  "directory.allIndiaSuffix": "— All India",
+  "directory.loading": "Loading top doctors…",
+  "directory.resultCountSingular": "{n} verified expert available",
+  "directory.resultCountPlural": "{n} verified experts available",
+  "directory.radiusWithin": "Within {n} km",
+  "directory.sortRelevance": "Relevance",
+  "directory.sortDistance": "Nearest First",
+  "directory.sortRating": "Highest Rated",
+  "directory.sortExperience": "Most Experienced",
+  "directory.sortFee": "Lowest Fee",
+  "directory.aiHintWithSpecialty": "Showing {specialty} specialists based on “{query}”",
+  "directory.aiHintGeneric": "Showing matching specialists based on “{query}”",
+  "directory.findingSpecialists": "Finding the best specialists for you…",
+  "directory.lookingBroadly": "Looking a little more broadly for you…",
+  "directory.noMatch": "No doctors match your criteria",
+  "directory.noMatchDesc": "We couldn't find any specialists matching your search in this area. Try adjusting your filters or searching across All India.",
+
+  // ── Doctor card ──────────────────────────────────────────────────────────
+  "doctorCard.yrsExp": "{n}+ yrs exp",
+  "doctorCard.minWait": "~{n} min wait",
+  "doctorCard.directions": "Directions",
+  "doctorCard.mapNotSet": "Map not set",
+  "doctorCard.kmAway": "{km} away",
+  "doctorCard.featured": "Featured",
+
+  // ── Doctor detail page chrome ────────────────────────────────────────────
+  "doctorDetail.allDoctors": "All Doctors",
+  "doctorDetail.yearsExperience": "years experience",
+  "doctorDetail.patients": "patients",
+  "doctorDetail.recommend": "recommend",
+  "doctorDetail.wait": "wait",
+  "doctorDetail.verifiedProfile": "Verified profile",
+  "doctorDetail.practicesAt": "Practices At",
+  "doctorDetail.about": "About",
+  "doctorDetail.focusAreas": "Focus Areas",
+  "doctorDetail.similarIn": "Similar {specialty}s in {city}",
+  "doctorDetail.viewAllIn": "View all {specialty}s in {city}",
+
+  // ── Booking panel ────────────────────────────────────────────────────────
+  "booking.title": "Reserve your visit",
+  "booking.titleDone": "You're all set! 🎉",
+  "booking.subtitle": "Fill in the details below.",
+  "booking.subtitleDone": "We'll confirm once the hospital reviews.",
+  "booking.preferredDate": "Preferred date",
+  "booking.preferredTime": "Preferred time",
+  "booking.morning": "Morning",
+  "booking.afternoon": "Afternoon",
+  "booking.evening": "Evening",
+  "booking.night": "Night",
+  "booking.continue": "Continue",
+  "booking.back": "Back",
+  "booking.fullName": "Full Name",
+  "booking.fullNamePlaceholder": "Patient's full name",
+  "booking.age": "Age",
+  "booking.agePlaceholder": "Years",
+  "booking.sex": "Sex",
+  "booking.sexMale": "Male",
+  "booking.sexFemale": "Female",
+  "booking.sexOther": "Other",
+  "booking.mobile": "Mobile Number",
+  "booking.mobilePlaceholder": "10-digit mobile number",
+  "booking.email": "Email (optional)",
+  "booking.reason": "Reason for visit (optional)",
+  "booking.reasonPlaceholder": "Briefly describe your symptoms or reason",
+  "booking.guardianName": "Guardian name (optional)",
+  "booking.guardianNamePlaceholder": "e.g. Ramesh Kumar",
+  "booking.confirmAppointment": "Confirm Appointment",
+  "booking.bookingInProgress": "Booking…",
+  "booking.errorNameRequired": "Please enter the patient's name.",
+  "booking.errorAgeRequired": "Please enter a valid age.",
+  "booking.errorMobileRequired": "Please enter a valid 10-digit mobile number.",
+  "booking.errorSexRequired": "Please select the patient's sex.",
+  "booking.errorDateRequired": "Please choose a preferred date.",
+  "booking.errorTimeRequired": "Please choose a preferred time window.",
+  "booking.reference": "Booking reference",
+  "booking.confirmationNote": "We'll confirm once the hospital reviews.",
+  "booking.bookAnother": "Book another appointment",
+  "booking.directions": "Directions",
+  "booking.rateService": "How was your booking experience?",
+  "booking.ratingBad": "Bad",
+  "booking.ratingPoor": "Poor",
+  "booking.ratingOkay": "Okay",
+  "booking.ratingGood": "Good",
+  "booking.ratingVeryGood": "Very Good",
+
+  // ── Reviews ───────────────────────────────────────────────────────────────
+  "reviews.title": "Reviews",
+  "reviews.reviewsCount": "{n} reviews",
+  "reviews.noReviewsYet": "No reviews yet. Be the first to review {name}!",
+  "reviews.addCommentLabel": "Add a comment (optional)",
+  "reviews.commentPlaceholder": "Share your experience with {name}…",
+  "reviews.saving": "Saving…",
+  "reviews.addComment": "Add comment",
+  "reviews.thanksExtra": "Thanks for the extra detail!",
+  "reviews.ratingSaved": "Rating saved!",
+  "reviews.alreadyRated": "You already rated this doctor",
+  "reviews.rateDoctor": "Rate {name}",
+  "reviews.tapAStar": "Tap a star — it saves right away.",
+  "reviews.helpful": "Helpful",
+  "reviews.errorGeneric": "Couldn't save your rating — please try again.",
+  "reviews.errorComment": "Couldn't save your comment — please try again.",
+
+  // ── Footer ────────────────────────────────────────────────────────────────
+  "footer.needHelp": "Need help booking?",
+  "footer.areYouProvider": "Are you a provider?",
+  "footer.providerDesc": "Equip your clinic, hospital, lab or pharmacy with AI-powered tools, scribes and billing.",
+  "footer.exploreOS": "Explore NexEagle OS",
+  "footer.dataPrivate": "Your health data stays private & secure.",
+  "footer.brandBlurb": "Book in-clinic appointments with verified doctors near you. Powered by the NexEagle healthcare operating system.",
+  "footer.allRightsReserved": "All rights reserved.",
+  "footer.privacy": "Privacy",
+  "footer.terms": "Terms",
+
+  // ── Language toggle itself ───────────────────────────────────────────────
+  "language.choose": "Choose your language",
+} as const;
+
+export type TranslationKey = keyof typeof en;

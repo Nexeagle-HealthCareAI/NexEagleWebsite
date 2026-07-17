@@ -15,10 +15,13 @@ import {
   Languages,
 } from "lucide-react";
 import AnalyticsTracker from "@/components/AnalyticsTracker";
+import DoctorViewTracker from "@/components/patient/DoctorViewTracker";
 import PatientTopBar from "@/components/patient/PatientTopBar";
 import PatientFooter from "@/components/patient/PatientFooter";
 import BookingPanel from "@/components/patient/BookingPanel";
 import ReviewsSection from "@/components/patient/ReviewsSection";
+import DoctorCard from "@/components/patient/DoctorCard";
+import ShareButton from "@/components/patient/ShareButton";
 import { RatingBadge } from "@/components/patient/StarRating";
 import { getDoctorById, easyhmsFetch } from "@/lib/api/server";
 import { mapDoctors } from "@/lib/api/mappers";
@@ -40,6 +43,22 @@ async function resolveDoctor(slug: string): Promise<Doctor | null> {
   const doctorId = parseDoctorIdFromSlug(slug);
   const { doctor } = await getDoctorById(doctorId);
   return doctor;
+}
+
+async function getSimilarDoctors(doctor: Doctor): Promise<Doctor[]> {
+  try {
+    const result = await easyhmsFetch<DoctorsResponseDto>("/public/doctors");
+    let allDoctors = mockDoctors;
+    if (!result.notConfigured && result.data) {
+      allDoctors = mapDoctors(result.data.doctors);
+    }
+    
+    return allDoctors
+      .filter((d) => d.id !== doctor.id && d.specialtyId === doctor.specialtyId && d.city === doctor.city)
+      .slice(0, 3); // Get top 3
+  } catch {
+    return [];
+  }
 }
 
 export async function generateStaticParams() {
@@ -104,6 +123,9 @@ export default async function DoctorDetailPage({ params }: PageProps) {
   const doctor = await resolveDoctor(params.doctorSlug);
   if (!doctor) notFound();
 
+  const similarDoctors = await getSimilarDoctors(doctor);
+  const canonicalSlug = doctorSlug(doctor, doctor.city);
+
   const locationLine =
     [doctor.hospitalName, doctor.city].filter(Boolean).join(", ") || doctor.clinic;
 
@@ -121,10 +143,22 @@ export default async function DoctorDetailPage({ params }: PageProps) {
             name: doctor.hospitalName,
             address: {
               "@type": "PostalAddress",
+              streetAddress: doctor.address || undefined,
               addressLocality: doctor.city || undefined,
               addressRegion: doctor.state || undefined,
+              postalCode: doctor.pincode || undefined,
               addressCountry: "IN",
             },
+            ...(doctor.latitude && doctor.longitude ? {
+              location: {
+                "@type": "Place",
+                geo: {
+                  "@type": "GeoCoordinates",
+                  latitude: doctor.latitude.toString(),
+                  longitude: doctor.longitude.toString()
+                }
+              }
+            } : {})
           },
         }
       : {}),
@@ -175,6 +209,7 @@ export default async function DoctorDetailPage({ params }: PageProps) {
         dangerouslySetInnerHTML={{ __html: JSON.stringify(breadcrumbs) }}
       />
       <AnalyticsTracker title={`${doctor.name} — ${doctor.specialty} | NexEagle Doctor Dekho`} />
+      <DoctorViewTracker doctorId={doctor.id} />
 
       {/* Patient topbar (no geo props needed on this page) */}
       <PatientTopBar />
@@ -190,11 +225,13 @@ export default async function DoctorDetailPage({ params }: PageProps) {
             <ChevronLeft className="w-4 h-4" /> All Doctors
           </Link>
 
-          {/* ── DESKTOP / TABLET: 2/3 + 1/3 grid ── */}
-          <div className="grid grid-cols-1 lg:grid-cols-[2fr_1fr] gap-8 items-start">
+          {/* ── DESKTOP: 2/3 + 1/3 grid. MOBILE: identity card → booking panel → everything
+              else, via order-* + explicit grid placement, so a mobile visitor sees who the
+              doctor is and can start booking before scrolling through About/Reviews. ── */}
+          <div className="grid grid-cols-1 lg:grid-cols-[2fr_1fr] gap-6 items-start">
 
-            {/* ───────── LEFT: Doctor Info (2/3) ───────── */}
-            <div className="space-y-6">
+            {/* ───────── Doctor identity card (own grid item — order-1 on mobile) ───────── */}
+            <div className="order-1 lg:order-none lg:col-start-1 lg:row-start-1">
 
               {/* Doctor identity card */}
               <div className="bg-white rounded-3xl border border-slate-200/80 shadow-sm p-6">
@@ -218,12 +255,19 @@ export default async function DoctorDetailPage({ params }: PageProps) {
 
                   {/* Identity */}
                   <div className="min-w-0 flex-1">
-                    <h1 className="text-xl sm:text-2xl font-extrabold text-slate-900 tracking-tight flex items-center gap-2 flex-wrap">
-                      {doctor.name}
-                      {doctor.verified && (
-                        <BadgeCheck className="w-5 h-5 text-brand-teal shrink-0" />
-                      )}
-                    </h1>
+                    <div className="flex items-start justify-between gap-4 flex-wrap">
+                      <h1 className="text-xl sm:text-2xl font-extrabold text-slate-900 tracking-tight flex items-center gap-2 flex-wrap">
+                        {doctor.name}
+                        {doctor.verified && (
+                          <BadgeCheck className="w-5 h-5 text-brand-teal shrink-0" />
+                        )}
+                      </h1>
+                      <ShareButton 
+                        title={`Book Appointment with ${doctor.name}`} 
+                        text={`Book an appointment with ${doctor.name}, ${doctor.specialty} in ${doctor.city} on NexEagle Doctor Dekho.`}
+                        url={`https://nexeagle.com/doctors/${canonicalSlug}`}
+                      />
+                    </div>
                     <p className="text-sm font-bold text-brand-teal mt-1">{doctor.specialty}</p>
                     {doctor.qualifications && (
                       <p className="text-sm text-slate-500 mt-0.5">{doctor.qualifications}</p>
@@ -289,6 +333,10 @@ export default async function DoctorDetailPage({ params }: PageProps) {
 
                 {/* Mobile Book CTA moved to fixed bottom bar */}
               </div>
+            </div>
+
+            {/* ───────── Rest of doctor info (own grid item — order-3 on mobile, after booking) ───────── */}
+            <div className="order-3 lg:order-none lg:col-start-1 lg:row-start-2 space-y-6">
 
               {/* Practices at */}
               {locationLine && (
@@ -304,9 +352,12 @@ export default async function DoctorDetailPage({ params }: PageProps) {
                       {doctor.hospitalName && (
                         <p className="font-bold text-sm text-slate-900 truncate">{doctor.hospitalName}</p>
                       )}
+                      {doctor.address && (
+                        <p className="text-xs text-slate-600 mt-0.5">{doctor.address}</p>
+                      )}
                       {doctor.city && (
                         <p className="text-xs text-slate-500 mt-0.5">
-                          {doctor.city}{doctor.state ? `, ${doctor.state}` : ""}
+                          {doctor.city}{doctor.state ? `, ${doctor.state}` : ""}{doctor.pincode ? ` – ${doctor.pincode}` : ""}
                         </p>
                       )}
                     </div>
@@ -362,19 +413,46 @@ export default async function DoctorDetailPage({ params }: PageProps) {
               </div>
             </div>
 
-            {/* ───────── RIGHT: Booking Panel (1/3) ─────────
+            {/* ───────── Booking Panel ─────────
+                order-2 on mobile: appears right after the identity card, before Practices
+                At/About/Reviews, so booking is reachable without scrolling past all of that.
+                lg:row-span-2 so on desktop it still spans both rows of the left column (identity
+                card + rest-of-content) — needed for lg:sticky to track the full scroll height,
+                same as before this was split into two left-column grid items.
                 lg:max-h + overflow-y-auto so the panel scrolls WITHIN itself once its own
                 content (e.g. the multi-block "done" success state) is taller than the
                 viewport — otherwise the sticky positioning pins it in place with no way to
                 reach the rest of it, since the outer page has nowhere further to scroll. */}
             <div
               id="book"
-              className="lg:sticky lg:top-24 lg:max-h-[calc(100vh-7rem)] lg:overflow-y-auto lg:overscroll-contain"
+              className="order-2 lg:order-none lg:col-start-2 lg:row-start-1 lg:row-span-2 lg:sticky lg:top-24 lg:max-h-[calc(100vh-7rem)] lg:overflow-y-auto lg:overscroll-contain"
             >
               <BookingPanel doctor={doctor} />
             </div>
           </div>
         </div>
+
+        {/* ── SEO Semantic Silo: Similar Doctors ── */}
+        {similarDoctors.length > 0 && (
+          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12 border-t border-slate-200 mt-12">
+            <h3 className="font-display text-2xl font-extrabold text-slate-900 mb-6">
+              Similar {doctor.specialty}s in {doctor.city}
+            </h3>
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+              {similarDoctors.map((doc) => (
+                <DoctorCard key={doc.id} doctor={doc} />
+              ))}
+            </div>
+            <div className="mt-8">
+              <Link 
+                href={`/specialties/${doctor.specialtyId}/${doctor.city.toLowerCase().replace(/[^a-z0-9]+/g, "-")}`}
+                className="inline-flex items-center text-brand-teal font-bold hover:underline"
+              >
+                View all {doctor.specialty}s in {doctor.city} &rarr;
+              </Link>
+            </div>
+          </div>
+        )}
       </main>
 
       <PatientFooter />

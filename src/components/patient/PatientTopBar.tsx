@@ -8,6 +8,8 @@ import type { CityOption } from "@/data/patient";
 import { cityLabel } from "@/data/patient";
 import type { GeoStatus } from "@/lib/geo";
 import { cn } from "@/lib/utils";
+import { useTranslation } from "@/lib/i18n/I18nContext";
+import LanguageToggle from "./LanguageToggle";
 
 interface PatientTopBarProps {
   /** Geolocation detection status */
@@ -29,6 +31,7 @@ export default function PatientTopBar({
   onCityChange,
   onRequestLocation,
 }: PatientTopBarProps) {
+  const { t } = useTranslation();
   const [showDropdown, setShowDropdown] = useState(false);
   const [showPrompt, setShowPrompt] = useState(false);
 
@@ -90,7 +93,7 @@ export default function PatientTopBar({
                   {detecting ? (
                     <>
                       <span className="w-2 h-2 rounded-full bg-brand-teal animate-pulse shadow-[0_0_8px_rgba(20,184,166,0.6)]" />
-                      <span className="hidden sm:inline font-medium">Detecting…</span>
+                      <span className="hidden sm:inline font-medium">{t("topbar.detecting")}</span>
                       <span className="sm:hidden font-medium">…</span>
                     </>
                   ) : city ? (
@@ -104,13 +107,13 @@ export default function PatientTopBar({
                   ) : denied ? (
                     <>
                       <Locate className="w-4 h-4 shrink-0" />
-                      <span className="hidden sm:inline font-medium">Allow Location</span>
+                      <span className="hidden sm:inline font-medium">{t("topbar.allowLocationPill")}</span>
                       <span className="sm:hidden">📍</span>
                     </>
                   ) : (
                     <>
                       <MapPin className="w-4 h-4 shrink-0" />
-                      <span className="hidden sm:inline font-medium">All India</span>
+                      <span className="hidden sm:inline font-medium">{t("topbar.allIndia")}</span>
                       <ChevronDown className="w-3.5 h-3.5 shrink-0 opacity-50 sm:hidden" />
                     </>
                   )}
@@ -126,7 +129,7 @@ export default function PatientTopBar({
                         !city ? "text-brand-teal bg-teal-50/50 font-bold" : "text-slate-600 font-medium hover:bg-slate-50"
                       )}
                     >
-                      🌍 All India
+                      🌍 {t("topbar.allIndia")}
                     </button>
                     <div className="h-px bg-slate-100 my-1 mx-3" />
                     {cities.map((c) => (
@@ -152,13 +155,16 @@ export default function PatientTopBar({
             {/* Provider CTA */}
             <Link href="/business" className="shrink-0">
               <button className="hidden sm:inline-flex items-center gap-2 px-5 py-2.5 rounded-full bg-brand-teal hover:bg-teal-500 text-white text-sm font-bold transition-all duration-300 shadow-[0_4px_14px_0_rgba(20,184,166,0.3)] hover:shadow-[0_6px_20px_rgba(20,184,166,0.4)] hover:-translate-y-0.5">
-                <span>For Hospitals</span>
+                <span>{t("topbar.forHospitals")}</span>
                 <ArrowRight className="w-4 h-4" />
               </button>
               <button className="sm:hidden inline-flex items-center justify-center w-10 h-10 rounded-full bg-teal-50 text-brand-teal border border-teal-100 hover:bg-teal-100 transition-colors">
                 <ArrowRight className="w-4 h-4" />
               </button>
             </Link>
+
+            {/* Language toggle — persistent, top-right, per the feature spec */}
+            <LanguageToggle />
           </div>
         </div>
       </header>
@@ -180,11 +186,10 @@ export default function PatientTopBar({
             </div>
             <div>
               <h3 className="font-display font-bold text-slate-900 text-xl tracking-tight">
-                Find doctors near you
+                {t("topbar.findDoctorsNearYou")}
               </h3>
               <p className="text-sm text-slate-500 mt-2 leading-relaxed font-medium">
-                Allow location access to automatically show the best specialists in your city.
-                You can always pick a city manually later.
+                {t("topbar.allowLocationDesc")}
               </p>
             </div>
             <div className="flex flex-col gap-3 pt-2">
@@ -195,13 +200,13 @@ export default function PatientTopBar({
                 }}
                 className="w-full py-3.5 rounded-xl bg-brand-teal text-white font-semibold text-sm shadow-[0_4px_14px_0_rgba(20,184,166,0.3)] hover:bg-brand-teal/90 hover:shadow-[0_6px_20px_rgba(20,184,166,0.4)] transition-all duration-300"
               >
-                Allow Location
+                {t("topbar.allowLocationConfirm")}
               </button>
               <button
                 onClick={() => setShowPrompt(false)}
                 className="w-full py-3.5 rounded-xl bg-slate-50 text-slate-700 font-semibold text-sm hover:bg-slate-100 transition-colors"
               >
-                Choose City Manually
+                {t("topbar.chooseCityManually")}
               </button>
             </div>
           </div>

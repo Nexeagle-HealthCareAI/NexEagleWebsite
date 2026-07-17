@@ -7,6 +7,8 @@ import {
   type LucideIcon,
 } from "lucide-react";
 import { specialties } from "@/data/patient";
+import { useTranslation } from "@/lib/i18n/I18nContext";
+import { translateSpecialty } from "@/lib/i18n/specialties";
 
 const iconMap: Record<string, LucideIcon> = {
   stethoscope: Stethoscope,
@@ -35,15 +37,16 @@ interface SpecialtyRailProps {
 
 /** Horizontal rail of specialties — the primary "browse by need" entry point. */
 export default function SpecialtyRail({ selected, onSelect }: SpecialtyRailProps) {
+  const { t, locale } = useTranslation();
   return (
     <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-10">
       <div className="flex items-end justify-between mb-5">
         <div>
           <h2 className="text-xl sm:text-2xl font-extrabold text-slate-900 tracking-tight">
-            Consult by Speciality
+            {t("specialtyRail.heading")}
           </h2>
           <p className="text-sm text-slate-500 mt-0.5">
-            {specialties.length} specialities · pick one to filter doctors
+            {t("specialtyRail.subtitle", { n: specialties.length })}
           </p>
         </div>
         {selected && (
@@ -51,7 +54,7 @@ export default function SpecialtyRail({ selected, onSelect }: SpecialtyRailProps
             onClick={() => onSelect("")}
             className="text-xs font-bold text-brand-teal hover:underline"
           >
-            Clear filter
+            {t("specialtyRail.clearFilter")}
           </button>
         )}
       </div>
@@ -81,7 +84,7 @@ export default function SpecialtyRail({ selected, onSelect }: SpecialtyRailProps
                 <Icon className="w-5 h-5" />
               </span>
               <span className="text-[10px] sm:text-[11px] font-bold text-slate-700 text-center leading-tight line-clamp-2">
-                {spec.name}
+                {translateSpecialty(spec.id, spec.name, locale)}
               </span>
             </motion.button>
           );

@@ -20,7 +20,12 @@ import {
 import { getDirectionsUrl, type Doctor } from "@/data/patient";
 import { useCreateAppointment, useDoctorAvailability, useSubmitReview } from "@/lib/api/hooks";
 import { getSavedRating, markRated } from "@/lib/ratingGuard";
+import { reportEngagement } from "@/lib/pwaInstall";
 import { cn } from "@/lib/utils";
+
+// Same canonical relation-prefix set as the hospital-side PatientForm.tsx (RELATION_OPTIONS)
+// — kept identical so "S/O"/"C/O"/etc. mean the same thing everywhere in the product.
+const GUARDIAN_RELATIONS = ["C/O", "S/O", "D/O", "W/O", "H/O", "G/O", "F/O", "M/O"];
 
 // 5-point emoji scale for the post-booking service rating — a quick, no-comment tap that
 // feeds the SAME doctor rating shown publicly (just a friendlier entry point than stars,
@@ -61,6 +66,8 @@ export default function BookingPanel({ doctor }: BookingPanelProps) {
   const [sex, setSex]     = useState<"Male" | "Female" | "Other" | "">("");
   const [phone, setPhone] = useState("");
   const [email, setEmail] = useState("");
+  const [guardianName, setGuardianName] = useState("");
+  const [guardianRelation, setGuardianRelation] = useState(GUARDIAN_RELATIONS[0]);
   const [reason, setReason] = useState("");
   const [errors, setErrors] = useState<Record<string, string>>({});
 
@@ -143,13 +150,22 @@ export default function BookingPanel({ doctor }: BookingPanelProps) {
       const selectedRange = TIME_RANGES.find((r) => r.id === timeRange);
       const res = await createAppointment.mutateAsync({
         doctorId: doctor.id,
-        patient: { fullName: name, mobile: phone, age: +age, sex, ageUnit: "years" } as any,
+        patient: {
+          fullName: name,
+          mobile: phone,
+          age: +age,
+          sex,
+          ageUnit: "years",
+          guardianName: guardianName.trim() || undefined,
+          guardianRelation: guardianName.trim() ? guardianRelation : undefined,
+        } as any,
         preferredDate: date,
         preferredTime,
         reason: [reason.trim(), selectedRange ? `Preferred window: ${selectedRange.label} (${selectedRange.time})` : ""].filter(Boolean).join(" | ") || undefined,
         referrerUrl: typeof document !== "undefined" ? document.referrer || undefined : undefined,
       });
       if (res.reference) setServerRef(res.reference);
+      reportEngagement("booking_success");
     } catch { /* use local id */ }
     finally { setSubmitting(false); setStep("done"); }
   }
@@ -157,6 +173,7 @@ export default function BookingPanel({ doctor }: BookingPanelProps) {
   function reset() {
     setStep("visit"); setDate(""); setTimeRange(""); setPreferredTime(undefined);
     setName(""); setAge(""); setSex(""); setPhone(""); setEmail(""); setReason("");
+    setGuardianName(""); setGuardianRelation(GUARDIAN_RELATIONS[0]);
     setErrors({}); setExpectedOtp(""); setOtp(""); setOtpError(""); setResendIn(0);
     setSubmitting(false); setServerRef(null);
     setServiceRating(getSavedRating(doctor.id) ?? 0); setServiceRatingSaving(false);
@@ -377,6 +394,28 @@ export default function BookingPanel({ doctor }: BookingPanelProps) {
             <input value={email} onChange={(e) => setEmail(e.target.value)} placeholder="For booking confirmation" type="email" className={inputCls(errors.email)} />
           </Field>
 
+          {/* Guardian / relative name (optional) */}
+          <Field label="Guardian / Relative Name (optional)">
+            <div className="flex items-center rounded-xl border border-slate-200 bg-white shadow-sm focus-within:border-brand-teal/40 focus-within:ring-1 focus-within:ring-brand-teal/10 overflow-hidden">
+              <select
+                value={guardianRelation}
+                onChange={(e) => setGuardianRelation(e.target.value)}
+                aria-label="Relation"
+                className="pl-3 pr-1.5 py-2.5 text-sm text-slate-500 font-semibold border-r border-slate-200 bg-transparent focus:outline-none cursor-pointer shrink-0"
+              >
+                {GUARDIAN_RELATIONS.map((r) => (
+                  <option key={r} value={r}>{r}</option>
+                ))}
+              </select>
+              <input
+                value={guardianName}
+                onChange={(e) => setGuardianName(e.target.value)}
+                placeholder="Guardian / relative name"
+                className="flex-1 min-w-0 px-3 py-2.5 text-sm text-slate-800 bg-transparent focus:outline-none"
+              />
+            </div>
+          </Field>
+
           {/* Reason (optional) */}
           <Field label="Reason for Visit (optional)">
             <input value={reason} onChange={(e) => setReason(e.target.value)} placeholder="e.g. fever, follow-up, checkup…" className={inputCls()} />
@@ -411,6 +450,7 @@ export default function BookingPanel({ doctor }: BookingPanelProps) {
             <Row label="Age / Sex" value={`${age} yrs · ${sex}`} />
             <Row label="Mobile" value={`+91 ${phone} ✓`} />
             {email && <Row label="Email" value={email} />}
+            {guardianName.trim() && <Row label="Guardian" value={`${guardianRelation} ${guardianName.trim()}`} />}
             <Row label="Visit" value={`${selectedDateLabel} · ${selectedRange?.label} (${selectedRange?.time})`} accent />
             {locationLine && <Row label="Hospital" value={locationLine} />}
           </div>

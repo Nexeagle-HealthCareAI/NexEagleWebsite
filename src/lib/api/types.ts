@@ -24,8 +24,12 @@ export interface DoctorDto {
   languages?: string[] | null;
   hospitalId: string;
   hospitalName?: string | null;
+  // Full street-level address as entered on the hospital's own profile — previously missing
+  // from this DTO, so doctor cards could only ever show "City, State".
+  address?: string | null;
   city?: string | null;
   state?: string | null;
+  pincode?: string | null;
   // GPS pin for a "get directions" link — inherited from the hospital, since a doctor
   // doesn't have their own address.
   latitude?: number | null;
@@ -135,6 +139,11 @@ export interface CreateAppointmentRequest {
     age?: number;
     ageUnit?: string;
     sex?: string;
+    // Optional — same GuardianName/GuardianRelation fields the hospital-side PatientForm
+    // already collects (PatientRegistration.GuardianName/GuardianRelation). guardianRelation
+    // is only meaningful (and only sent) alongside a non-empty guardianName.
+    guardianName?: string;
+    guardianRelation?: string;
   };
   preferredDate: string; // YYYY-MM-DD
   preferredTime?: string; // "HH:mm:ss", optional/non-binding

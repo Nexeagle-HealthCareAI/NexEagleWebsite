@@ -38,11 +38,15 @@ export interface Doctor {
   // hospitalName now that the directory spans every publicly-listed hospital.
   // Mock data leaves this undefined and uses `clinic` instead — see DoctorCard.tsx.
   hospitalName?: string;
+  // Full street-level address as entered on the hospital's own profile — real API only,
+  // undefined for mock data (same optional/hide-when-absent convention as the KPI fields).
+  address?: string;
   // City name alone is NOT unique in India (e.g. "Kishanganj" is a town in Bihar
   // AND a locality in Delhi). Always filter/match on (city, state) together —
   // see CityOption/cityKey below. Never compare `city` in isolation.
   city: string;
   state: string;
+  pincode?: string;
   area: string;
   clinic: string;
   languages: string[];
@@ -85,11 +89,11 @@ export function parseDoctorIdFromSlug(slug: string): string {
 // on desktop). Prefers the hospital's GPS pin when available; falls back to a text
 // search on hospital name + city/state so the link still works for mock/incomplete
 // data. Returns null only when there's truly nothing to search for.
-export function getDirectionsUrl(doctor: Pick<Doctor, "latitude" | "longitude" | "hospitalName" | "city" | "state">): string | null {
+export function getDirectionsUrl(doctor: Pick<Doctor, "latitude" | "longitude" | "hospitalName" | "address" | "city" | "state">): string | null {
   if (doctor.latitude != null && doctor.longitude != null) {
     return `https://www.google.com/maps/dir/?api=1&destination=${doctor.latitude},${doctor.longitude}`;
   }
-  const query = [doctor.hospitalName, doctor.city, doctor.state].filter(Boolean).join(", ");
+  const query = [doctor.hospitalName, doctor.address, doctor.city, doctor.state].filter(Boolean).join(", ");
   if (!query) return null;
   return `https://www.google.com/maps/dir/?api=1&destination=${encodeURIComponent(query)}`;
 }
