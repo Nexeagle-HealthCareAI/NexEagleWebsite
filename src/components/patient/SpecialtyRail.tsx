@@ -4,6 +4,8 @@ import { motion } from "framer-motion";
 import {
   Stethoscope, Baby, HeartPulse, Sparkles, Bone, Flower2, Smile, Ear,
   Eye, Brain, Droplets, Activity, Zap, Wind, Shield, Dumbbell, Apple,
+  Scissors, BrainCircuit, Wand2, GitBranch, Syringe, ScanLine, Microscope,
+  Siren, Armchair, Trophy,
   type LucideIcon,
 } from "lucide-react";
 import { specialties } from "@/data/patient";
@@ -28,6 +30,16 @@ const iconMap: Record<string, LucideIcon> = {
   shield:      Shield,
   dumbbell:    Dumbbell,
   apple:       Apple,
+  scissors:      Scissors,
+  brainCircuit:  BrainCircuit,
+  wand2:         Wand2,
+  gitBranch:     GitBranch,
+  syringe:       Syringe,
+  scanLine:      ScanLine,
+  microscope:    Microscope,
+  siren:         Siren,
+  armchair:      Armchair,
+  trophy:        Trophy,
 };
 
 interface SpecialtyRailProps {
@@ -59,7 +71,7 @@ export default function SpecialtyRail({ selected, onSelect }: SpecialtyRailProps
         )}
       </div>
 
-      {/* 4 cols → 5 → 10 — fits 20 tiles in exactly 2 rows on desktop */}
+      {/* 4 cols → 5 → 10 — wraps to further rows as the specialty list grows past 20 */}
       <div className="grid grid-cols-4 sm:grid-cols-5 md:grid-cols-10 gap-2 sm:gap-3">
         {specialties.map((spec, i) => {
           const Icon = iconMap[spec.icon] ?? Stethoscope;

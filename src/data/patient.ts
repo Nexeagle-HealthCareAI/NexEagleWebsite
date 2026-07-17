@@ -193,6 +193,22 @@ export const specialties: Specialty[] = [
   { id: "rheumatology",   name: "Rheumatology",         icon: "activity",     blurb: "Arthritis, lupus & autoimmune disease",  accent: "text-emerald-600 bg-emerald-50"},
   { id: "physiotherapy",  name: "Physiotherapy",        icon: "dumbbell",     blurb: "Rehabilitation, pain & mobility",         accent: "text-lime-600 bg-lime-50"     },
   { id: "dietetics",      name: "Dietetics & Nutrition",icon: "apple",        blurb: "Diet, weight & lifestyle diseases",      accent: "text-green-600 bg-green-50"   },
+
+  // ── Added from the NMC qualification-ladder reference (Section 8 patient-facing
+  // categories) — the 19 above already matched an existing Section 8 row 1:1, so only
+  // these 11 needed adding. "General Surgery" is the one deliberate addition beyond
+  // Section 8 itself (see seed_medical_specialities.sql for why).
+  { id: "generalsurgery",       name: "General Surgery",        icon: "scissors",     blurb: "Hernia, gallbladder & general operations", accent: "text-slate-600 bg-slate-50"  },
+  { id: "neurosurgery",         name: "Neurosurgery",           icon: "brainCircuit", blurb: "Brain, spine & nerve surgery",             accent: "text-purple-700 bg-purple-50"},
+  { id: "plasticsurgery",       name: "Plastic Surgery",        icon: "wand2",        blurb: "Reconstructive & cosmetic surgery",        accent: "text-pink-700 bg-pink-50"    },
+  { id: "vascularsurgery",      name: "Vascular Surgery",       icon: "gitBranch",    blurb: "Varicose veins & blood vessel surgery",    accent: "text-rose-700 bg-rose-50"    },
+  { id: "cardiothoracicsurgery",name: "Cardiothoracic Surgery", icon: "heartPulse",   blurb: "Heart & chest surgery",                    accent: "text-red-700 bg-red-50"      },
+  { id: "anesthesiology",       name: "Anesthesiology",         icon: "syringe",      blurb: "Pain management & surgical anesthesia",    accent: "text-indigo-700 bg-indigo-50"},
+  { id: "radiology",            name: "Radiology",              icon: "scanLine",     blurb: "X-ray, CT, MRI & imaging diagnostics",     accent: "text-gray-600 bg-gray-50"    },
+  { id: "pathology",            name: "Pathology",              icon: "microscope",   blurb: "Lab diagnostics & disease testing",        accent: "text-stone-600 bg-stone-50"  },
+  { id: "emergencymedicine",    name: "Emergency Medicine",     icon: "siren",        blurb: "Trauma, urgent & critical care",           accent: "text-orange-700 bg-orange-50"},
+  { id: "geriatrics",           name: "Geriatrics",             icon: "armchair",     blurb: "Elderly care & age-related conditions",    accent: "text-amber-700 bg-amber-50"  },
+  { id: "sportsmedicine",       name: "Sports Medicine",        icon: "trophy",       blurb: "Sports injuries & athletic performance",   accent: "text-lime-700 bg-lime-50"    },
 ];
 
 
