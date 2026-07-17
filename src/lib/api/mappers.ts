@@ -45,11 +45,64 @@ function matchSpecialtyId(name: string): { id: string; label: string } {
   return { id: norm.replace(/\s+/g, "-") || "other", label: name };
 }
 
+// Maps dbo.MedicalSpecialities.PatientFacingCategory (see seed_medical_specialities.sql) to
+// our local Specialty.id — an authoritative alternative to matchSpecialtyId's fuzzy
+// department-name guessing, used whenever a doctor has a primary speciality linked on their
+// profile. Two DB categories ("Gastroenterologist" / "GI/Surgical Gastroenterologist") fold
+// into the one "gastroenterology" tile, since patients don't search medical-vs-surgical GI
+// separately.
+const PATIENT_CATEGORY_TO_SPECIALTY_ID: Record<string, string> = {
+  "General Physician": "general",
+  "Paediatrician": "pediatrics",
+  "Gynaecologist": "gynecology",
+  "Dermatologist (Skin)": "dermatology",
+  "ENT Specialist": "ent",
+  "Ophthalmologist (Eye)": "ophthalmology",
+  "Orthopaedic Surgeon (Bone)": "orthopedics",
+  "Cardiologist (Heart)": "cardiology",
+  "Neurologist": "neurology",
+  "Neurosurgeon": "neurosurgery",
+  "Psychiatrist": "psychiatry",
+  "Urologist": "urology",
+  "Gastroenterologist": "gastroenterology",
+  "GI/Surgical Gastroenterologist": "gastroenterology",
+  "Pulmonologist (Chest/Lungs)": "pulmonology",
+  "Oncologist (Cancer)": "oncology",
+  "Nephrologist (Kidney)": "nephrology",
+  "Endocrinologist (Hormones/Diabetes)": "endocrinology",
+  "Rheumatologist": "rheumatology",
+  "Plastic Surgeon": "plasticsurgery",
+  "Vascular Surgeon": "vascularsurgery",
+  "Cardiothoracic Surgeon": "cardiothoracicsurgery",
+  "Anaesthesiologist": "anesthesiology",
+  "Radiologist": "radiology",
+  "Pathologist": "pathology",
+  "Emergency Medicine Specialist": "emergencymedicine",
+  "Physiotherapist / Rehab": "physiotherapy",
+  "Geriatrician": "geriatrics",
+  "Sports Medicine Specialist": "sportsmedicine",
+  "General Surgeon": "generalsurgery",
+};
+
+/** Resolve a doctor's specialtyId/label — prefers the authoritative MedicalSpeciality link
+ * (primaryMedicalSpecialityCategory) when the doctor has one, falling back to fuzzy-matching
+ * departmentName/specializations for doctors who don't (the vast majority, until hospitals
+ * adopt the new "Primary Speciality" picker on the doctor profile form). */
+function resolveSpecialty(dto: DoctorDto): { id: string; label: string } {
+  const category = dto.primaryMedicalSpecialityCategory?.trim();
+  const specialtyId = category ? PATIENT_CATEGORY_TO_SPECIALTY_ID[category] : undefined;
+  if (specialtyId) {
+    const matched = specialties.find((s) => s.id === specialtyId);
+    return { id: specialtyId, label: dto.primaryMedicalSpecialityPatientFacingName?.trim() || matched?.name || category! };
+  }
+  const specialtyRaw = dto.departmentName?.trim() || dto.specializations?.[0] || "General Physician";
+  return matchSpecialtyId(specialtyRaw);
+}
+
 export function mapDoctor(dto: DoctorDto): Doctor {
   const id = String(dto.doctorId);
   const name = dto.fullName?.trim() || "Doctor";
-  const specialtyRaw = dto.departmentName?.trim() || dto.specializations?.[0] || "General Physician";
-  const { id: specialtyId, label: specialty } = matchSpecialtyId(specialtyRaw);
+  const { id: specialtyId, label: specialty } = resolveSpecialty(dto);
 
   return {
     id,

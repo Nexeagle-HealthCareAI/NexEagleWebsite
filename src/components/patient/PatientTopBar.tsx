@@ -10,6 +10,7 @@ import type { GeoStatus } from "@/lib/geo";
 import { cn } from "@/lib/utils";
 import { useTranslation } from "@/lib/i18n/I18nContext";
 import LanguageToggle from "./LanguageToggle";
+import ShareButton from "./ShareButton";
 
 interface PatientTopBarProps {
   /** Geolocation detection status */
@@ -162,6 +163,23 @@ export default function PatientTopBar({
                 <ArrowRight className="w-4 h-4" />
               </button>
             </Link>
+
+            {/* Share CTA */}
+            <div className="shrink-0 hidden sm:block">
+              <ShareButton 
+                title="NexEagle Doctor Dekho"
+                text="Find and book appointments with the best doctors near you on NexEagle Doctor Dekho!"
+                url="https://nexeagle.com"
+              />
+            </div>
+            <div className="shrink-0 sm:hidden">
+              <ShareButton 
+                title="NexEagle Doctor Dekho"
+                text="Find and book appointments with the best doctors near you on NexEagle Doctor Dekho!"
+                url="https://nexeagle.com"
+                className="!px-2 !py-2 [&>span]:hidden" 
+              />
+            </div>
 
             {/* Language toggle — persistent, top-right, per the feature spec */}
             <LanguageToggle />

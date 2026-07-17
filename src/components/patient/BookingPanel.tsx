@@ -22,6 +22,9 @@ import { useCreateAppointment, useDoctorAvailability, useSubmitReview } from "@/
 import { getSavedRating, markRated } from "@/lib/ratingGuard";
 import { reportEngagement } from "@/lib/pwaInstall";
 import { cn } from "@/lib/utils";
+import { useTranslation } from "@/lib/i18n/I18nContext";
+import type { TranslationKey } from "@/lib/i18n/dictionaries/en";
+import type { Locale } from "@/lib/i18n/types";
 
 // Same canonical relation-prefix set as the hospital-side PatientForm.tsx (RELATION_OPTIONS)
 // — kept identical so "S/O"/"C/O"/etc. mean the same thing everywhere in the product.
@@ -30,12 +33,12 @@ const GUARDIAN_RELATIONS = ["C/O", "S/O", "D/O", "W/O", "H/O", "G/O", "F/O", "M/
 // 5-point emoji scale for the post-booking service rating — a quick, no-comment tap that
 // feeds the SAME doctor rating shown publicly (just a friendlier entry point than stars,
 // right when the patient has just finished booking).
-const SERVICE_RATINGS = [
-  { value: 1, emoji: "😞", label: "Bad" },
-  { value: 2, emoji: "😕", label: "Poor" },
-  { value: 3, emoji: "😐", label: "Okay" },
-  { value: 4, emoji: "🙂", label: "Good" },
-  { value: 5, emoji: "😃", label: "Very Good" },
+const SERVICE_RATINGS: { value: number; emoji: string; labelKey: TranslationKey }[] = [
+  { value: 1, emoji: "😞", labelKey: "booking.ratingBad" },
+  { value: 2, emoji: "😕", labelKey: "booking.ratingPoor" },
+  { value: 3, emoji: "😐", labelKey: "booking.ratingOkay" },
+  { value: 4, emoji: "🙂", labelKey: "booking.ratingGood" },
+  { value: 5, emoji: "😃", labelKey: "booking.ratingVeryGood" },
 ];
 
 interface BookingPanelProps {
@@ -46,15 +49,30 @@ type Step = "visit" | "details" | "done";
 const STEP_ORDER: Step[] = ["visit", "details"];
 const RESEND_SECONDS = 30;
 
+// Sex options mapped to a compact, language-agnostic M/F/O glyph (shown on the button) plus
+// a translated aria-label/title — spelled-out words don't abbreviate sensibly once translated
+// (e.g. Hindi "पुरुष" or Bengali "পুরুষ" have no single-letter equivalent to M/F/O), so the
+// glyph stays fixed across locales while the accessible name is still localized.
+const SEX_LABEL_KEYS: Record<"Male" | "Female" | "Other", TranslationKey> = {
+  Male: "booking.sexMale",
+  Female: "booking.sexFemale",
+  Other: "booking.sexOther",
+};
+
+// bn/hi don't have a widely-supported Intl locale distinction worth the risk here — Hinglish
+// readers use Latin script so en-IN keeps weekday/month names in English, matching the register.
+const DATE_LOCALE: Record<Locale, string> = { en: "en-IN", hi: "hi-IN", bn: "bn-IN", hinglish: "en-IN" };
+
 // ── 3-hour time-range slots ────────────────────────────────────────────
-const TIME_RANGES = [
-  { id: "morning",   label: "Morning",   time: "9:00 – 12:00",  icon: <Sun className="w-4 h-4" />,    bg: "bg-amber-50", border: "border-amber-200", text: "text-amber-700"   },
-  { id: "afternoon", label: "Afternoon", time: "12:00 – 3:00",  icon: <Sunset className="w-4 h-4" />, bg: "bg-orange-50", border: "border-orange-200", text: "text-orange-700" },
-  { id: "evening",   label: "Evening",   time: "3:00 – 6:00",   icon: <Star className="w-4 h-4" />,   bg: "bg-purple-50", border: "border-purple-200", text: "text-purple-700" },
-  { id: "night",     label: "Night",     time: "6:00 – 9:00",   icon: <Moon className="w-4 h-4" />,   bg: "bg-slate-100", border: "border-slate-200", text: "text-slate-600"  },
+const TIME_RANGES: { id: string; labelKey: TranslationKey; time: string; icon: React.ReactNode; bg: string; border: string; text: string }[] = [
+  { id: "morning",   labelKey: "booking.morning",   time: "9:00 – 12:00",  icon: <Sun className="w-4 h-4" />,    bg: "bg-amber-50", border: "border-amber-200", text: "text-amber-700"   },
+  { id: "afternoon", labelKey: "booking.afternoon", time: "12:00 – 3:00",  icon: <Sunset className="w-4 h-4" />, bg: "bg-orange-50", border: "border-orange-200", text: "text-orange-700" },
+  { id: "evening",   labelKey: "booking.evening",   time: "3:00 – 6:00",   icon: <Star className="w-4 h-4" />,   bg: "bg-purple-50", border: "border-purple-200", text: "text-purple-700" },
+  { id: "night",     labelKey: "booking.night",     time: "6:00 – 9:00",   icon: <Moon className="w-4 h-4" />,   bg: "bg-slate-100", border: "border-slate-200", text: "text-slate-600"  },
 ];
 
 export default function BookingPanel({ doctor }: BookingPanelProps) {
+  const { t, locale } = useTranslation();
   const [step, setStep] = useState<Step>("visit");
   const [date, setDate] = useState("");
   const [timeRange, setTimeRange] = useState("");
@@ -117,26 +135,26 @@ export default function BookingPanel({ doctor }: BookingPanelProps) {
       d.setDate(today.getDate() + offset);
       return {
         key: d.toISOString().slice(0, 10),
-        label: offset === 0 ? "Today" : offset === 1 ? "Tmrw" : d.toLocaleDateString("en-US", { weekday: "short" }),
-        sub: d.toLocaleDateString("en-US", { day: "numeric", month: "short" }),
+        label: offset === 0 ? t("booking.today") : offset === 1 ? t("booking.tomorrow") : d.toLocaleDateString(DATE_LOCALE[locale], { weekday: "short" }),
+        sub: d.toLocaleDateString(DATE_LOCALE[locale], { day: "numeric", month: "short" }),
       };
     });
-  }, []);
+  }, [t, locale]);
 
   // OTP countdown
   useEffect(() => {
     if (resendIn <= 0) return;
-    const t = setInterval(() => setResendIn((s) => s - 1), 1000);
-    return () => clearInterval(t);
+    const timer = setInterval(() => setResendIn((s) => s - 1), 1000);
+    return () => clearInterval(timer);
   }, [resendIn]);
 
   function validateDetails() {
     const e: Record<string, string> = {};
-    if (!name.trim()) e.name = "Patient name is required";
-    if (!age.trim() || isNaN(+age) || +age <= 0 || +age > 120) e.age = "Enter a valid age (1–120)";
-    if (!sex) e.sex = "Please select sex";
-    if (!/^\d{10}$/.test(phone.trim())) e.phone = "Enter a valid 10-digit mobile number";
-    if (email.trim() && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email.trim())) e.email = "Enter a valid email address";
+    if (!name.trim()) e.name = t("booking.errorNameRequired");
+    if (!age.trim() || isNaN(+age) || +age <= 0 || +age > 120) e.age = t("booking.errorAgeRequired");
+    if (!sex) e.sex = t("booking.errorSexRequired");
+    if (!/^\d{10}$/.test(phone.trim())) e.phone = t("booking.errorMobileRequired");
+    if (email.trim() && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email.trim())) e.email = t("booking.errorEmailInvalid");
     setErrors(e);
     return Object.keys(e).length === 0;
   }
@@ -161,7 +179,7 @@ export default function BookingPanel({ doctor }: BookingPanelProps) {
         } as any,
         preferredDate: date,
         preferredTime,
-        reason: [reason.trim(), selectedRange ? `Preferred window: ${selectedRange.label} (${selectedRange.time})` : ""].filter(Boolean).join(" | ") || undefined,
+        reason: [reason.trim(), selectedRange ? `Preferred window: ${t(selectedRange.labelKey)} (${selectedRange.time})` : ""].filter(Boolean).join(" | ") || undefined,
         referrerUrl: typeof document !== "undefined" ? document.referrer || undefined : undefined,
       });
       if (res.reference) setServerRef(res.reference);
@@ -192,7 +210,7 @@ export default function BookingPanel({ doctor }: BookingPanelProps) {
     `Hi! I've booked an appointment request:\n` +
     `Doctor: ${doctor.name} (${doctor.specialty})\n` +
     `${locationLine ? `Hospital: ${locationLine}\n` : ""}` +
-    `Date: ${selectedDateLabel} · ${selectedRange?.label ?? ""} (${selectedRange?.time ?? ""})\n` +
+    `Date: ${selectedDateLabel} · ${selectedRange ? t(selectedRange.labelKey) : ""} (${selectedRange?.time ?? ""})\n` +
     `Patient: ${name} | Mobile: +91 ${phone}\n` +
     `Ref: ${bookingId}`
   );
@@ -205,7 +223,7 @@ export default function BookingPanel({ doctor }: BookingPanelProps) {
     `Your appointment request has been placed.\n\n` +
     `Doctor: ${doctor.name} (${doctor.specialty})\n` +
     `${locationLine ? `Hospital: ${locationLine}\n` : ""}` +
-    `Date: ${selectedDateLabel} | Time: ${selectedRange?.label ?? ""} (${selectedRange?.time ?? ""})\n` +
+    `Date: ${selectedDateLabel} | Time: ${selectedRange ? t(selectedRange.labelKey) : ""} (${selectedRange?.time ?? ""})\n` +
     `Patient: ${name} | Mobile: +91 ${phone}\n` +
     `Reference: ${bookingId}\n\n` +
     `Please note: The hospital will confirm your exact time and may call to adjust.\n` +
@@ -220,13 +238,13 @@ export default function BookingPanel({ doctor }: BookingPanelProps) {
       {/* Panel header */}
       <div className="p-5 border-b border-slate-100 bg-gradient-to-r from-teal-50/60 to-white">
         <span className="block text-[10px] font-bold text-brand-teal uppercase tracking-widest">
-          Appointment Request
+          {t("booking.appointmentRequestLabel")}
         </span>
         <h3 className="text-base font-extrabold text-slate-900 mt-0.5">
-          {step === "done" ? "You're all set! 🎉" : "Reserve your visit"}
+          {step === "done" ? t("booking.titleDone") : t("booking.title")}
         </h3>
         <p className="text-xs text-slate-500 mt-0.5">
-          {step === "done" ? "We'll confirm once the hospital reviews." : "Fill in the details below."}
+          {step === "done" ? t("booking.subtitleDone") : t("booking.subtitle")}
         </p>
       </div>
 
@@ -250,7 +268,7 @@ export default function BookingPanel({ doctor }: BookingPanelProps) {
           {/* Date strip */}
           <div>
             <label className="block text-[11px] font-bold text-slate-400 uppercase tracking-wide mb-2">
-              Choose a Day
+              {t("booking.chooseDay")}
             </label>
             <div className="grid grid-cols-4 gap-2 sm:grid-cols-7">
               {dates.map((d) => (
@@ -275,18 +293,18 @@ export default function BookingPanel({ doctor }: BookingPanelProps) {
           {date && (
             <div>
               <label className="block text-[11px] font-bold text-slate-400 uppercase tracking-wide mb-2">
-                Preferred Time Window
+                {t("booking.preferredTimeWindow")}
               </label>
               {apiActive && availability.isLoading ? (
                 <div className="flex items-center justify-center gap-2 py-6 text-slate-400 text-sm">
                   <Loader2 className="w-5 h-5 animate-spin text-brand-teal" />
-                  Checking availability…
+                  {t("booking.checkingAvailability")}
                 </div>
               ) : apiActive && availability.data && !availability.data.isAvailable ? (
                 <div className="flex flex-col items-center gap-1.5 py-6 text-slate-400">
                   <CalendarX className="w-6 h-6" />
-                  <p className="text-sm font-semibold text-slate-600">Not available on this date</p>
-                  <p className="text-xs">Please pick another day.</p>
+                  <p className="text-sm font-semibold text-slate-600">{t("booking.notAvailableDate")}</p>
+                  <p className="text-xs">{t("booking.pickAnotherDay")}</p>
                 </div>
               ) : (
                 <div className="grid grid-cols-2 gap-2">
@@ -303,7 +321,7 @@ export default function BookingPanel({ doctor }: BookingPanelProps) {
                     >
                       <span className={cn("shrink-0", timeRange === r.id ? "text-white" : "")}>{r.icon}</span>
                       <div>
-                        <div className="text-xs font-bold">{r.label}</div>
+                        <div className="text-xs font-bold">{t(r.labelKey)}</div>
                         <div className={cn("text-[10px]", timeRange === r.id ? "text-teal-100" : "opacity-70")}>{r.time}</div>
                       </div>
                     </button>
@@ -315,7 +333,7 @@ export default function BookingPanel({ doctor }: BookingPanelProps) {
 
           <div className="flex items-start gap-1.5 text-[11px] text-slate-500 bg-slate-50 border border-slate-200/60 rounded-xl p-2.5">
             <Clock className="w-3.5 h-3.5 shrink-0 mt-0.5 text-brand-teal" />
-            This reserves a preferred window — {doctor.hospitalName || "the hospital"} confirms your exact slot.
+            {t("booking.reservesWindowNote", { hospital: doctor.hospitalName || t("booking.hospitalFallbackLower") })}
           </div>
 
           <button
@@ -323,7 +341,7 @@ export default function BookingPanel({ doctor }: BookingPanelProps) {
             onClick={() => setStep("details")}
             className="w-full py-3.5 rounded-2xl bg-brand-teal text-white font-bold text-sm shadow-md shadow-teal-500/20 disabled:opacity-40 disabled:cursor-not-allowed hover:bg-brand-teal/90 active:scale-[0.98] transition"
           >
-            {date && timeRange ? "Continue →" : "Pick a day & time window"}
+            {date && timeRange ? `${t("booking.continue")} →` : t("booking.pickDayTimePrompt")}
           </button>
         </div>
       )}
@@ -332,34 +350,36 @@ export default function BookingPanel({ doctor }: BookingPanelProps) {
       {step === "details" && (
         <form onSubmit={handleDetailsSubmit} className="p-5 space-y-4">
           <button type="button" onClick={() => setStep("visit")} className="inline-flex items-center gap-1 text-xs font-bold text-slate-500 hover:text-slate-800">
-            <ChevronLeft className="w-4 h-4" /> Change window
+            <ChevronLeft className="w-4 h-4" /> {t("booking.changeWindow")}
           </button>
 
           {/* Selected visit summary */}
           <div className="p-3 rounded-2xl bg-teal-50 border border-teal-100 text-xs flex items-center justify-between">
-            <span className="text-slate-500">Preferred visit</span>
+            <span className="text-slate-500">{t("booking.preferredVisitLabel")}</span>
             <span className="font-bold text-slate-800">
-              {selectedDateLabel} · <span className="text-brand-teal">{selectedRange?.label} ({selectedRange?.time})</span>
+              {selectedDateLabel} · <span className="text-brand-teal">{selectedRange ? t(selectedRange.labelKey) : ""} ({selectedRange?.time})</span>
             </span>
           </div>
 
           {/* Name */}
-          <Field label="Full Name *" error={errors.name}>
-            <input value={name} onChange={(e) => setName(e.target.value)} placeholder="Patient's full name" className={inputCls(errors.name)} />
+          <Field label={`${t("booking.fullName")} *`} error={errors.name}>
+            <input value={name} onChange={(e) => setName(e.target.value)} placeholder={t("booking.fullNamePlaceholder")} className={inputCls(errors.name)} />
           </Field>
 
           {/* Age + Sex row */}
           <div className="grid grid-cols-2 gap-3">
-            <Field label="Age *" error={errors.age}>
-              <input value={age} onChange={(e) => setAge(e.target.value.replace(/\D/g, "").slice(0, 3))} placeholder="Age" inputMode="numeric" className={inputCls(errors.age)} />
+            <Field label={`${t("booking.age")} *`} error={errors.age}>
+              <input value={age} onChange={(e) => setAge(e.target.value.replace(/\D/g, "").slice(0, 3))} placeholder={t("booking.agePlaceholder")} inputMode="numeric" className={inputCls(errors.age)} />
             </Field>
-            <Field label="Sex *" error={errors.sex}>
+            <Field label={`${t("booking.sex")} *`} error={errors.sex}>
               <div className="flex gap-1.5">
                 {(["Male", "Female", "Other"] as const).map((s) => (
                   <button
                     key={s}
                     type="button"
                     onClick={() => setSex(s)}
+                    title={t(SEX_LABEL_KEYS[s])}
+                    aria-label={t(SEX_LABEL_KEYS[s])}
                     className={cn(
                       "flex-1 py-2 text-[11px] font-bold rounded-xl border transition",
                       sex === s
@@ -376,13 +396,13 @@ export default function BookingPanel({ doctor }: BookingPanelProps) {
           </div>
 
           {/* Mobile */}
-          <Field label="Contact (Mobile) *" error={errors.phone}>
+          <Field label={`${t("booking.mobile")} *`} error={errors.phone}>
             <div className="flex items-center rounded-xl border border-slate-200 bg-white shadow-sm focus-within:border-brand-teal/40 focus-within:ring-1 focus-within:ring-brand-teal/10 overflow-hidden">
               <span className="pl-3 pr-2 text-sm text-slate-400 font-semibold border-r border-slate-200">+91</span>
               <input
                 value={phone}
                 onChange={(e) => setPhone(e.target.value.replace(/\D/g, "").slice(0, 10))}
-                placeholder="10-digit mobile"
+                placeholder={t("booking.mobilePlaceholder")}
                 inputMode="numeric"
                 className="flex-1 px-3 py-2.5 text-sm text-slate-800 bg-transparent focus:outline-none"
               />
@@ -390,8 +410,8 @@ export default function BookingPanel({ doctor }: BookingPanelProps) {
           </Field>
 
           {/* Email (optional) */}
-          <Field label="Email (optional)" error={errors.email}>
-            <input value={email} onChange={(e) => setEmail(e.target.value)} placeholder="For booking confirmation" type="email" className={inputCls(errors.email)} />
+          <Field label={t("booking.email")} error={errors.email}>
+            <input value={email} onChange={(e) => setEmail(e.target.value)} placeholder={t("booking.emailPlaceholder")} type="email" className={inputCls(errors.email)} />
           </Field>
 
           {/* Guardian / relative name (optional) */}
@@ -417,12 +437,12 @@ export default function BookingPanel({ doctor }: BookingPanelProps) {
           </Field>
 
           {/* Reason (optional) */}
-          <Field label="Reason for Visit (optional)">
-            <input value={reason} onChange={(e) => setReason(e.target.value)} placeholder="e.g. fever, follow-up, checkup…" className={inputCls()} />
+          <Field label={t("booking.reason")}>
+            <input value={reason} onChange={(e) => setReason(e.target.value)} placeholder={t("booking.reasonPlaceholder")} className={inputCls()} />
           </Field>
 
           <button type="submit" disabled={submitting} className="w-full py-3.5 rounded-2xl bg-brand-teal text-white font-bold text-sm shadow-md shadow-teal-500/20 hover:bg-brand-teal/90 active:scale-[0.98] transition flex items-center justify-center gap-2 disabled:opacity-50">
-            {submitting ? <><Loader2 className="w-4 h-4 animate-spin" /> Booking…</> : <><CheckCircle2 className="w-4 h-4" /> Confirm Appointment</>}
+            {submitting ? <><Loader2 className="w-4 h-4 animate-spin" /> {t("booking.bookingInProgress")}</> : <><CheckCircle2 className="w-4 h-4" /> {t("booking.confirmAppointment")}</>}
           </button>
         </form>
       )}
@@ -437,31 +457,30 @@ export default function BookingPanel({ doctor }: BookingPanelProps) {
             <div className="w-16 h-16 rounded-full bg-teal-50 border-2 border-brand-teal/30 flex items-center justify-center mx-auto mb-3">
               <CheckCircle2 className="w-8 h-8 text-brand-teal" />
             </div>
-            <h3 className="text-lg font-extrabold text-slate-900">Appointment Requested!</h3>
+            <h3 className="text-lg font-extrabold text-slate-900">{t("booking.appointmentRequestedTitle")}</h3>
             <p className="text-[11px] font-bold text-slate-400 uppercase tracking-wide mt-1">
-              Ref: {bookingId}
+              {t("booking.reference")}: {bookingId}
             </p>
           </div>
 
           {/* Booking summary */}
           <div className="rounded-2xl border border-slate-200 bg-slate-50/60 p-4 space-y-2.5 text-sm">
-            <Row label="Doctor" value={`${doctor.name} · ${doctor.specialty}`} />
-            <Row label="Patient" value={name} />
-            <Row label="Age / Sex" value={`${age} yrs · ${sex}`} />
-            <Row label="Mobile" value={`+91 ${phone} ✓`} />
-            {email && <Row label="Email" value={email} />}
-            {guardianName.trim() && <Row label="Guardian" value={`${guardianRelation} ${guardianName.trim()}`} />}
-            <Row label="Visit" value={`${selectedDateLabel} · ${selectedRange?.label} (${selectedRange?.time})`} accent />
-            {locationLine && <Row label="Hospital" value={locationLine} />}
+            <Row label={t("booking.rowDoctor")} value={`${doctor.name} · ${doctor.specialty}`} />
+            <Row label={t("booking.rowPatient")} value={name} />
+            <Row label={t("booking.rowAgeSex")} value={`${age} yrs · ${sex ? t(SEX_LABEL_KEYS[sex]) : sex}`} />
+            <Row label={t("booking.rowMobile")} value={`+91 ${phone} ✓`} />
+            {email && <Row label={t("booking.rowEmail")} value={email} />}
+            {guardianName.trim() && <Row label={t("booking.rowGuardian")} value={`${guardianRelation} ${guardianName.trim()}`} />}
+            <Row label={t("booking.rowVisit")} value={`${selectedDateLabel} · ${selectedRange ? t(selectedRange.labelKey) : ""} (${selectedRange?.time})`} accent />
+            {locationLine && <Row label={t("booking.rowHospital")} value={locationLine} />}
           </div>
 
           {/* Pending notice */}
           <div className="flex items-start gap-2.5 p-3.5 rounded-2xl bg-amber-50/60 border border-amber-200/60">
             <Hourglass className="w-4 h-4 text-amber-500 shrink-0 mt-0.5" />
             <p className="text-xs text-slate-600 leading-relaxed">
-              <strong className="text-slate-800">Pending confirmation.</strong>{" "}
-              {doctor.hospitalName || "The hospital"} will confirm your slot and may call{" "}
-              <strong>+91 {phone}</strong> to adjust if needed.
+              <strong className="text-slate-800">{t("booking.pendingConfirmationTitle")}</strong>{" "}
+              {t("booking.pendingConfirmationBody", { hospital: doctor.hospitalName || t("booking.hospitalFallbackCap"), phone: `+91 ${phone}` })}
             </p>
           </div>
 
@@ -469,11 +488,11 @@ export default function BookingPanel({ doctor }: BookingPanelProps) {
           <div className="rounded-2xl border border-teal-100 bg-gradient-to-br from-teal-50/60 to-white p-4 text-center">
             {serviceRating ? (
               <p className="text-sm font-bold text-teal-700">
-                {SERVICE_RATINGS.find((r) => r.value === serviceRating)?.emoji} Thanks for rating your experience!
+                {SERVICE_RATINGS.find((r) => r.value === serviceRating)?.emoji} {t("booking.thanksForRatingExperience")}
               </p>
             ) : (
               <>
-                <p className="text-xs font-bold text-slate-600 mb-3">How was booking with us?</p>
+                <p className="text-xs font-bold text-slate-600 mb-3">{t("booking.rateService")}</p>
                 <div className="flex items-center justify-center gap-1.5">
                   {SERVICE_RATINGS.map((r) => (
                     <button
@@ -481,11 +500,11 @@ export default function BookingPanel({ doctor }: BookingPanelProps) {
                       type="button"
                       disabled={serviceRatingSaving}
                       onClick={() => handleServiceRate(r.value)}
-                      title={r.label}
+                      title={t(r.labelKey)}
                       className="flex flex-col items-center gap-1 px-1.5 py-2 rounded-xl hover:bg-teal-50 active:scale-90 transition disabled:opacity-40"
                     >
                       <span className="text-2xl leading-none">{r.emoji}</span>
-                      <span className="text-[9px] font-bold text-slate-400">{r.label}</span>
+                      <span className="text-[9px] font-bold text-slate-400">{t(r.labelKey)}</span>
                     </button>
                   ))}
                 </div>
@@ -503,7 +522,7 @@ export default function BookingPanel({ doctor }: BookingPanelProps) {
                 className="flex flex-col items-center justify-center gap-1 py-3 rounded-2xl bg-brand-teal hover:bg-brand-teal/90 text-white font-bold text-xs transition shadow-md"
               >
                 <Navigation className="w-4 h-4" />
-                Directions
+                {t("booking.directions")}
               </a>
             )}
             <a
@@ -520,7 +539,7 @@ export default function BookingPanel({ doctor }: BookingPanelProps) {
               className="flex flex-col items-center justify-center gap-1 py-3 rounded-2xl bg-slate-800 hover:bg-slate-700 text-white font-bold text-xs transition shadow-md"
             >
               <Mail className="w-4 h-4" />
-              {email ? "Email me" : "Email"}
+              {email ? t("booking.emailMeLabel") : t("booking.emailLabel")}
             </a>
           </div>
 
@@ -528,7 +547,7 @@ export default function BookingPanel({ doctor }: BookingPanelProps) {
             onClick={reset}
             className="w-full py-3 rounded-2xl bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold text-sm transition"
           >
-            Book Another Slot
+            {t("booking.bookAnother")}
           </button>
         </div>
       )}

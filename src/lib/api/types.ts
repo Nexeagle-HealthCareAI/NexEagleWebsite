@@ -20,6 +20,11 @@ export interface DoctorDto {
   experienceYears?: number | null;
   bio?: string | null;
   departmentName?: string | null;
+  // NMC qualification-ladder speciality (dbo.MedicalSpecialities), when the doctor has one
+  // linked on their profile — a cleaner, authoritative alternative to fuzzy-matching
+  // departmentName for specialty categorization. Null when unset.
+  primaryMedicalSpecialityPatientFacingName?: string | null;
+  primaryMedicalSpecialityCategory?: string | null;
   specializations?: string[] | null;
   languages?: string[] | null;
   hospitalId: string;
