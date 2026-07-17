@@ -4,6 +4,13 @@ import { useState, useEffect } from "react";
 import { Search, MapPin, Stethoscope, Mic } from "lucide-react";
 import { specialties } from "@/data/patient";
 import { cn } from "@/lib/utils";
+import { useTranslation } from "@/lib/i18n/I18nContext";
+import { translateSpecialty } from "@/lib/i18n/specialties";
+
+// en-IN handles Indian English + Hinglish; hi-IN/bn-IN give the speech engine a much
+// better shot at actual Hindi/Bengali sentences once the UI locale says that's what
+// the visitor speaks.
+const SPEECH_LANG: Record<string, string> = { en: "en-IN", hi: "hi-IN", bn: "bn-IN", hinglish: "en-IN" };
 
 interface PatientHeroProps {
   query: string;
@@ -18,6 +25,8 @@ export default function PatientHero({
   specialtyId,
   onSpecialtyChange,
 }: PatientHeroProps) {
+  const { t, locale } = useTranslation();
+
   function scrollToDoctors() {
     document.getElementById("doctors")?.scrollIntoView({ behavior: "smooth" });
   }
@@ -37,8 +46,7 @@ export default function PatientHero({
     const SpeechRecognitionAPI = (window as any).SpeechRecognition || (window as any).webkitSpeechRecognition;
     const recognition = new SpeechRecognitionAPI();
     
-    // en-IN perfectly handles Indian English and Hinglish vernacular phrases
-    recognition.lang = "en-IN"; 
+    recognition.lang = SPEECH_LANG[locale] ?? "en-IN";
     recognition.interimResults = true;
     recognition.maxAlternatives = 1;
 
@@ -94,7 +102,7 @@ export default function PatientHero({
           </span>
         </h1>
         <p className="max-w-2xl mx-auto text-base sm:text-lg text-slate-500 font-medium mb-12">
-          Find the care you deserve. Book verified top specialists near you instantly. No login, no app downloads—just seamless healthcare access.
+          {t("hero.subtitle")}
         </p>
 
         {/* ── The Floating Search Pill ── */}
@@ -108,7 +116,7 @@ export default function PatientHero({
               value={query}
               onChange={(e) => onQueryChange(e.target.value)}
               onKeyDown={(e) => e.key === "Enter" && scrollToDoctors()}
-              placeholder="Doctor, hospital, or symptom..."
+              placeholder={t("hero.searchPlaceholder")}
               className="w-full min-w-0 bg-transparent px-4 text-base text-slate-800 placeholder:text-slate-400 font-medium focus:outline-none"
             />
             {query && (
@@ -123,18 +131,18 @@ export default function PatientHero({
             <button
               onClick={() => {
                 if (!hasSpeechSupport) {
-                  alert("Voice search is not supported in this browser. Please try Chrome, Edge, or Safari.");
+                  alert(t("hero.voiceNotSupported"));
                   return;
                 }
                 startVoiceSearch();
               }}
               className={cn(
                 "w-10 h-10 rounded-full flex items-center justify-center shrink-0 transition-all active:scale-[0.90]",
-                isListening 
-                  ? "bg-rose-100 text-rose-500 shadow-[0_0_15px_rgba(244,63,94,0.4)] animate-pulse" 
+                isListening
+                  ? "bg-rose-100 text-rose-500 shadow-[0_0_15px_rgba(244,63,94,0.4)] animate-pulse"
                   : "bg-slate-100 text-slate-500 hover:bg-brand-teal/10 hover:text-brand-teal"
               )}
-              title="Search by voice"
+              title={t("hero.voiceSearchTitle")}
             >
               <Mic className="w-5 h-5" />
             </button>
@@ -151,10 +159,10 @@ export default function PatientHero({
               onChange={(e) => onSpecialtyChange(e.target.value)}
               className="w-full min-w-0 bg-transparent px-4 text-base text-slate-800 font-medium focus:outline-none cursor-pointer appearance-none"
             >
-              <option value="">All Specialities</option>
+              <option value="">{t("hero.allSpecialities")}</option>
               {specialties.map((s) => (
                 <option key={s.id} value={s.id}>
-                  {s.name}
+                  {translateSpecialty(s.id, s.name, locale)}
                 </option>
               ))}
             </select>
@@ -172,13 +180,13 @@ export default function PatientHero({
             className="w-full sm:w-auto h-14 sm:h-16 px-8 sm:px-10 rounded-2xl sm:rounded-full bg-brand-teal text-white text-base sm:text-lg font-bold shadow-[0_8px_25px_-5px_rgba(20,184,166,0.4)] hover:bg-teal-500 hover:shadow-[0_12px_30px_-5px_rgba(20,184,166,0.5)] active:scale-[0.98] transition-all duration-300 shrink-0 flex items-center justify-center gap-2"
           >
             <Search className="w-5 h-5 sm:hidden" />
-            <span>Search</span>
+            <span>{t("hero.search")}</span>
           </button>
         </div>
 
         {/* Quick specialty chips — all specialities */}
         <div className="mt-8 flex flex-col items-center">
-          <p className="text-xs font-bold text-slate-400 uppercase tracking-widest mb-4">Browse All Specialities</p>
+          <p className="text-xs font-bold text-slate-400 uppercase tracking-widest mb-4">{t("hero.browseAll")}</p>
           <div className="flex flex-wrap justify-center gap-2.5">
             {specialties.map((s) => (
               <button
@@ -194,7 +202,7 @@ export default function PatientHero({
                     : "bg-white/60 border-slate-200/60 text-slate-600 hover:bg-white hover:border-brand-teal/30 hover:text-brand-teal hover:shadow-sm"
                 )}
               >
-                {s.name}
+                {translateSpecialty(s.id, s.name, locale)}
               </button>
             ))}
           </div>

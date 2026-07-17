@@ -9,6 +9,9 @@ import type { CityOption } from "@/data/patient";
 import { useDoctors, useSmartSearch, type SmartSearchIntent } from "@/lib/api/hooks";
 import { haversineDistance, type GeoStatus } from "@/lib/geo";
 import { cn } from "@/lib/utils";
+import { useTranslation } from "@/lib/i18n/I18nContext";
+import { translateSpecialty } from "@/lib/i18n/specialties";
+import type { TranslationKey } from "@/lib/i18n/dictionaries/en";
 
 interface DoctorDirectoryProps {
   city: CityOption | null;
@@ -23,12 +26,12 @@ interface DoctorDirectoryProps {
 
 type SortKey = "relevance" | "distance" | "experience" | "patients" | "fee" | "rating";
 
-const sortOptions: { key: SortKey; label: string }[] = [
-  { key: "relevance", label: "Relevance" },
-  { key: "distance", label: "Nearest First" },
-  { key: "rating", label: "Highest Rated" },
-  { key: "experience", label: "Most Experienced" },
-  { key: "fee", label: "Lowest Fee" },
+const sortOptions: { key: SortKey; labelKey: TranslationKey }[] = [
+  { key: "relevance", labelKey: "directory.sortRelevance" },
+  { key: "distance", labelKey: "directory.sortDistance" },
+  { key: "rating", labelKey: "directory.sortRating" },
+  { key: "experience", labelKey: "directory.sortExperience" },
+  { key: "fee", labelKey: "directory.sortFee" },
 ];
 
 export default function DoctorDirectory({
@@ -41,13 +44,15 @@ export default function DoctorDirectory({
   query,
   specialtyId,
 }: DoctorDirectoryProps) {
+  const { t, locale } = useTranslation();
   const [sort, setSort] = useState<SortKey>("relevance");
   const [radius, setRadius] = useState<number>(100);
 
   const { data, isLoading } = useDoctors();
   const allDoctors = data?.doctors ?? [];
 
-  const specialtyName = specialties.find((s) => s.id === specialtyId)?.name;
+  const specialtyMeta = specialties.find((s) => s.id === specialtyId);
+  const specialtyName = specialtyMeta ? translateSpecialty(specialtyMeta.id, specialtyMeta.name, locale) : undefined;
 
   // Location (coords/city/area) + specialty-chip filtering — everything except the free-text
   // query, since the AI fallback below needs to re-filter from this same base rather than
@@ -134,7 +139,8 @@ export default function DoctorDirectory({
   }, [baseFiltered, aiIntent]);
 
   const usingAiResults = keywordFiltered.length === 0 && aiFiltered !== null && aiFiltered.length > 0;
-  const aiSpecialtyName = aiIntent?.specialtyId ? specialties.find((s) => s.id === aiIntent.specialtyId)?.name : undefined;
+  const aiSpecialtyMeta = aiIntent?.specialtyId ? specialties.find((s) => s.id === aiIntent.specialtyId) : undefined;
+  const aiSpecialtyName = aiSpecialtyMeta ? translateSpecialty(aiSpecialtyMeta.id, aiSpecialtyMeta.name, locale) : undefined;
 
   const filtered = useMemo(() => {
     const base = usingAiResults && aiFiltered ? aiFiltered : keywordFiltered;
@@ -172,29 +178,36 @@ export default function DoctorDirectory({
         <div className="flex flex-col sm:flex-row sm:items-end justify-between gap-6 mb-10 pb-6 border-b border-slate-200/60">
           <div>
             <h2 className="font-display text-2xl sm:text-3xl font-extrabold text-slate-900 tracking-tight">
-              {specialtyName ? `${specialtyName} Specialists` : "Top Specialists"}
+              {specialtyName ? `${specialtyName} ${t("directory.specialists")}` : t("directory.topSpecialists")}
               {city ? (
-                <span className="text-brand-teal"> in {cityLabel(city)}</span>
+                <span className="text-brand-teal"> {t("directory.inCity", { city: cityLabel(city) })}</span>
               ) : (
-                <span className="text-slate-400 font-medium"> — All India</span>
+                <span className="text-slate-400 font-medium"> {t("directory.allIndiaSuffix")}</span>
               )}
             </h2>
             <p className="text-base text-slate-500 mt-2 font-medium">
               {isLoading ? (
-                <span className="animate-pulse">Loading top doctors…</span>
+                <span className="animate-pulse">{t("directory.loading")}</span>
               ) : (
-                <>
-                  <motion.span
-                    key={filtered.length}
-                    initial={{ opacity: 0, y: -6 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    transition={{ duration: 0.25 }}
-                    className="font-bold text-slate-800 inline-block"
-                  >
-                    {filtered.length}
-                  </motion.span>{" "}
-                  verified {filtered.length === 1 ? "expert" : "experts"} available
-                </>
+                (() => {
+                  const key = filtered.length === 1 ? "directory.resultCountSingular" : "directory.resultCountPlural";
+                  const [before, after] = t(key).split("{n}");
+                  return (
+                    <>
+                      {before}
+                      <motion.span
+                        key={filtered.length}
+                        initial={{ opacity: 0, y: -6 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        transition={{ duration: 0.25 }}
+                        className="font-bold text-slate-800 inline-block"
+                      >
+                        {filtered.length}
+                      </motion.span>
+                      {after}
+                    </>
+                  );
+                })()
               )}
             </p>
           </div>
@@ -212,13 +225,11 @@ export default function DoctorDirectory({
                     onChange={(e) => setRadius(Number(e.target.value))}
                     className="bg-transparent text-sm font-bold text-slate-700 focus:outline-none cursor-pointer appearance-none pr-6"
                   >
-                    <option value={5}>Within 5 km</option>
-                    <option value={10}>Within 10 km</option>
-                    <option value={25}>Within 25 km</option>
-                    <option value={50}>Within 50 km</option>
-                    <option value={100}>Within 100 km</option>
-                    <option value={250}>Within 250 km</option>
-                    <option value={500}>Within 500 km</option>
+                    {[5, 10, 25, 50, 100, 250, 500].map((km) => (
+                      <option key={km} value={km}>
+                        {t("directory.radiusWithin", { n: km })}
+                      </option>
+                    ))}
                   </select>
                   <div className="absolute right-3 pointer-events-none">
                     <ChevronDown className="w-4 h-4 text-slate-400" />
@@ -238,7 +249,7 @@ export default function DoctorDirectory({
                 >
                   {sortOptions.map((o) => (
                     <option key={o.key} value={o.key}>
-                      {o.label}
+                      {t(o.labelKey)}
                     </option>
                   ))}
                 </select>
@@ -256,7 +267,9 @@ export default function DoctorDirectory({
           <div className="flex items-center gap-2 mb-6 -mt-4 text-sm text-brand-teal font-semibold">
             <Sparkles className="w-4 h-4 shrink-0" />
             <span>
-              Showing {aiSpecialtyName ?? "matching"} specialists based on &quot;{query.trim()}&quot;
+              {aiSpecialtyName
+                ? t("directory.aiHintWithSpecialty", { specialty: aiSpecialtyName, query: query.trim() })
+                : t("directory.aiHintGeneric", { query: query.trim() })}
             </span>
           </div>
         )}
@@ -265,12 +278,12 @@ export default function DoctorDirectory({
         {isLoading ? (
           <div className="flex flex-col items-center justify-center py-32 text-slate-400">
             <Loader2 className="w-10 h-10 animate-spin text-brand-teal/50 mb-4" />
-            <p className="text-base font-semibold">Finding the best specialists for you…</p>
+            <p className="text-base font-semibold">{t("directory.findingSpecialists")}</p>
           </div>
         ) : filtered.length === 0 && smartSearch.isPending ? (
           <div className="flex flex-col items-center justify-center py-32 text-slate-400">
             <Sparkles className="w-10 h-10 animate-pulse text-brand-teal/50 mb-4" />
-            <p className="text-base font-semibold">Looking a little more broadly for you…</p>
+            <p className="text-base font-semibold">{t("directory.lookingBroadly")}</p>
           </div>
         ) : filtered.length > 0 ? (
           <motion.div
@@ -293,9 +306,9 @@ export default function DoctorDirectory({
             <div className="w-20 h-20 rounded-full bg-slate-50 border border-slate-100 text-slate-300 flex items-center justify-center mx-auto mb-5 shadow-inner">
               <Frown className="w-10 h-10" />
             </div>
-            <h3 className="font-display font-bold text-xl text-slate-900 mb-2">No doctors match your criteria</h3>
+            <h3 className="font-display font-bold text-xl text-slate-900 mb-2">{t("directory.noMatch")}</h3>
             <p className="text-base text-slate-500 max-w-md mx-auto">
-              We couldn&apos;t find any specialists matching your search in this area. Try adjusting your filters or searching across All India.
+              {t("directory.noMatchDesc")}
             </p>
           </motion.div>
         )}
