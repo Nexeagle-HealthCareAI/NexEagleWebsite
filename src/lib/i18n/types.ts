@@ -7,13 +7,15 @@ export interface LocaleMeta {
   nativeLabel: string;
   /** Compact badge shown on the closed toggle button. */
   shortLabel: string;
+  /** English label for universal understanding */
+  englishLabel: string;
 }
 
 export const LOCALES: LocaleMeta[] = [
-  { code: "en", nativeLabel: "English", shortLabel: "A" },
-  { code: "hi", nativeLabel: "हिंदी", shortLabel: "अ" },
-  { code: "bn", nativeLabel: "বাংলা", shortLabel: "অ" },
-  { code: "hinglish", nativeLabel: "Hinglish", shortLabel: "Hg" },
+  { code: "en", nativeLabel: "English", englishLabel: "English", shortLabel: "EN" },
+  { code: "hi", nativeLabel: "हिंदी", englishLabel: "Hindi", shortLabel: "HI" },
+  { code: "bn", nativeLabel: "বাংলা", englishLabel: "Bengali", shortLabel: "BN" },
+  { code: "hinglish", nativeLabel: "Hinglish", englishLabel: "Hinglish", shortLabel: "HG" },
 ];
 
 export const DEFAULT_LOCALE: Locale = "en";

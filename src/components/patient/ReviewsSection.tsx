@@ -5,28 +5,36 @@ import { MessageCircle, ThumbsUp, Send, UserCircle2, CheckCircle2 } from "lucide
 import StarRating from "./StarRating";
 import { useDoctorReviews, useMarkReviewHelpful, useSubmitReview, useUpdateReviewComment } from "@/lib/api/hooks";
 import { getSavedRating, markRated } from "@/lib/ratingGuard";
+import { useTranslation } from "@/lib/i18n/I18nContext";
+import type { Locale } from "@/lib/i18n/types";
 
 interface ReviewsSectionProps {
   doctorId: string;
   doctorName: string;
 }
 
-function timeAgo(iso: string): string {
-  const diff = Date.now() - new Date(iso).getTime();
-  const mins = Math.floor(diff / 60000);
-  if (mins < 1) return "just now";
-  if (mins < 60) return `${mins}m ago`;
-  const hrs = Math.floor(mins / 60);
-  if (hrs < 24) return `${hrs}h ago`;
-  const days = Math.floor(hrs / 24);
-  if (days < 7) return `${days}d ago`;
-  return new Date(iso).toLocaleDateString("en-IN", { day: "numeric", month: "short" });
-}
+// bn/hi don't have a widely-supported Intl locale distinction worth the risk here — Hinglish
+// readers use Latin script so en-IN keeps the month name in English, matching the register.
+const DATE_LOCALE: Record<Locale, string> = { en: "en-IN", hi: "hi-IN", bn: "bn-IN", hinglish: "en-IN" };
 
 export default function ReviewsSection({
   doctorId,
   doctorName,
 }: ReviewsSectionProps) {
+  const { t, locale } = useTranslation();
+
+  function timeAgo(iso: string): string {
+    const diff = Date.now() - new Date(iso).getTime();
+    const mins = Math.floor(diff / 60000);
+    if (mins < 1) return t("reviews.justNow");
+    if (mins < 60) return t("reviews.minutesAgo", { n: mins });
+    const hrs = Math.floor(mins / 60);
+    if (hrs < 24) return t("reviews.hoursAgo", { n: hrs });
+    const days = Math.floor(hrs / 24);
+    if (days < 7) return t("reviews.daysAgo", { n: days });
+    return new Date(iso).toLocaleDateString(DATE_LOCALE[locale], { day: "numeric", month: "short" });
+  }
+
   const { data } = useDoctorReviews(doctorId);
   const submitMutation = useSubmitReview(doctorId);
   const updateCommentMutation = useUpdateReviewComment(doctorId);
@@ -59,7 +67,7 @@ export default function ReviewsSection({
       markRated(doctorId, value);
       setPriorRating(value);
     } catch (e) {
-      setError(e instanceof Error ? e.message : "Couldn't save your rating — please try again.");
+      setError(e instanceof Error ? e.message : t("reviews.errorGeneric"));
       setNewRating(0);
     } finally {
       setRatingSaving(false);
@@ -79,7 +87,7 @@ export default function ReviewsSection({
         setComment("");
       }, 2500);
     } catch {
-      setError("Couldn't save your comment — please try again.");
+      setError(t("reviews.errorComment"));
     } finally {
       setCommentSaving(false);
     }
@@ -96,7 +104,7 @@ export default function ReviewsSection({
         <div className="flex items-center gap-2">
           <MessageCircle className="w-5 h-5 text-brand-teal" />
           <h2 className="text-lg font-extrabold text-slate-900">
-            Reviews
+            {t("reviews.title")}
           </h2>
           <span className="text-sm text-slate-400 font-medium">
             ({reviews.length})
@@ -109,7 +117,7 @@ export default function ReviewsSection({
             </span>
             <div>
               <StarRating value={avg} size="sm" />
-              <span className="text-xs text-slate-400">{reviews.length} reviews</span>
+              <span className="text-xs text-slate-400">{t("reviews.reviewsCount", { n: reviews.length })}</span>
             </div>
           </div>
         )}
@@ -129,7 +137,7 @@ export default function ReviewsSection({
                     <UserCircle2 className="w-5 h-5 text-brand-teal" />
                   </div>
                   <div>
-                    <p className="text-sm font-bold text-slate-800">{r.authorName || "Anonymous"}</p>
+                    <p className="text-sm font-bold text-slate-800">{r.authorName || t("reviews.anonymous")}</p>
                     <p className="text-[11px] text-slate-400">{timeAgo(r.createdAt)}</p>
                   </div>
                 </div>
@@ -144,7 +152,7 @@ export default function ReviewsSection({
                   className="inline-flex items-center gap-1 text-[11px] text-slate-400 hover:text-brand-teal transition"
                 >
                   <ThumbsUp className="w-3 h-3" />
-                  Helpful {r.helpfulCount > 0 && `(${r.helpfulCount})`}
+                  {t("reviews.helpful")} {r.helpfulCount > 0 && `(${r.helpfulCount})`}
                 </button>
               </div>
             </div>
@@ -154,7 +162,7 @@ export default function ReviewsSection({
         <div className="text-center py-8 rounded-2xl border border-dashed border-slate-200 bg-slate-50/50">
           <MessageCircle className="w-8 h-8 text-slate-300 mx-auto mb-2" />
           <p className="text-sm text-slate-500 font-medium">
-            No reviews yet. Be the first to review {doctorName}!
+            {t("reviews.noReviewsYet", { name: doctorName })}
           </p>
         </div>
       )}
@@ -166,25 +174,25 @@ export default function ReviewsSection({
             <div className="w-10 h-10 rounded-full bg-teal-100 text-brand-teal flex items-center justify-center mx-auto mb-2">
               <CheckCircle2 className="w-5 h-5" />
             </div>
-            <p className="text-sm font-bold text-teal-700">Thanks for the extra detail!</p>
+            <p className="text-sm font-bold text-teal-700">{t("reviews.thanksExtra")}</p>
           </div>
         ) : savedReviewId ? (
           <>
             <div className="flex items-center gap-2 mb-4">
               <CheckCircle2 className="w-5 h-5 text-brand-teal shrink-0" />
               <div>
-                <p className="text-sm font-bold text-teal-700">Rating saved!</p>
+                <p className="text-sm font-bold text-teal-700">{t("reviews.ratingSaved")}</p>
                 <StarRating value={newRating} size="sm" />
               </div>
             </div>
             <div className="space-y-2">
               <label className="block text-[11px] font-bold text-slate-400 uppercase tracking-wide">
-                Add a comment (optional)
+                {t("reviews.addCommentLabel")}
               </label>
               <textarea
                 value={comment}
                 onChange={(e) => setComment(e.target.value)}
-                placeholder={`Share your experience with ${doctorName}…`}
+                placeholder={t("reviews.commentPlaceholder", { name: doctorName })}
                 rows={3}
                 className="w-full px-3.5 py-2.5 bg-white border border-slate-200 rounded-xl text-sm text-slate-800 shadow-sm focus:outline-none focus:ring-1 focus:border-brand-teal/40 focus:ring-brand-teal/10 transition resize-none"
               />
@@ -196,7 +204,7 @@ export default function ReviewsSection({
                   className="w-full py-2.5 rounded-xl bg-brand-teal hover:bg-brand-teal/90 text-white font-bold text-sm transition flex items-center justify-center gap-2 shadow-md shadow-teal-500/20 disabled:opacity-50"
                 >
                   <Send className="w-4 h-4" />
-                  {commentSaving ? "Saving…" : "Add comment"}
+                  {commentSaving ? t("reviews.saving") : t("reviews.addComment")}
                 </button>
               )}
             </div>
@@ -205,16 +213,16 @@ export default function ReviewsSection({
           <div className="flex items-center gap-2">
             <CheckCircle2 className="w-5 h-5 text-brand-teal shrink-0" />
             <div>
-              <p className="text-sm font-bold text-teal-700">You already rated this doctor</p>
+              <p className="text-sm font-bold text-teal-700">{t("reviews.alreadyRated")}</p>
               <StarRating value={priorRating} size="sm" />
             </div>
           </div>
         ) : (
           <>
             <h3 className="text-sm font-extrabold text-slate-800 mb-1">
-              Rate {doctorName}
+              {t("reviews.rateDoctor", { name: doctorName })}
             </h3>
-            <p className="text-xs text-slate-500 mb-3">Tap a star — it saves right away.</p>
+            <p className="text-xs text-slate-500 mb-3">{t("reviews.tapAStar")}</p>
             <StarRating
               value={newRating}
               size="lg"

@@ -3,8 +3,11 @@
 import Link from "next/link";
 import { ChevronRight, Phone, Mail, ShieldCheck } from "lucide-react";
 import { Logo } from "@/components/Logo";
+import { useTranslation } from "@/lib/i18n/I18nContext";
 
 export default function PatientFooter() {
+  const { t } = useTranslation();
+
   return (
     <footer className="bg-slate-900 text-slate-400">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12 grid grid-cols-1 md:grid-cols-3 gap-8">
@@ -12,18 +15,17 @@ export default function PatientFooter() {
         <div className="space-y-3">
           <Logo textSize="text-base sm:text-lg" textColor="text-white" />
           <p className="text-xs leading-relaxed font-light max-w-xs">
-            Book in-clinic appointments with verified doctors near you. Powered by
-            the NexEagle healthcare operating system.
+            {t("footer.brandBlurb")}
           </p>
           <div className="flex items-center gap-1.5 text-xs text-slate-500">
             <ShieldCheck className="w-3.5 h-3.5 text-emerald-400" />
-            Your health data stays private &amp; secure.
+            {t("footer.dataPrivate")}
           </div>
         </div>
 
         {/* Contact */}
         <div className="space-y-3">
-          <h4 className="text-white text-sm font-bold">Need help booking?</h4>
+          <h4 className="text-white text-sm font-bold">{t("footer.needHelp")}</h4>
           <a href="tel:+918074906808" className="flex items-center gap-2 text-xs hover:text-white transition">
             <Phone className="w-3.5 h-3.5" /> +91 80749 06808
           </a>
@@ -34,14 +36,13 @@ export default function PatientFooter() {
 
         {/* Provider CTA */}
         <div className="space-y-3 md:text-right">
-          <h4 className="text-white text-sm font-bold">Are you a provider?</h4>
+          <h4 className="text-white text-sm font-bold">{t("footer.areYouProvider")}</h4>
           <p className="text-xs font-light md:ml-auto max-w-xs">
-            Equip your clinic, hospital, lab or pharmacy with AI-powered tools,
-            scribes and billing.
+            {t("footer.providerDesc")}
           </p>
           <Link href="/business" className="inline-flex">
             <button className="inline-flex items-center gap-1 px-4 py-2 bg-brand-teal hover:bg-brand-teal/90 text-white text-xs font-bold rounded-lg transition shadow-md">
-              Explore NexEagle OS <ChevronRight className="w-3.5 h-3.5" />
+              {t("footer.exploreOS")} <ChevronRight className="w-3.5 h-3.5" />
             </button>
           </Link>
         </div>
@@ -50,7 +51,7 @@ export default function PatientFooter() {
       {/* ── SEO Link Farm (Internal Silo) ── */}
       <div className="border-t border-slate-800 pt-8 pb-4">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <h4 className="text-white text-sm font-bold mb-6">Top Specialties in Major Cities</h4>
+          <h4 className="text-white text-sm font-bold mb-6">{t("footer.topSpecialtiesHeading")}</h4>
           <div className="grid grid-cols-2 md:grid-cols-4 gap-4 text-xs font-light">
             <div className="space-y-2 flex flex-col">
               <Link href="/specialties/general/delhi-ncr-delhi" className="hover:text-white transition">General Physicians in Delhi NCR</Link>
@@ -78,10 +79,10 @@ export default function PatientFooter() {
 
       <div className="border-t border-slate-800">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4 flex flex-col sm:flex-row items-center justify-between gap-2 text-[11px] text-slate-500">
-          <span>© {new Date().getFullYear()} NexEagle. All rights reserved.</span>
+          <span>© {new Date().getFullYear()} NexEagle. {t("footer.allRightsReserved")}</span>
           <div className="flex items-center gap-4">
-            <Link href="/privacy" className="hover:text-white transition">Privacy</Link>
-            <Link href="/terms" className="hover:text-white transition">Terms</Link>
+            <Link href="/privacy" className="hover:text-white transition">{t("footer.privacy")}</Link>
+            <Link href="/terms" className="hover:text-white transition">{t("footer.terms")}</Link>
           </div>
         </div>
       </div>

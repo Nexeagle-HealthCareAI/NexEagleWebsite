@@ -1,31 +1,34 @@
 "use client";
 
 import { Search, CalendarCheck, Stethoscope } from "lucide-react";
-
-const steps = [
-  {
-    icon: <Search className="w-5 h-5" />,
-    title: "Find your doctor",
-    desc: "Browse verified specialists by department, experience and patients served.",
-  },
-  {
-    icon: <CalendarCheck className="w-5 h-5" />,
-    title: "Pick a slot",
-    desc: "Choose a date and time that suits you and confirm in under a minute.",
-  },
-  {
-    icon: <Stethoscope className="w-5 h-5" />,
-    title: "Visit the clinic",
-    desc: "Walk in at your slot, pay at the desk, and get consulted in person.",
-  },
-];
+import { useTranslation } from "@/lib/i18n/I18nContext";
 
 export default function HowItWorks() {
+  const { t } = useTranslation();
+
+  const steps = [
+    {
+      icon: <Search className="w-5 h-5" />,
+      title: t("howItWorks.step1Title"),
+      desc: t("howItWorks.step1Desc"),
+    },
+    {
+      icon: <CalendarCheck className="w-5 h-5" />,
+      title: t("howItWorks.step2Title"),
+      desc: t("howItWorks.step2Desc"),
+    },
+    {
+      icon: <Stethoscope className="w-5 h-5" />,
+      title: t("howItWorks.step3Title"),
+      desc: t("howItWorks.step3Desc"),
+    },
+  ];
+
   return (
     <section className="bg-slate-50/70 border-y border-slate-100">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
         <h2 className="text-center text-xl sm:text-2xl font-extrabold text-slate-900 tracking-tight">
-          Booking an appointment is simple
+          {t("howItWorks.heading")}
         </h2>
         <div className="mt-8 grid grid-cols-1 sm:grid-cols-3 gap-5">
           {steps.map((s, i) => (
