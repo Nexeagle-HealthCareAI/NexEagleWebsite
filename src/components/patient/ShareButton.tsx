@@ -97,22 +97,38 @@ export default function ShareButton({ title, text, url, className = "" }: ShareB
 
   if (!mounted) return null;
 
+  // Fast-path for mobile: if native Web Share is available, use a simple button.
+  // The native share sheet already includes 'Copy' and 'QR' options on modern OSs.
+  if (mounted && typeof navigator !== "undefined" && !!navigator.share) {
+    return (
+      <button
+        onClick={handleShare}
+        className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-slate-100 text-slate-600 hover:bg-slate-200 hover:text-slate-900 transition-colors text-xs font-bold ${className}`}
+        title={t("shareButton.share") || "Share"}
+      >
+        <Share2 className="w-3.5 h-3.5" />
+        {t("shareButton.share") || "Share"}
+      </button>
+    );
+  }
+
+  // Fallback for Desktop (no navigator.share): show the Dropdown menu
   return (
     <>
       <DropdownMenu>
         <DropdownMenuTrigger asChild>
           <button
             className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-slate-100 text-slate-600 hover:bg-slate-200 hover:text-slate-900 transition-colors text-xs font-bold ${className}`}
-            title={t("shareButton.shareOnWhatsapp") || "Share"}
+            title={t("shareButton.share") || "Share"}
           >
             <Share2 className="w-3.5 h-3.5" />
             {t("shareButton.share") || "Share"}
           </button>
         </DropdownMenuTrigger>
-        <DropdownMenuContent align="end" className="w-48">
+        <DropdownMenuContent align="end" className="w-48 z-[100]">
           <DropdownMenuItem onClick={handleShare} className="gap-2 cursor-pointer">
             <Share2 className="w-4 h-4" />
-            <span>{t("shareButton.shareLink") || "Share Link"}</span>
+            <span>{t("shareButton.shareOnWhatsapp") || "Share on WhatsApp"}</span>
           </DropdownMenuItem>
           <DropdownMenuItem onClick={handleCopy} className="gap-2 cursor-pointer">
             <Copy className="w-4 h-4" />
@@ -126,7 +142,7 @@ export default function ShareButton({ title, text, url, className = "" }: ShareB
       </DropdownMenu>
 
       <Dialog open={showQr} onOpenChange={setShowQr}>
-        <DialogContent className="sm:max-w-md">
+        <DialogContent className="sm:max-w-md z-[110]">
           <DialogHeader>
             <DialogTitle className="text-center">{t("shareButton.scanQrCode") || "Scan QR Code"}</DialogTitle>
           </DialogHeader>

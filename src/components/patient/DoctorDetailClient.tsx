@@ -42,7 +42,7 @@ export default function DoctorDetailClient({ doctor, similarDoctors, canonicalSl
       <DoctorViewTracker doctorId={doctor.id} />
 
       {/* Patient topbar (no geo props needed on this page) */}
-      <PatientTopBar />
+      <PatientTopBar showBackButton={true} />
 
       <main className="flex-1 pb-24 lg:pb-0">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
@@ -287,23 +287,7 @@ export default function DoctorDetailClient({ doctor, similarDoctors, canonicalSl
 
       <PatientFooter />
 
-      {/* ── MOBILE FIXED BOTTOM CTA ── */}
-      <div className="lg:hidden fixed bottom-0 left-0 right-0 z-[60] bg-white/95 backdrop-blur-xl border-t border-slate-200/80 px-4 py-4 pb-6 sm:pb-4 flex items-center gap-4 shadow-[0_-10px_40px_rgba(0,0,0,0.05)] animate-in slide-in-from-bottom-full duration-500">
-        <div className="flex-1">
-          <span className="block text-[10px] font-bold text-slate-400 uppercase tracking-widest">{t("doctorDetail.consultationFee")}</span>
-          {doctor.fee !== undefined ? (
-            <span className="font-display text-lg font-bold text-slate-900">₹{doctor.fee}</span>
-          ) : (
-            <span className="text-[11px] font-bold text-emerald-600">{t("doctorDetail.acceptingPatients")}</span>
-          )}
-        </div>
-        <a
-          href="#book"
-          className="flex-1 flex items-center justify-center py-3.5 rounded-2xl bg-brand-teal text-white font-bold text-sm shadow-[0_4px_14px_0_rgba(20,184,166,0.3)] hover:bg-brand-teal/90 active:scale-[0.98] transition-all"
-        >
-          {t("doctorDetail.bookAppointment")}
-        </a>
-      </div>
+      {/* Redundant MOBILE FIXED BOTTOM CTA removed */}
     </div>
   );
 }

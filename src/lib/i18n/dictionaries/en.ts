@@ -221,6 +221,12 @@ export const en = {
 
   // ── Language toggle itself ───────────────────────────────────────────────
   "language.choose": "Choose your language",
+
+  // ── Bottom Nav ─────────────────────────────────────────────────────────────
+  "nav.home": "Home",
+  "nav.search": "Search",
+  "nav.appointments": "Appointments",
+  "nav.profile": "Profile",
 } as const;
 
 export type TranslationKey = keyof typeof en;

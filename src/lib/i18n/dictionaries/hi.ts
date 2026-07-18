@@ -200,4 +200,9 @@ export const hi: Record<keyof typeof en, string> = {
   "footer.terms": "नियम व शर्तें",
 
   "language.choose": "अपनी भाषा चुनें",
+
+  "nav.home": "होम",
+  "nav.search": "खोजें",
+  "nav.appointments": "अपॉइंटमेंट",
+  "nav.profile": "प्रोफ़ाइल",
 };

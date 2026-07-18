@@ -201,5 +201,10 @@ export const hinglish: Record<keyof typeof en, string> = {
   "footer.privacy": "Privacy",
   "footer.terms": "Terms",
 
-  "language.choose": "Apni language chunein",
+  "language.choose": "Apni bhasha chunein",
+
+  "nav.home": "Home",
+  "nav.search": "Search",
+  "nav.appointments": "Appointments",
+  "nav.profile": "Profile",
 };
