@@ -53,6 +53,36 @@ export default async function HospitalPage({ params }: PageProps) {
   const { doctors } = await getAllDoctors();
   const initialDoctors = filterDoctorsByHospital(doctors, params.hospital);
 
+  // All doctors filtered to this hospital share one real-world location — use
+  // the first as the source of truth for the clinic's own address/geo, rather
+  // than NexEagle's HQ (see NEX-7 acceptance criteria).
+  const locationSource = initialDoctors[0];
+
+  const clinicSchema = locationSource
+    ? {
+        "@context": "https://schema.org",
+        "@type": "MedicalClinic",
+        name: hospitalName,
+        address: {
+          "@type": "PostalAddress",
+          streetAddress: locationSource.address || undefined,
+          addressLocality: locationSource.city || undefined,
+          addressRegion: locationSource.state || undefined,
+          postalCode: locationSource.pincode || undefined,
+          addressCountry: "IN",
+        },
+        ...(locationSource.latitude != null && locationSource.longitude != null
+          ? {
+              geo: {
+                "@type": "GeoCoordinates",
+                latitude: locationSource.latitude.toString(),
+                longitude: locationSource.longitude.toString(),
+              },
+            }
+          : {}),
+      }
+    : null;
+
   const faqSchema = {
     "@context": "https://schema.org",
     "@type": "FAQPage",
@@ -78,6 +108,12 @@ export default async function HospitalPage({ params }: PageProps) {
 
   return (
     <>
+      {clinicSchema && (
+        <script
+          type="application/ld+json"
+          dangerouslySetInnerHTML={{ __html: JSON.stringify(clinicSchema) }}
+        />
+      )}
       <script
         type="application/ld+json"
         dangerouslySetInnerHTML={{ __html: JSON.stringify(faqSchema) }}

@@ -112,6 +112,14 @@ export default async function DoctorDetailPage({ params }: PageProps) {
     description: doctor.about || undefined,
     image: doctor.photo || undefined,
     medicalSpecialty: doctor.specialty,
+    ...(doctor.qualifications
+      ? {
+          hasCredential: doctor.qualifications.split(",").map((q) => ({
+            "@type": "EducationalOccupationalCredential",
+            credentialCategory: q.trim(),
+          })),
+        }
+      : {}),
     ...(doctor.hospitalName
       ? {
           worksFor: {
