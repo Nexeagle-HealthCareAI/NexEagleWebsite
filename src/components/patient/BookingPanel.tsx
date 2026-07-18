@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useMemo, useState } from "react";
+import { useMemo, useState } from "react";
 import {
   ChevronLeft,
   CheckCircle2,
@@ -21,6 +21,7 @@ import { getDirectionsUrl, type Doctor } from "@/data/patient";
 import { useCreateAppointment, useDoctorAvailability, useSubmitReview } from "@/lib/api/hooks";
 import { getSavedRating, markRated } from "@/lib/ratingGuard";
 import { reportEngagement } from "@/lib/pwaInstall";
+import { useGuestAppointments } from "@/hooks/useGuestAppointments";
 import { cn } from "@/lib/utils";
 import { useTranslation } from "@/lib/i18n/I18nContext";
 import type { TranslationKey } from "@/lib/i18n/dictionaries/en";
@@ -47,7 +48,6 @@ interface BookingPanelProps {
 
 type Step = "visit" | "details" | "done";
 const STEP_ORDER: Step[] = ["visit", "details"];
-const RESEND_SECONDS = 30;
 
 // Sex options mapped to a compact, language-agnostic M/F/O glyph (shown on the button) plus
 // a translated aria-label/title — spelled-out words don't abbreviate sensibly once translated
@@ -89,12 +89,6 @@ export default function BookingPanel({ doctor }: BookingPanelProps) {
   const [reason, setReason] = useState("");
   const [errors, setErrors] = useState<Record<string, string>>({});
 
-  // OTP
-  const [expectedOtp, setExpectedOtp] = useState("");
-  const [otp, setOtp] = useState("");
-  const [otpError, setOtpError] = useState("");
-  const [resendIn, setResendIn] = useState(0);
-
   const [submitting, setSubmitting] = useState(false);
   const [serverRef, setServerRef] = useState<string | null>(null);
   const [localBookingId] = useState(() => `NEX-${Math.floor(100000 + Math.random() * 900000)}`);
@@ -104,6 +98,7 @@ export default function BookingPanel({ doctor }: BookingPanelProps) {
   const apiActive = Boolean(availability.data && !availability.data.notConfigured);
   const createAppointment = useCreateAppointment();
   const submitReview = useSubmitReview(doctor.id);
+  const { addAppointment } = useGuestAppointments();
 
   // Post-booking emoji rating — a quick tap, no comment, submitted straight to the doctor's
   // rating (see SERVICE_RATINGS above). Seeded from localStorage so re-booking the same
@@ -141,13 +136,6 @@ export default function BookingPanel({ doctor }: BookingPanelProps) {
     });
   }, [t, locale]);
 
-  // OTP countdown
-  useEffect(() => {
-    if (resendIn <= 0) return;
-    const timer = setInterval(() => setResendIn((s) => s - 1), 1000);
-    return () => clearInterval(timer);
-  }, [resendIn]);
-
   function validateDetails() {
     const e: Record<string, string> = {};
     if (!name.trim()) e.name = t("booking.errorNameRequired");
@@ -182,7 +170,13 @@ export default function BookingPanel({ doctor }: BookingPanelProps) {
         reason: [reason.trim(), selectedRange ? `Preferred window: ${t(selectedRange.labelKey)} (${selectedRange.time})` : ""].filter(Boolean).join(" | ") || undefined,
         referrerUrl: typeof document !== "undefined" ? document.referrer || undefined : undefined,
       });
-      if (res.reference) setServerRef(res.reference);
+      if (res.reference) {
+        setServerRef(res.reference);
+        // The reference IS the backend AppointmentId (see mapBookingReference) — this is what
+        // makes it show up on the guest-tier /appointments page at all. Previously never called,
+        // so a successful booking simply vanished the moment the patient navigated away.
+        addAppointment(res.reference, phone);
+      }
       reportEngagement("booking_success");
     } catch { /* use local id */ }
     finally { setSubmitting(false); setStep("done"); }
@@ -192,7 +186,7 @@ export default function BookingPanel({ doctor }: BookingPanelProps) {
     setStep("visit"); setDate(""); setTimeRange(""); setPreferredTime(undefined);
     setName(""); setAge(""); setSex(""); setPhone(""); setEmail(""); setReason("");
     setGuardianName(""); setGuardianRelation(GUARDIAN_RELATIONS[0]);
-    setErrors({}); setExpectedOtp(""); setOtp(""); setOtpError(""); setResendIn(0);
+    setErrors({});
     setSubmitting(false); setServerRef(null);
     setServiceRating(getSavedRating(doctor.id) ?? 0); setServiceRatingSaving(false);
   }

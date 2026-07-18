@@ -82,20 +82,28 @@ export default function PatientTopBar({
             </button>
           ) : null}
           
-          <Link 
-            href="/" 
+          <Link
+            href="/"
             className={cn(
               "items-center gap-2 sm:gap-3 shrink-0 select-none group",
               showBackButton ? "hidden md:flex" : "flex"
             )}
           >
-            <Logo textSize="text-base sm:text-xl" />
-            <div className="hidden sm:flex items-center gap-2.5">
-              <span className="w-px h-6 bg-slate-200/60" />
-              <span className="font-display font-extrabold text-transparent bg-clip-text bg-gradient-to-r from-brand-teal to-sky-500 tracking-tight text-lg group-hover:opacity-80 transition-opacity">
-                Doctor Dekho
-              </span>
-            </div>
+            {/* Icon-only on mobile — the full wordmark logo + "Doctor Dekho" divider don't leave
+                enough room for the location pill / hospital CTA / language toggle that also live
+                in this row on a narrow screen. Full logo (icon + "NexEagle" text) from sm: up. */}
+            <span className="sm:hidden">
+              <Logo iconOnly iconClassName="w-9 h-9" />
+            </span>
+            <span className="hidden sm:flex items-center gap-3">
+              <Logo textSize="text-base sm:text-xl" />
+              <div className="flex items-center gap-2.5">
+                <span className="w-px h-6 bg-slate-200/60" />
+                <span className="font-display font-extrabold text-transparent bg-clip-text bg-gradient-to-r from-brand-teal to-sky-500 tracking-tight text-lg group-hover:opacity-80 transition-opacity">
+                  Doctor Dekho
+                </span>
+              </div>
+            </span>
           </Link>
 
           {/* ── Right: Location pill + Provider CTA ── */}
@@ -119,7 +127,7 @@ export default function PatientTopBar({
                 <button
                   onClick={handleLocationClick}
                   className={cn(
-                    "flex items-center gap-1.5 sm:gap-2 px-3 sm:px-4 py-2 sm:py-2.5 rounded-full border backdrop-blur-md text-[11px] sm:text-sm font-semibold transition-all duration-300",
+                    "flex items-center gap-1 sm:gap-2 px-2.5 sm:px-4 py-2 sm:py-2.5 rounded-full border backdrop-blur-md text-[11px] sm:text-sm font-semibold transition-all duration-300",
                     detecting
                       ? "border-brand-teal/20 bg-teal-50/50 text-brand-teal"
                       : city
@@ -138,10 +146,10 @@ export default function PatientTopBar({
                   ) : city ? (
                     <>
                       <MapPin className="w-3.5 h-3.5 sm:w-4 sm:h-4 shrink-0" />
-                      <span className="max-w-[70px] sm:max-w-[160px] truncate font-medium">
+                      <span className="max-w-[52px] sm:max-w-[160px] truncate font-medium">
                         {cityLabel(city)}
                       </span>
-                      <ChevronDown className="w-3 h-3 sm:w-3.5 sm:h-3.5 shrink-0 opacity-50" />
+                      <ChevronDown className="hidden sm:block w-3 h-3 sm:w-3.5 sm:h-3.5 shrink-0 opacity-50" />
                     </>
                   ) : denied ? (
                     <>

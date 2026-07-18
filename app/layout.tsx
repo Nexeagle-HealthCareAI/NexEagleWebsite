@@ -7,6 +7,7 @@ import { Inter, Poppins } from "next/font/google";
 import LayoutWrapper from "./layout-wrapper";
 import ConnectionStatusBanner from "@/components/patient/ConnectionStatusBanner";
 import InstallAppPrompt from "@/components/patient/InstallAppPrompt";
+import LaunchSplash from "@/components/patient/LaunchSplash";
 import "./globals.css";
 
 const inter = Inter({ subsets: ["latin"], variable: "--font-inter", display: "swap" });
@@ -91,6 +92,7 @@ export default function RootLayout({
       </head>
       <body className="min-h-screen bg-white">
         <Providers>
+          <LaunchSplash />
           <CursorGlow />
           <Toaster />
           <Sonner />
