@@ -1,9 +1,7 @@
 import type { MetadataRoute } from "next";
-import { easyhmsFetch } from "@/lib/api/server";
-import { mapDoctors } from "@/lib/api/mappers";
-import { doctors as mockDoctors, doctorSlug, specialties, CITIES, AREAS_BY_CITY } from "@/data/patient";
+import { getAllDoctors } from "@/lib/api/server";
+import { doctorSlug, specialties, CITIES, AREAS_BY_CITY } from "@/data/patient";
 import { medicalArticles } from "@/data/wiki";
-import type { DoctorsResponseDto } from "@/lib/api/types";
 
 const BASE_URL = "https://nexeagle.com";
 
@@ -33,17 +31,6 @@ const STATIC_ROUTES: { path: string; priority: number; changeFrequency: Metadata
   { path: "/terms", priority: 0.3, changeFrequency: "yearly" },
 ];
 
-async function listDoctorSlugs(): Promise<string[]> {
-  const result = await easyhmsFetch<DoctorsResponseDto>("/public/doctors");
-  if (result.notConfigured || !result.data) {
-    // Local dev without the API configured — still emit mock doctor URLs so
-    // the route/slug shape is exercised.
-    return mockDoctors.map((d) => doctorSlug(d, d.city));
-  }
-  const doctors = mapDoctors(result.data.doctors);
-  return doctors.map((d) => doctorSlug(d, d.city));
-}
-
 export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   const now = new Date();
 
@@ -58,9 +45,9 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   let pseoEntries: MetadataRoute.Sitemap = [];
 
   try {
-    const slugs = await listDoctorSlugs();
-    doctorEntries = slugs.map((slug) => ({
-      url: `${BASE_URL}/doctors/${slug}`,
+    const { doctors } = await getAllDoctors();
+    doctorEntries = doctors.map((d) => ({
+      url: `${BASE_URL}/doctors/${doctorSlug(d, d.city)}`,
       lastModified: now,
       changeFrequency: "weekly",
       priority: 0.7,
@@ -68,7 +55,7 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
 
     // Generate Programmatic SEO links (Specialties, Cities, Conditions)
     const conditionSet = new Set<string>();
-    for (const d of mockDoctors) {
+    for (const d of doctors) {
       for (const f of d.focusAreas) {
         conditionSet.add(f.toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/(^-|-$)/g, ""));
       }
@@ -128,7 +115,7 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
 
     // Generate Hospital paths
     const hospitalSet = new Set<string>();
-    for (const d of mockDoctors) {
+    for (const d of doctors) {
       if (d.hospitalName) {
         hospitalSet.add(d.hospitalName.toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/(^-|-$)/g, ""));
       }

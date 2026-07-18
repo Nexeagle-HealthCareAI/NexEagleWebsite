@@ -31,6 +31,17 @@ const nextConfig = {
   eslint: {
     ignoreDuringBuilds: true,
   },
+  images: {
+    remotePatterns: [
+      // EasyHMS object store — real doctor profile pictures (presigned S3-style
+      // URLs, so match on hostname only; the query string carries a per-request
+      // signature/expiry that next/image doesn't need to know about).
+      {
+        protocol: "https",
+        hostname: "nexeagle-dev.in-south1-objectstore.e2enetworks.net",
+      },
+    ],
+  },
 };
 
 export default withSerwist(nextConfig);

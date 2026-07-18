@@ -2,6 +2,10 @@ import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 import { specialties, CITIES, AREAS_BY_CITY } from "@/data/patient";
 import HomeClient from "@/app/home-client";
+import { getAllDoctors } from "@/lib/api/server";
+import { filterDoctorsByLocation } from "@/lib/filters/doctorLocation";
+
+export const revalidate = 3600;
 
 interface PageProps {
   params: { specialty: string; city: string; area: string };
@@ -45,12 +49,22 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
   };
 }
 
-export default function SpecialtyCityAreaPage({ params }: PageProps) {
+export default async function SpecialtyCityAreaPage({ params }: PageProps) {
   const specialty = specialties.find((s) => s.id === params.specialty);
   const city = CITIES.find((c) => c.id === params.city);
   if (!specialty || !city) notFound();
 
   const areaName = unslugify(params.area);
+
+  // Server-fetched + pre-filtered so this page ships real doctor content in the
+  // raw HTML — see src/lib/api/server.ts's getAllDoctors.
+  const { doctors } = await getAllDoctors();
+  const initialDoctors = filterDoctorsByLocation(doctors, {
+    specialtyId: specialty.id,
+    city: city.name,
+    state: city.state,
+    area: areaName,
+  });
 
   // Note: For FAQ, area-specific FAQs can also be injected here
   const faqSchema = {
@@ -82,7 +96,12 @@ export default function SpecialtyCityAreaPage({ params }: PageProps) {
         type="application/ld+json"
         dangerouslySetInnerHTML={{ __html: JSON.stringify(faqSchema) }}
       />
-      <HomeClient initialSpecialtyId={specialty.id} initialCityId={city.id} initialArea={areaName} />
+      <HomeClient
+        initialSpecialtyId={specialty.id}
+        initialCityId={city.id}
+        initialArea={areaName}
+        initialDoctors={initialDoctors}
+      />
     </>
   );
 }

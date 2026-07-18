@@ -7,7 +7,7 @@ import PatientHero from "@/components/patient/PatientHero";
 import DoctorDirectory from "@/components/patient/DoctorDirectory";
 import HowItWorks from "@/components/patient/HowItWorks";
 import PatientFooter from "@/components/patient/PatientFooter";
-import { CITIES, cityId as makeCityId, type CityOption } from "@/data/patient";
+import { CITIES, cityId as makeCityId, type CityOption, type Doctor } from "@/data/patient";
 import { useDoctors } from "@/lib/api/hooks";
 import { useGeolocatedCity } from "@/lib/geo";
 
@@ -16,6 +16,12 @@ interface HomeClientProps {
   initialCityId?: string;
   initialArea?: string;
   initialQuery?: string;
+  /** Server-fetched doctors for this route (see src/lib/api/server.ts's getAllDoctors).
+   * Passed to BOTH useDoctors() call sites below (this component's own, and
+   * DoctorDirectory's) — they share one React Query cache entry by queryKey, and
+   * whichever of the two mounts/observes first is the one that actually seeds it,
+   * so both need the same seed to avoid depending on render order. */
+  initialDoctors?: Doctor[];
 }
 
 export default function HomeClient({
@@ -23,8 +29,11 @@ export default function HomeClient({
   initialCityId = "",
   initialArea = "",
   initialQuery = "",
+  initialDoctors,
 }: HomeClientProps = {}) {
-  const { data: doctorsData } = useDoctors();
+  const { data: doctorsData } = useDoctors(
+    initialDoctors ? { doctors: initialDoctors, notConfigured: false } : undefined
+  );
 
   // Build city list from live API data; fall back to static list
   const dynamicCities = useMemo<CityOption[]>(() => {
@@ -115,6 +124,7 @@ export default function HomeClient({
           onCityChange={handleCityChange}
           query={query}
           specialtyId={specialtyId}
+          initialDoctors={initialDoctors}
         />
 
         <HowItWorks />

@@ -32,7 +32,12 @@ export interface DoctorsResult {
   notConfigured: boolean;
 }
 
-export function useDoctors() {
+// `seed` is server-fetched, already-filtered doctor data (see src/lib/api/server.ts's
+// getAllDoctors + src/lib/filters/doctorLocation.ts) passed down as a prop from a
+// page.tsx Server Component. Seeding `initialData` makes the FIRST render (server AND
+// client hydration pass) show real doctors immediately, instead of an empty array
+// while the client's own live re-fetch is still in flight.
+export function useDoctors(seed?: DoctorsResult) {
   return useQuery<DoctorsResult>({
     queryKey: ["public", "doctors"],
     queryFn: async () => {
@@ -42,6 +47,7 @@ export function useDoctors() {
       const list = Array.isArray(json) ? json : json?.doctors ?? json?.data;
       return { doctors: mapDoctors(list), notConfigured: false };
     },
+    initialData: seed,
     staleTime: 5 * 60 * 1000,
   });
 }

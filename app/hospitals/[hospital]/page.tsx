@@ -1,10 +1,10 @@
 import type { Metadata } from "next";
 import { notFound } from "next/navigation";
-import { doctors as mockDoctors } from "@/data/patient";
 import HomeClient from "@/app/home-client";
-import { easyhmsFetch } from "@/lib/api/server";
-import { mapDoctors } from "@/lib/api/mappers";
-import type { DoctorsResponseDto } from "@/lib/api/types";
+import { getAllDoctors } from "@/lib/api/server";
+import { filterDoctorsByHospital } from "@/lib/filters/doctorLocation";
+
+export const revalidate = 3600;
 
 interface PageProps {
   params: { hospital: string };
@@ -19,13 +19,7 @@ function unslugify(slug: string) {
 }
 
 export async function generateStaticParams() {
-  let doctors = mockDoctors;
-  try {
-    const result = await easyhmsFetch<DoctorsResponseDto>("/public/doctors");
-    if (!result.notConfigured && result.data) {
-      doctors = mapDoctors(result.data.doctors);
-    }
-  } catch {}
+  const { doctors } = await getAllDoctors();
 
   const hospitalSet = new Set<string>();
   for (const d of doctors) {
@@ -51,8 +45,13 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
   };
 }
 
-export default function HospitalPage({ params }: PageProps) {
+export default async function HospitalPage({ params }: PageProps) {
   const hospitalName = unslugify(params.hospital);
+
+  // Server-fetched + pre-filtered so this page ships real doctor content in the
+  // raw HTML — see src/lib/api/server.ts's getAllDoctors.
+  const { doctors } = await getAllDoctors();
+  const initialDoctors = filterDoctorsByHospital(doctors, params.hospital);
 
   const faqSchema = {
     "@context": "https://schema.org",
@@ -83,7 +82,10 @@ export default function HospitalPage({ params }: PageProps) {
         type="application/ld+json"
         dangerouslySetInnerHTML={{ __html: JSON.stringify(faqSchema) }}
       />
-      <HomeClient initialQuery={hospitalName} />
+      {/* Not initialQuery={hospitalName}: the free-text search filter matches doctor
+          name/specialty/focusAreas, never hospitalName, so seeding it here would
+          silently filter the correctly hospital-scoped initialDoctors back to zero. */}
+      <HomeClient initialDoctors={initialDoctors} />
     </>
   );
 }

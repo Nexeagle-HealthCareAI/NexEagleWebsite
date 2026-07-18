@@ -1,11 +1,12 @@
 "use client";
 
 import { useEffect, useMemo, useState } from "react";
+import { useIsRestoring } from "@tanstack/react-query";
 import { motion, AnimatePresence } from "framer-motion";
 import { Frown, Loader2, ChevronDown, SlidersHorizontal, MapPin, Sparkles } from "lucide-react";
 import DoctorCard from "./DoctorCard";
 import { specialties, cityLabel } from "@/data/patient";
-import type { CityOption } from "@/data/patient";
+import type { CityOption, Doctor } from "@/data/patient";
 import { useDoctors, useSmartSearch, type SmartSearchIntent } from "@/lib/api/hooks";
 import { haversineDistance, type GeoStatus } from "@/lib/geo";
 import { cn } from "@/lib/utils";
@@ -22,6 +23,10 @@ interface DoctorDirectoryProps {
   onCityChange: (city: CityOption | null) => void;
   query: string;
   specialtyId: string;
+  /** Server-fetched, already-filtered doctors for this route (see src/lib/api/server.ts's
+   * getAllDoctors + src/lib/filters/doctorLocation.ts). Seeds the first render — server AND
+   * client hydration pass — with real content instead of an empty array. */
+  initialDoctors?: Doctor[];
 }
 
 type SortKey = "relevance" | "distance" | "experience" | "patients" | "fee" | "rating";
@@ -43,12 +48,29 @@ export default function DoctorDirectory({
   onCityChange,
   query,
   specialtyId,
+  initialDoctors,
 }: DoctorDirectoryProps) {
   const { t, locale } = useTranslation();
   const [sort, setSort] = useState<SortKey>("relevance");
   const [radius, setRadius] = useState<number>(100);
 
-  const { data, isLoading } = useDoctors();
+  const hasSeedData = initialDoctors !== undefined;
+  const { data, isLoading: queryIsLoading } = useDoctors(
+    initialDoctors ? { doctors: initialDoctors, notConfigured: false } : undefined
+  );
+  // The QueryClient persists to localStorage (see app/providers.tsx), so on a
+  // repeat visit the client's very first render can already see a *restored*
+  // cache — before the server ever rendered anything — while SSR always starts
+  // from a clean "loading" state (no localStorage access). That mismatch (server
+  // says "loading", client says "0 results") trips a hydration warning. Treat
+  // "still restoring the persisted cache" as loading too, so the first client
+  // render matches what the server sent — UNLESS we already seeded real content
+  // server-side (`hasSeedData`), in which case the server rendered real doctor
+  // cards and forcing "loading" on the client's hydration pass would flash a
+  // spinner over content that's already correct, reintroducing the same class
+  // of mismatch this guard was written to prevent.
+  const isRestoring = useIsRestoring();
+  const isLoading = queryIsLoading || (isRestoring && !hasSeedData);
   const allDoctors = data?.doctors ?? [];
 
   const specialtyMeta = specialties.find((s) => s.id === specialtyId);

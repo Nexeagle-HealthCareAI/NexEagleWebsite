@@ -1,5 +1,8 @@
 import type { Metadata } from "next";
 import HomeClient from "./home-client";
+import { getAllDoctors } from "@/lib/api/server";
+
+export const revalidate = 3600;
 
 export const metadata: Metadata = {
   // Overrides the root layout's "%s | NexEagle" template — this exact phrase
@@ -52,11 +55,16 @@ const structuredData = {
   ],
 };
 
-export default function HomePage() {
+export default async function HomePage() {
+  // Fetched server-side so the homepage ships real doctor content in the raw
+  // HTML — a non-JS crawler (Googlebot without rendering, Bing, AI bots) would
+  // otherwise see an empty client shell. See src/lib/api/server.ts's getAllDoctors.
+  const { doctors } = await getAllDoctors();
+
   return (
     <>
       <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(structuredData) }} />
-      <HomeClient />
+      <HomeClient initialDoctors={doctors} />
     </>
   );
 }
