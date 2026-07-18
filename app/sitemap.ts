@@ -3,6 +3,8 @@ import { getAllDoctors } from "@/lib/api/server";
 import { doctorSlug, specialties, CITIES, AREAS_BY_CITY } from "@/data/patient";
 import { medicalArticles } from "@/data/wiki";
 
+export const revalidate = 3600;
+
 const BASE_URL = "https://nexeagle.com";
 
 const STATIC_ROUTES: { path: string; priority: number; changeFrequency: MetadataRoute.Sitemap[number]["changeFrequency"] }[] = [
