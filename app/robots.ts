@@ -14,6 +14,14 @@ export default function robots(): MetadataRoute.Robots {
         userAgent: ['ChatGPT-User', 'OAI-SearchBot', 'anthropic-ai', 'ClaudeBot', 'PerplexityBot'],
         allow: '/',
       },
+      // Explicit Bingbot allow — ChatGPT's live-search feature is powered by
+      // Bing's index, so this doubles as an AI-crawl signal, not just classic
+      // web search. Practo and JustDial both take this same explicit-over-
+      // wildcard approach.
+      {
+        userAgent: 'Bingbot',
+        allow: '/',
+      },
     ],
     sitemap: 'https://nexeagle.com/sitemap.xml',
   };
