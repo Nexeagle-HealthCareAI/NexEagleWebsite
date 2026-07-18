@@ -1,11 +1,25 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { Search, MapPin, Stethoscope, Mic } from "lucide-react";
+import { Search, MapPin, Stethoscope, Mic, ChevronDown } from "lucide-react";
 import { specialties } from "@/data/patient";
 import { cn } from "@/lib/utils";
 import { useTranslation } from "@/lib/i18n/I18nContext";
 import { translateSpecialty } from "@/lib/i18n/specialties";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import {
+  Drawer,
+  DrawerContent,
+  DrawerHeader,
+  DrawerTitle,
+  DrawerTrigger,
+} from "@/components/ui/drawer";
 
 // en-IN handles Indian English + Hinglish; hi-IN/bn-IN give the speech engine a much
 // better shot at actual Hindi/Bengali sentences once the UI locale says that's what
@@ -33,6 +47,7 @@ export default function PatientHero({
 
   const [isListening, setIsListening] = useState(false);
   const [hasSpeechSupport, setHasSpeechSupport] = useState(false);
+  const [isDrawerOpen, setIsDrawerOpen] = useState(false);
 
   useEffect(() => {
     if (typeof window !== "undefined" && ("SpeechRecognition" in window || "webkitSpeechRecognition" in window)) {
@@ -109,70 +124,126 @@ export default function PatientHero({
         <div className="max-w-4xl mx-auto bg-white/80 backdrop-blur-2xl p-1.5 sm:p-3 rounded-[1.5rem] sm:rounded-full border border-white/60 shadow-[0_20px_60px_-15px_rgba(0,0,0,0.05),0_0_40px_-10px_rgba(20,184,166,0.1)] ring-1 ring-black/5 flex flex-col sm:flex-row items-center gap-1.5 sm:gap-0 transition-shadow duration-500 hover:shadow-[0_25px_60px_-15px_rgba(0,0,0,0.08),0_0_50px_-10px_rgba(20,184,166,0.15)]">
           
           {/* Input 1: Doctor/Symptom */}
-          <div className="flex-1 flex items-center h-14 sm:h-16 px-5 sm:px-6 rounded-2xl sm:rounded-l-full sm:rounded-r-none hover:bg-slate-50/50 focus-within:bg-slate-50/80 transition-colors w-full group relative">
-            <Search className="w-5 h-5 text-slate-400 shrink-0 group-focus-within:text-brand-teal transition-colors" />
+          <div className="flex-1 h-14 sm:h-16 rounded-2xl sm:rounded-l-full sm:rounded-r-none hover:bg-slate-50/50 focus-within:bg-slate-50/80 transition-colors w-full group relative">
+            <div className="absolute left-5 sm:left-6 top-1/2 -translate-y-1/2 pointer-events-none">
+              <Search className="w-5 h-5 text-slate-400 group-focus-within:text-brand-teal transition-colors" />
+            </div>
             <input
               id="doctor-search"
               value={query}
               onChange={(e) => onQueryChange(e.target.value)}
               onKeyDown={(e) => e.key === "Enter" && scrollToDoctors()}
               placeholder={t("hero.searchPlaceholder")}
-              className="w-full min-w-0 bg-transparent px-4 text-base text-slate-800 placeholder:text-slate-400 font-medium focus:outline-none"
+              className="w-full h-full bg-transparent pl-12 sm:pl-14 pr-[80px] text-base text-slate-800 placeholder:text-slate-400 font-medium focus:outline-none"
             />
-            {query && (
-              <button
-                onClick={() => onQueryChange("")}
-                className="w-6 h-6 rounded-full bg-slate-200 flex items-center justify-center text-slate-500 hover:bg-slate-300 hover:text-slate-700 transition-colors mr-1"
-              >
-                <span className="text-[10px] font-bold">✕</span>
-              </button>
-            )}
             
-            <button
-              onClick={() => {
-                if (!hasSpeechSupport) {
-                  alert(t("hero.voiceNotSupported"));
-                  return;
-                }
-                startVoiceSearch();
-              }}
-              className={cn(
-                "w-10 h-10 rounded-full flex items-center justify-center shrink-0 transition-all active:scale-[0.90]",
-                isListening
-                  ? "bg-rose-100 text-rose-500 shadow-[0_0_15px_rgba(244,63,94,0.4)] animate-pulse"
-                  : "bg-slate-100 text-slate-500 hover:bg-brand-teal/10 hover:text-brand-teal"
+            <div className="absolute right-2 sm:right-3 top-1/2 -translate-y-1/2 flex items-center gap-1 z-10">
+              {query && (
+                <button
+                  onClick={() => onQueryChange("")}
+                  className="w-7 h-7 rounded-full bg-slate-200 flex items-center justify-center text-slate-500 hover:bg-slate-300 hover:text-slate-700 transition-colors"
+                >
+                  <span className="text-[10px] font-bold">✕</span>
+                </button>
               )}
-              title={t("hero.voiceSearchTitle")}
-            >
-              <Mic className="w-5 h-5" />
-            </button>
-          </div>
-
-          <div className="hidden sm:block w-px h-10 bg-slate-200 shrink-0" />
-
-          {/* Input 2: Specialty Selector */}
-          <div className="flex-1 sm:max-w-[280px] w-full flex items-center h-14 sm:h-16 px-5 sm:px-6 rounded-2xl sm:rounded-none hover:bg-slate-50/50 focus-within:bg-slate-50/80 transition-colors group relative">
-            <Stethoscope className="w-5 h-5 text-slate-400 shrink-0 group-focus-within:text-brand-teal transition-colors" />
-            <select
-              id="specialty-filter"
-              value={specialtyId}
-              onChange={(e) => onSpecialtyChange(e.target.value)}
-              className="w-full min-w-0 bg-transparent px-4 text-base text-slate-800 font-medium focus:outline-none cursor-pointer appearance-none"
-            >
-              <option value="">{t("hero.allSpecialities")}</option>
-              {specialties.map((s) => (
-                <option key={s.id} value={s.id}>
-                  {translateSpecialty(s.id, s.name, locale)}
-                </option>
-              ))}
-            </select>
-            {/* Custom dropdown arrow to replace default appearance-none */}
-            <div className="absolute right-6 top-1/2 -translate-y-1/2 pointer-events-none">
-              <svg className="w-4 h-4 text-slate-400 group-hover:text-slate-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
-              </svg>
+              <button
+                onClick={() => {
+                  if (!hasSpeechSupport) {
+                    alert(t("hero.voiceNotSupported"));
+                    return;
+                  }
+                  startVoiceSearch();
+                }}
+                className={cn(
+                  "w-10 h-10 rounded-full flex items-center justify-center shrink-0 transition-all active:scale-[0.90]",
+                  isListening
+                    ? "bg-rose-100 text-rose-500 shadow-[0_0_15px_rgba(244,63,94,0.4)] animate-pulse"
+                    : "bg-slate-100 text-slate-500 hover:bg-brand-teal/10 hover:text-brand-teal"
+                )}
+                title={t("hero.voiceSearchTitle")}
+              >
+                <Mic className="w-5 h-5" />
+              </button>
             </div>
           </div>
+
+          {/* Divider */}
+          <div className="w-[90%] h-px sm:w-px sm:h-10 bg-slate-200 shrink-0 my-1 sm:my-0" />
+
+          {/* Input 2: Specialty Selector (Desktop) */}
+          <div className="hidden sm:flex flex-1 max-w-[280px] w-full h-16 rounded-r-full hover:bg-slate-50/50 focus-within:bg-slate-50/80 transition-colors group relative border-l border-slate-200/60">
+            <div className="absolute left-6 top-1/2 -translate-y-1/2 pointer-events-none z-10">
+              <Stethoscope className="w-5 h-5 text-slate-400 group-focus-within:text-brand-teal transition-colors" />
+            </div>
+            <Select 
+              value={specialtyId || "all"} 
+              onValueChange={(val) => onSpecialtyChange(val === "all" ? "" : val)}
+            >
+              <SelectTrigger className="w-full h-full border-0 bg-transparent pl-14 pr-6 focus:ring-0 shadow-none text-base font-medium rounded-r-full text-slate-800">
+                <SelectValue placeholder={t("hero.allSpecialities")} />
+              </SelectTrigger>
+              <SelectContent className="max-h-[300px] z-[60]">
+                <SelectItem value="all">{t("hero.allSpecialities")}</SelectItem>
+                {specialties.map((s) => (
+                  <SelectItem key={s.id} value={s.id}>
+                    {translateSpecialty(s.id, s.name, locale)}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          </div>
+
+          {/* Input 2: Specialty Selector (Mobile) */}
+          <div className="sm:hidden flex-1 w-full h-14 hover:bg-slate-50/50 transition-colors group relative">
+            <Drawer open={isDrawerOpen} onOpenChange={setIsDrawerOpen}>
+              <DrawerTrigger asChild>
+                <button className="w-full h-full flex items-center justify-between px-5 text-left text-base font-medium text-slate-800 focus:outline-none">
+                  <div className="flex items-center gap-3 truncate pr-4">
+                    <Stethoscope className="w-5 h-5 text-slate-400 shrink-0" />
+                    <span className="truncate">
+                      {specialtyId 
+                        ? translateSpecialty(specialtyId, specialties.find(s => s.id === specialtyId)?.name || "", locale)
+                        : t("hero.allSpecialities")}
+                    </span>
+                  </div>
+                  <ChevronDown className="w-4 h-4 text-slate-400 shrink-0" />
+                </button>
+              </DrawerTrigger>
+              <DrawerContent className="z-[100] max-h-[85vh]">
+                <DrawerHeader>
+                  <DrawerTitle className="text-center">{t("hero.browseAll")}</DrawerTitle>
+                </DrawerHeader>
+                <div className="px-4 pb-8 overflow-y-auto flex flex-col gap-1.5 mt-2">
+                  <button 
+                    onClick={() => { onSpecialtyChange(""); setIsDrawerOpen(false); }}
+                    className={cn(
+                      "text-left px-5 py-3.5 rounded-2xl text-sm font-semibold transition-colors flex items-center justify-between", 
+                      !specialtyId ? "bg-teal-50 text-brand-teal" : "text-slate-600 hover:bg-slate-50"
+                    )}
+                  >
+                    <span>{t("hero.allSpecialities")}</span>
+                    {!specialtyId && <div className="w-2 h-2 rounded-full bg-brand-teal" />}
+                  </button>
+                  {specialties.map((s) => (
+                    <button
+                      key={s.id}
+                      onClick={() => { onSpecialtyChange(s.id); setIsDrawerOpen(false); }}
+                      className={cn(
+                        "text-left px-5 py-3.5 rounded-2xl text-sm font-semibold transition-colors flex items-center justify-between", 
+                        specialtyId === s.id ? "bg-teal-50 text-brand-teal" : "text-slate-600 hover:bg-slate-50"
+                      )}
+                    >
+                      <span>{translateSpecialty(s.id, s.name, locale)}</span>
+                      {specialtyId === s.id && <div className="w-2 h-2 rounded-full bg-brand-teal" />}
+                    </button>
+                  ))}
+                </div>
+              </DrawerContent>
+            </Drawer>
+          </div>
+
+          {/* Divider */}
+          <div className="w-[90%] h-px sm:hidden bg-slate-200 shrink-0 my-1" />
 
           {/* Search Button */}
           <button
@@ -185,7 +256,7 @@ export default function PatientHero({
         </div>
 
         {/* Quick specialty chips — all specialities */}
-        <div className="mt-8 flex flex-col items-center">
+        <div className="mt-8 hidden sm:flex flex-col items-center">
           <p className="text-xs font-bold text-slate-400 uppercase tracking-widest mb-4">{t("hero.browseAll")}</p>
           <div className="flex flex-wrap justify-center gap-2.5">
             {specialties.map((s) => (

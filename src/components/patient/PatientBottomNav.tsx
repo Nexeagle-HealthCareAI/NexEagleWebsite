@@ -17,12 +17,7 @@ export default function PatientBottomNav() {
       icon: Home,
       isActive: pathname === "/",
     },
-    {
-      name: t("nav.search") || "Search",
-      href: "/specialties/all", // Or wherever the main directory is
-      icon: Search,
-      isActive: pathname.startsWith("/specialties") || pathname.startsWith("/conditions"),
-    },
+
     {
       name: t("nav.appointments") || "Appointments",
       href: "/appointments", // Assuming this exists or will exist

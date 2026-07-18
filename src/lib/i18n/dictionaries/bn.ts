@@ -199,5 +199,10 @@ export const bn: Record<keyof typeof en, string> = {
   "footer.privacy": "গোপনীয়তা",
   "footer.terms": "শর্তাবলী",
 
-  "language.choose": "আপনার ভাষা বেছে নিন",
+  "language.choose": "আপনার ভাষা নির্বাচন করুন",
+
+  "nav.home": "হোম",
+  "nav.search": "খুঁজুন",
+  "nav.appointments": "অ্যাপয়েন্টমেন্ট",
+  "nav.profile": "প্রোফাইল",
 };

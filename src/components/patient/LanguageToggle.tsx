@@ -35,7 +35,7 @@ export default function LanguageToggle() {
         </button>
       </DropdownMenuTrigger>
 
-      <DropdownMenuContent align="end" className="w-48 p-1.5 rounded-2xl border-slate-100 shadow-xl shadow-teal-900/5">
+      <DropdownMenuContent align="end" className="w-48 p-1.5 rounded-2xl border-slate-100 shadow-xl shadow-teal-900/5 z-[100]">
         <p className="px-3 pb-2 pt-1.5 text-[10px] font-bold text-slate-400 uppercase tracking-wide">
           {t("language.choose")}
         </p>

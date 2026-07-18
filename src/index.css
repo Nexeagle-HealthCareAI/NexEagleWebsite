@@ -175,6 +175,7 @@
     min-height: 100%;
     overscroll-behavior-y: none;
     -webkit-tap-highlight-color: transparent;
+    overflow-x: hidden;
   }
 
   body {
@@ -187,6 +188,7 @@
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
     text-rendering: optimizeLegibility;
+    overflow-x: hidden;
   }
 
   .main-site-wrapper {

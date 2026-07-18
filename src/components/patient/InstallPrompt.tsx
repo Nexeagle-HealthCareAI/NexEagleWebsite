@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { X, Download, Share, PlusSquare } from "lucide-react";
+import { Download, Share, PlusSquare, X } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import { useInstallPrompt } from "@/hooks/useInstallPrompt";
 
@@ -10,78 +10,76 @@ export default function InstallPrompt() {
   const { isInstallable, promptInstall, isIos, isStandalone } = useInstallPrompt();
 
   useEffect(() => {
-    // Check if user has already dismissed or installed
-    const hasSeenPrompt = localStorage.getItem("hasSeenInstallPrompt");
-    if (hasSeenPrompt === "true" || isStandalone) return;
+    // If the app is installed, never show
+    if (isStandalone) {
+      setShowPrompt(false);
+      return;
+    }
 
     if (isInstallable) {
-      // Wait a few seconds before showing the prompt so we don't overwhelm them instantly
-      const timer = setTimeout(() => setShowPrompt(true), 3000);
+      // Delay showing the floating pill by a little bit to let the page load
+      const timer = setTimeout(() => setShowPrompt(true), 2000);
       return () => clearTimeout(timer);
+    } else {
+      setShowPrompt(false);
     }
   }, [isInstallable, isStandalone]);
 
-  const handleDismiss = () => {
-    setShowPrompt(false);
-    localStorage.setItem("hasSeenInstallPrompt", "true");
-  };
-
   const handleInstallClick = async () => {
     await promptInstall();
-    handleDismiss();
+  };
+
+  const handleDismiss = () => {
+    setShowPrompt(false);
   };
 
   return (
     <AnimatePresence>
       {showPrompt && (
         <motion.div
-          initial={{ y: 150, opacity: 0 }}
-          animate={{ y: 0, opacity: 1 }}
-          exit={{ y: 150, opacity: 0 }}
-          transition={{ type: "spring", bounce: 0.2, duration: 0.6 }}
-          className="fixed bottom-0 left-0 right-0 z-[100] p-4 sm:p-6 pb-[calc(1rem+env(safe-area-inset-bottom))] md:hidden pointer-events-none"
+          drag
+          dragConstraints={{ left: -150, right: 150, top: -400, bottom: 50 }}
+          whileDrag={{ scale: 1.02 }}
+          initial={{ y: 50, opacity: 0, x: "-50%" }}
+          animate={{ y: 0, opacity: 1, x: "-50%" }}
+          exit={{ y: 50, opacity: 0, x: "-50%" }}
+          transition={{ type: "spring", bounce: 0.4, duration: 0.6 }}
+          className="fixed bottom-[85px] left-1/2 z-[100] md:hidden pointer-events-none w-[90%] max-w-[320px] touch-none"
         >
-          <div className="bg-white rounded-3xl p-5 shadow-[0_10px_40px_rgba(0,0,0,0.15)] border border-slate-200/60 relative pointer-events-auto">
-            
-            <button 
-              onClick={handleDismiss}
-              className="absolute top-4 right-4 p-1.5 rounded-full bg-slate-100 text-slate-500 hover:bg-slate-200 active:scale-95 transition-all"
-              aria-label="Dismiss"
-            >
-              <X className="w-4 h-4" />
-            </button>
-
-            <div className="flex items-start gap-4 pr-6">
-              <div className="w-12 h-12 rounded-2xl bg-gradient-to-br from-brand-teal to-sky-500 flex items-center justify-center shrink-0 shadow-sm text-white">
-                <Download className="w-6 h-6" />
-              </div>
-              <div>
-                <h3 className="font-display font-bold text-slate-900 text-base leading-tight mb-1">
-                  Install Doctor Dekho
-                </h3>
-                <p className="text-[13px] text-slate-500 leading-snug">
-                  Add to your home screen for faster access, easy bookings, and a better experience.
-                </p>
-              </div>
-            </div>
-
+          <div className="relative pointer-events-auto">
             {isIos ? (
-              <div className="mt-4 pt-4 border-t border-slate-100 bg-slate-50/50 -mx-5 -mb-5 px-5 py-4 rounded-b-3xl">
-                <p className="text-[13px] text-slate-600 font-medium flex flex-wrap items-center gap-1.5 justify-center text-center">
-                  Tap <span className="inline-flex p-1 rounded-md bg-white border border-slate-200 shadow-sm"><Share className="w-3.5 h-3.5 text-blue-500" /></span> 
-                  and then <span className="inline-flex p-1 rounded-md bg-white border border-slate-200 shadow-sm"><PlusSquare className="w-3.5 h-3.5 text-slate-700" /></span>
-                  <strong className="text-slate-800">Add to Home Screen</strong>
+              // iOS Fallback Guide (Apple doesn't support the prompt API)
+              <div className="bg-slate-900/80 backdrop-blur-xl rounded-2xl p-3 shadow-[0_8px_32px_rgba(0,0,0,0.4)] border border-white/10 flex flex-col gap-1.5 ring-1 ring-black/5">
+                <p className="text-xs text-white/90 font-medium flex flex-wrap items-center gap-1.5 justify-center text-center leading-relaxed">
+                  To install, tap <span className="inline-flex p-1 rounded-md bg-white/10 border border-white/10"><Share className="w-3 h-3 text-white" /></span> 
+                  and select <span className="inline-flex p-1 rounded-md bg-white/10 border border-white/10"><PlusSquare className="w-3 h-3 text-white" /></span>
+                  <strong className="text-white">Add to Home Screen</strong>
                 </p>
               </div>
             ) : (
+              // Android / Chrome Native Prompt Trigger
               <button
                 onClick={handleInstallClick}
-                className="w-full mt-5 py-3.5 rounded-xl bg-slate-900 text-white font-bold text-sm shadow-[0_4px_14px_0_rgba(15,23,42,0.18)] active:scale-[0.98] transition-transform"
+                className="w-full flex items-center justify-between bg-gradient-to-r from-slate-900/90 to-slate-800/90 backdrop-blur-xl p-1.5 pl-3 pr-4 rounded-full shadow-[0_8px_32px_rgba(0,0,0,0.4)] border border-white/10 active:scale-[0.98] transition-transform cursor-grab active:cursor-grabbing ring-1 ring-black/5 group"
               >
-                Install App
+                <div className="flex items-center gap-2.5">
+                  <div className="w-7 h-7 rounded-full bg-gradient-to-tr from-brand-teal to-teal-400 flex items-center justify-center shrink-0 shadow-[0_0_15px_rgba(20,184,166,0.3)] group-hover:shadow-[0_0_20px_rgba(20,184,166,0.5)] transition-shadow">
+                    <Download className="w-3.5 h-3.5 text-white" />
+                  </div>
+                  <span className="text-[13px] font-semibold text-white/95 tracking-wide">
+                    Add to Homescreen
+                  </span>
+                </div>
               </button>
             )}
             
+            {/* Close Button */}
+            <button 
+              onClick={handleDismiss}
+              className="absolute -top-1.5 -right-1.5 w-5 h-5 rounded-full bg-slate-800/90 backdrop-blur-sm border border-white/10 flex items-center justify-center text-slate-400 hover:text-white hover:bg-slate-700 shadow-lg z-10 touch-auto active:scale-90 transition-all cursor-pointer"
+            >
+              <X className="w-2.5 h-2.5" />
+            </button>
           </div>
         </motion.div>
       )}

@@ -3,7 +3,7 @@
 import { useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { MapPin, ChevronDown, Locate, ArrowRight, X, ArrowLeft } from "lucide-react";
+import { MapPin, ChevronDown, Locate, ArrowRight, X, ArrowLeft, Calendar, User } from "lucide-react";
 import { Logo } from "@/components/Logo";
 import type { CityOption } from "@/data/patient";
 import { cityLabel } from "@/data/patient";
@@ -99,14 +99,27 @@ export default function PatientTopBar({
           </Link>
 
           {/* ── Right: Location pill + Provider CTA ── */}
-          <div className="flex items-center gap-3 sm:gap-5">
+          <div className="flex items-center gap-1.5 sm:gap-5">
+            
+            {/* Desktop Navigation Links */}
+            <div className="hidden md:flex items-center gap-6 mr-2">
+              <Link href="/appointments" className="text-sm font-semibold text-slate-600 hover:text-brand-teal transition-colors flex items-center gap-1.5">
+                <Calendar className="w-4 h-4 text-slate-400" />
+                Appointments
+              </Link>
+              <Link href="/profile" className="text-sm font-semibold text-slate-600 hover:text-brand-teal transition-colors flex items-center gap-1.5">
+                <User className="w-4 h-4 text-slate-400" />
+                Profile
+              </Link>
+            </div>
+
             {/* Location pill (Glassmorphic) */}
             {hasLocationProps && (
-              <div className="relative">
+              <div className="relative shrink-0">
                 <button
                   onClick={handleLocationClick}
                   className={cn(
-                    "flex items-center gap-2 px-4 py-2.5 rounded-full border backdrop-blur-md text-xs sm:text-sm font-semibold transition-all duration-300",
+                    "flex items-center gap-1.5 sm:gap-2 px-3 sm:px-4 py-2 sm:py-2.5 rounded-full border backdrop-blur-md text-[11px] sm:text-sm font-semibold transition-all duration-300",
                     detecting
                       ? "border-brand-teal/20 bg-teal-50/50 text-brand-teal"
                       : city
@@ -118,29 +131,29 @@ export default function PatientTopBar({
                 >
                   {detecting ? (
                     <>
-                      <span className="w-2 h-2 rounded-full bg-brand-teal animate-pulse shadow-[0_0_8px_rgba(20,184,166,0.6)]" />
+                      <span className="w-1.5 h-1.5 sm:w-2 sm:h-2 rounded-full bg-brand-teal animate-pulse shadow-[0_0_8px_rgba(20,184,166,0.6)]" />
                       <span className="hidden sm:inline font-medium">{t("topbar.detecting")}</span>
                       <span className="sm:hidden font-medium">…</span>
                     </>
                   ) : city ? (
                     <>
-                      <MapPin className="w-4 h-4 shrink-0" />
-                      <span className="max-w-[100px] sm:max-w-[160px] truncate font-medium">
+                      <MapPin className="w-3.5 h-3.5 sm:w-4 sm:h-4 shrink-0" />
+                      <span className="max-w-[70px] sm:max-w-[160px] truncate font-medium">
                         {cityLabel(city)}
                       </span>
-                      <ChevronDown className="w-3.5 h-3.5 shrink-0 opacity-50" />
+                      <ChevronDown className="w-3 h-3 sm:w-3.5 sm:h-3.5 shrink-0 opacity-50" />
                     </>
                   ) : denied ? (
                     <>
-                      <Locate className="w-4 h-4 shrink-0" />
+                      <Locate className="w-3.5 h-3.5 sm:w-4 sm:h-4 shrink-0" />
                       <span className="hidden sm:inline font-medium">{t("topbar.allowLocationPill")}</span>
                       <span className="sm:hidden">📍</span>
                     </>
                   ) : (
                     <>
-                      <MapPin className="w-4 h-4 shrink-0" />
+                      <MapPin className="w-3.5 h-3.5 sm:w-4 sm:h-4 shrink-0" />
                       <span className="hidden sm:inline font-medium">{t("topbar.allIndia")}</span>
-                      <ChevronDown className="w-3.5 h-3.5 shrink-0 opacity-50 sm:hidden" />
+                      <ChevronDown className="w-3 h-3 sm:w-3.5 sm:h-3.5 shrink-0 opacity-50 sm:hidden" />
                     </>
                   )}
                 </button>
@@ -184,12 +197,12 @@ export default function PatientTopBar({
                 <span>{t("topbar.forHospitals")}</span>
                 <ArrowRight className="w-4 h-4" />
               </button>
-              <button className="sm:hidden inline-flex items-center justify-center w-10 h-10 rounded-full bg-teal-50 text-brand-teal border border-teal-100 hover:bg-teal-100 transition-colors">
-                <ArrowRight className="w-4 h-4" />
+              <button className="sm:hidden inline-flex items-center justify-center w-8 h-8 sm:w-10 sm:h-10 rounded-full bg-teal-50 text-brand-teal border border-teal-100 hover:bg-teal-100 transition-colors">
+                <ArrowRight className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
               </button>
             </Link>
 
-            {/* Share CTA */}
+            {/* Share CTA (Desktop only, mobile is too crowded and has browser share) */}
             <div className="shrink-0 hidden sm:block">
               <ShareButton 
                 title="NexEagle Doctor Dekho"
@@ -197,29 +210,15 @@ export default function PatientTopBar({
                 url="https://nexeagle.com"
               />
             </div>
-            <div className="shrink-0 sm:hidden">
-              <ShareButton 
-                title="NexEagle Doctor Dekho"
-                text="Find and book appointments with the best doctors near you on NexEagle Doctor Dekho!"
-                url="https://nexeagle.com"
-                className="!px-2 !py-2 [&>span]:hidden" 
-              />
-            </div>
-            {/* Install App CTA */}
+            {/* Install App CTA (Desktop Only, since mobile uses floating pill) */}
             {isInstallable && (
-              <div className="shrink-0">
+              <div className="shrink-0 hidden md:block">
                 <button 
                   onClick={promptInstall}
-                  className="hidden sm:inline-flex items-center gap-2 px-4 py-2 rounded-full bg-slate-900 hover:bg-slate-800 text-white text-sm font-bold transition-all duration-300 shadow-[0_4px_14px_0_rgba(15,23,42,0.18)]"
+                  className="inline-flex items-center gap-2 px-4 py-2.5 rounded-full bg-brand-teal hover:bg-teal-500 text-white text-sm font-bold transition-all duration-300 shadow-[0_4px_14px_0_rgba(20,184,166,0.3)] hover:shadow-[0_6px_20px_rgba(20,184,166,0.4)] hover:-translate-y-0.5"
                 >
                   <Download className="w-4 h-4" />
                   <span>Install App</span>
-                </button>
-                <button 
-                  onClick={promptInstall}
-                  className="sm:hidden inline-flex items-center justify-center w-9 h-9 rounded-full bg-slate-900 text-white shadow-md active:scale-95 transition-transform"
-                >
-                  <Download className="w-4 h-4" />
                 </button>
               </div>
             )}

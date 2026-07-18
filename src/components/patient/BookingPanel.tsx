@@ -236,16 +236,26 @@ export default function BookingPanel({ doctor }: BookingPanelProps) {
   return (
     <div className="rounded-3xl border border-slate-200/80 bg-white shadow-sm overflow-hidden">
       {/* Panel header */}
-      <div className="p-5 border-b border-slate-100 bg-gradient-to-r from-teal-50/60 to-white">
+      <div className="p-5 border-b border-slate-100 bg-gradient-to-r from-teal-50/60 to-white relative">
         <span className="block text-[10px] font-bold text-brand-teal uppercase tracking-widest">
           {t("booking.appointmentRequestLabel")}
         </span>
-        <h3 className="text-base font-extrabold text-slate-900 mt-0.5">
-          {step === "done" ? t("booking.titleDone") : t("booking.title")}
-        </h3>
-        <p className="text-xs text-slate-500 mt-0.5">
-          {step === "done" ? t("booking.subtitleDone") : t("booking.subtitle")}
-        </p>
+        <div className="flex items-start justify-between gap-4 mt-0.5">
+          <div>
+            <h3 className="text-base font-extrabold text-slate-900">
+              {step === "done" ? t("booking.titleDone") : t("booking.title")}
+            </h3>
+            <p className="text-xs text-slate-500 mt-0.5">
+              {step === "done" ? t("booking.subtitleDone") : t("booking.subtitle")}
+            </p>
+          </div>
+          {doctor.fee !== undefined && step !== "done" && (
+            <div className="text-right shrink-0 bg-white/60 backdrop-blur-sm px-3 py-1.5 rounded-xl border border-teal-100/50 shadow-sm">
+              <span className="block text-[9px] font-bold text-slate-400 uppercase tracking-widest leading-none mb-1">{t("doctorDetail.consultationFee" as any)}</span>
+              <span className="font-display text-base font-extrabold text-slate-900 leading-none">₹{doctor.fee}</span>
+            </div>
+          )}
+        </div>
       </div>
 
       {/* Progress bar */}
