@@ -1,4 +1,5 @@
 import React from 'react';
+import Image from 'next/image';
 
 interface LogoProps {
   className?: string;
@@ -15,12 +16,13 @@ export const Logo: React.FC<LogoProps> = ({
 }) => {
   return (
     <div className={`flex items-center gap-0.5 sm:gap-1 ${className}`}>
-      <img 
-        src="/assets/logo.webp" 
-        alt="NexEagle Logo" 
-        className="w-16 h-16 sm:w-20 sm:h-20 max-h-full object-contain select-none -mr-2.5 sm:-mr-4" 
-        fetchPriority="high"
-        decoding="async"
+      <Image
+        src="/assets/logo.webp"
+        alt="NexEagle Logo"
+        width={80}
+        height={80}
+        className="w-16 h-16 sm:w-20 sm:h-20 max-h-full object-contain select-none -mr-2.5 sm:-mr-4"
+        priority
       />
       
       {!iconOnly && (
