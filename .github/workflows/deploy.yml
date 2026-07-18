@@ -28,6 +28,13 @@
 #   ANTHROPIC_API_KEY     OPTIONAL — powers the AI search fallback (app/api/search/parse).
 #                         Same key used for both dev and prod. Leave unset to disable —
 #                         search stays literal-keyword-only, no error, nothing breaks.
+#   INTERNAL_PROXY_SECRET OPTIONAL — lets easyHMSAPI's public rate limiters see each real
+#                         visitor's IP instead of this container's own IP (every call to the
+#                         API is server-to-server — see src/lib/api/server.ts). Same key used
+#                         for both dev and prod; must match Internal:ProxyForwardingSecret in
+#                         the easyHMSAPI repo's own deploy secrets exactly. Leave unset on
+#                         either side to keep the previous (site-wide-budget) rate-limit
+#                         behavior — nothing breaks either way.
 # ═══════════════════════════════════════════════════════════════════════════════
 
 name: NexEagle Website — CI/CD
@@ -113,6 +120,7 @@ jobs:
           ACTOR: ${{ github.actor }}
           EASYHMS_API_KEY: ${{ secrets.EASYHMS_DEV_API_KEY }}
           ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
+          PROXY_SECRET: ${{ secrets.INTERNAL_PROXY_SECRET }}
         run: |
           IMAGE_LC=$(printf '%s' "$IMAGE" | tr '[:upper:]' '[:lower:]')
           ssh -i /tmp/deploy_key -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null \
@@ -126,6 +134,7 @@ jobs:
                  -e EASYHMS_API_KEY='$EASYHMS_API_KEY' \
                  -e EASYHMS_API_KEY_HEADER='X-Api-Key' \
                  -e ANTHROPIC_API_KEY='$ANTHROPIC_API_KEY' \
+                 -e EASYHMS_TRUSTED_PROXY_SECRET='$PROXY_SECRET' \
                  '$IMAGE_LC' && \
                docker image prune -f"
 
@@ -199,6 +208,7 @@ jobs:
           ACTOR: ${{ github.actor }}
           EASYHMS_API_KEY: ${{ secrets.EASYHMS_PROD_API_KEY }}
           ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
+          PROXY_SECRET: ${{ secrets.INTERNAL_PROXY_SECRET }}
         run: |
           IMAGE_LC=$(printf '%s' "$IMAGE" | tr '[:upper:]' '[:lower:]')
           ssh -i /tmp/deploy_key -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null \
@@ -212,6 +222,7 @@ jobs:
                  -e EASYHMS_API_KEY='$EASYHMS_API_KEY' \
                  -e EASYHMS_API_KEY_HEADER='X-Api-Key' \
                  -e ANTHROPIC_API_KEY='$ANTHROPIC_API_KEY' \
+                 -e EASYHMS_TRUSTED_PROXY_SECRET='$PROXY_SECRET' \
                  '$IMAGE_LC' && \
                docker image prune -f"
 

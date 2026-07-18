@@ -26,7 +26,7 @@ export default function LanguageToggle() {
       <DropdownMenuTrigger asChild>
         <button
           aria-label={t("language.choose")}
-          className="flex items-center justify-center gap-1.5 h-10 px-3 sm:px-4 rounded-full border border-slate-200/60 bg-white/80 backdrop-blur-md text-sm font-semibold text-slate-700 hover:border-brand-teal/40 hover:text-brand-teal hover:bg-white hover:shadow-sm transition-all focus:outline-none focus:ring-2 focus:ring-brand-teal/20"
+          className="flex items-center justify-center gap-1 sm:gap-1.5 h-10 px-2.5 sm:px-4 rounded-full border border-slate-200/60 bg-white/80 backdrop-blur-md text-sm font-semibold text-slate-700 hover:border-brand-teal/40 hover:text-brand-teal hover:bg-white hover:shadow-sm transition-all focus:outline-none focus:ring-2 focus:ring-brand-teal/20"
         >
           <Globe className="w-4 h-4 text-brand-teal shrink-0" />
           <span className="hidden sm:inline">{current.nativeLabel}</span>
