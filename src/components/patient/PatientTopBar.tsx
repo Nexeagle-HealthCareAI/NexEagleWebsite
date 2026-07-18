@@ -12,6 +12,8 @@ import { cn } from "@/lib/utils";
 import { useTranslation } from "@/lib/i18n/I18nContext";
 import LanguageToggle from "./LanguageToggle";
 import ShareButton from "./ShareButton";
+import { useInstallPrompt } from "@/hooks/useInstallPrompt";
+import { Download } from "lucide-react";
 
 interface PatientTopBarProps {
   /** Geolocation detection status */
@@ -40,6 +42,8 @@ export default function PatientTopBar({
   const router = useRouter();
   const [showDropdown, setShowDropdown] = useState(false);
   const [showPrompt, setShowPrompt] = useState(false);
+  
+  const { isInstallable, promptInstall, isIos } = useInstallPrompt();
 
   const detecting = geoStatus === "detecting" || geoStatus === "idle";
   const denied = geoStatus === "denied" || geoStatus === "unsupported";
@@ -201,6 +205,24 @@ export default function PatientTopBar({
                 className="!px-2 !py-2 [&>span]:hidden" 
               />
             </div>
+            {/* Install App CTA */}
+            {isInstallable && (
+              <div className="shrink-0">
+                <button 
+                  onClick={promptInstall}
+                  className="hidden sm:inline-flex items-center gap-2 px-4 py-2 rounded-full bg-slate-900 hover:bg-slate-800 text-white text-sm font-bold transition-all duration-300 shadow-[0_4px_14px_0_rgba(15,23,42,0.18)]"
+                >
+                  <Download className="w-4 h-4" />
+                  <span>Install App</span>
+                </button>
+                <button 
+                  onClick={promptInstall}
+                  className="sm:hidden inline-flex items-center justify-center w-9 h-9 rounded-full bg-slate-900 text-white shadow-md active:scale-95 transition-transform"
+                >
+                  <Download className="w-4 h-4" />
+                </button>
+              </div>
+            )}
 
             {/* Language toggle — persistent, top-right, per the feature spec */}
             <LanguageToggle />

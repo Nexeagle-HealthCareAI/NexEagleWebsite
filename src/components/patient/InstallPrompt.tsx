@@ -3,60 +3,23 @@
 import { useState, useEffect } from "react";
 import { X, Download, Share, PlusSquare } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
-
-// Define the beforeinstallprompt event type since it's non-standard
-interface BeforeInstallPromptEvent extends Event {
-  readonly platforms: string[];
-  readonly userChoice: Promise<{
-    outcome: "accepted" | "dismissed";
-    platform: string;
-  }>;
-  prompt(): Promise<void>;
-}
+import { useInstallPrompt } from "@/hooks/useInstallPrompt";
 
 export default function InstallPrompt() {
-  const [deferredPrompt, setDeferredPrompt] = useState<BeforeInstallPromptEvent | null>(null);
   const [showPrompt, setShowPrompt] = useState(false);
-  const [isIos, setIsIos] = useState(false);
+  const { isInstallable, promptInstall, isIos, isStandalone } = useInstallPrompt();
 
   useEffect(() => {
     // Check if user has already dismissed or installed
     const hasSeenPrompt = localStorage.getItem("hasSeenInstallPrompt");
-    if (hasSeenPrompt === "true") return;
+    if (hasSeenPrompt === "true" || isStandalone) return;
 
-    // Detect iOS (Safari doesn't support beforeinstallprompt)
-    const userAgent = window.navigator.userAgent.toLowerCase();
-    const isIosDevice = /iphone|ipad|ipod/.test(userAgent);
-    
-    // Check if the app is already running in standalone mode (installed)
-    const isStandalone = window.matchMedia("(display-mode: standalone)").matches || 
-                         (window.navigator as any).standalone === true;
-
-    if (isStandalone) return;
-
-    if (isIosDevice) {
-      setIsIos(true);
+    if (isInstallable) {
       // Wait a few seconds before showing the prompt so we don't overwhelm them instantly
       const timer = setTimeout(() => setShowPrompt(true), 3000);
       return () => clearTimeout(timer);
     }
-
-    // Android / Chrome handling
-    const handleBeforeInstallPrompt = (e: Event) => {
-      // Prevent the mini-infobar from appearing on mobile
-      e.preventDefault();
-      // Stash the event so it can be triggered later.
-      setDeferredPrompt(e as BeforeInstallPromptEvent);
-      // Optionally delay showing it
-      setTimeout(() => setShowPrompt(true), 3000);
-    };
-
-    window.addEventListener("beforeinstallprompt", handleBeforeInstallPrompt);
-
-    return () => {
-      window.removeEventListener("beforeinstallprompt", handleBeforeInstallPrompt);
-    };
-  }, []);
+  }, [isInstallable, isStandalone]);
 
   const handleDismiss = () => {
     setShowPrompt(false);
@@ -64,19 +27,8 @@ export default function InstallPrompt() {
   };
 
   const handleInstallClick = async () => {
-    if (!deferredPrompt) return;
-    
-    // Show the native install prompt
-    deferredPrompt.prompt();
-    
-    // Wait for the user to respond to the prompt
-    const { outcome } = await deferredPrompt.userChoice;
-    
-    // Regardless of outcome, we don't need to show our custom banner again
+    await promptInstall();
     handleDismiss();
-    
-    // Clear the saved prompt since it can't be used again
-    setDeferredPrompt(null);
   };
 
   return (
@@ -87,9 +39,9 @@ export default function InstallPrompt() {
           animate={{ y: 0, opacity: 1 }}
           exit={{ y: 150, opacity: 0 }}
           transition={{ type: "spring", bounce: 0.2, duration: 0.6 }}
-          className="fixed bottom-0 left-0 right-0 z-[100] p-4 sm:p-6 pb-[calc(1rem+env(safe-area-inset-bottom))] md:hidden"
+          className="fixed bottom-0 left-0 right-0 z-[100] p-4 sm:p-6 pb-[calc(1rem+env(safe-area-inset-bottom))] md:hidden pointer-events-none"
         >
-          <div className="bg-white rounded-3xl p-5 shadow-[0_10px_40px_rgba(0,0,0,0.15)] border border-slate-200/60 relative">
+          <div className="bg-white rounded-3xl p-5 shadow-[0_10px_40px_rgba(0,0,0,0.15)] border border-slate-200/60 relative pointer-events-auto">
             
             <button 
               onClick={handleDismiss}
