@@ -81,7 +81,9 @@ export default function BookingPanel({ doctor }: BookingPanelProps) {
   // Form fields
   const [name, setName]   = useState("");
   const [age, setAge]     = useState("");
-  const [sex, setSex]     = useState<"Male" | "Female" | "Other" | "">("");
+  // Defaults to Male — most patients booking for themselves skip past this without a second
+  // thought, so a pre-selected common default saves a tap; still fully changeable before submit.
+  const [sex, setSex]     = useState<"Male" | "Female" | "Other" | "">("Male");
   const [phone, setPhone] = useState("");
   const [email, setEmail] = useState("");
   const [guardianName, setGuardianName] = useState("");
@@ -184,7 +186,7 @@ export default function BookingPanel({ doctor }: BookingPanelProps) {
 
   function reset() {
     setStep("visit"); setDate(""); setTimeRange(""); setPreferredTime(undefined);
-    setName(""); setAge(""); setSex(""); setPhone(""); setEmail(""); setReason("");
+    setName(""); setAge(""); setSex("Male"); setPhone(""); setEmail(""); setReason("");
     setGuardianName(""); setGuardianRelation(GUARDIAN_RELATIONS[0]);
     setErrors({});
     setSubmitting(false); setServerRef(null);
