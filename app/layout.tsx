@@ -60,6 +60,12 @@ export const metadata: Metadata = {
     statusBarStyle: "default",
     title: "Doctor Dekho",
   },
+  verification: {
+    // Bing Webmaster Tools site-ownership check.
+    other: {
+      "msvalidate.01": "EC6A77DDD7DD7DA18EF0724DEAABA6F3",
+    },
+  },
 };
 
 // Installable PWA: standalone display + brand theme-color for the Android status
