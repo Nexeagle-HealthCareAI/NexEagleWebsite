@@ -173,6 +173,8 @@
   html {
     scroll-behavior: smooth;
     min-height: 100%;
+    overscroll-behavior-y: none;
+    -webkit-tap-highlight-color: transparent;
   }
 
   body {
@@ -232,6 +234,11 @@
     color: inherit;
     text-decoration: none;
     transition: color 0.2s ease;
+    user-select: none;
+  }
+
+  button {
+    user-select: none;
   }
 
   a:hover,

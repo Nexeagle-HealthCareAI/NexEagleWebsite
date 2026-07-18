@@ -42,7 +42,7 @@ export default function DoctorDetailClient({ doctor, similarDoctors, canonicalSl
       <DoctorViewTracker doctorId={doctor.id} />
 
       {/* Patient topbar (no geo props needed on this page) */}
-      <PatientTopBar />
+      <PatientTopBar showBackButton={true} />
 
       <main className="flex-1 pb-24 lg:pb-0">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">

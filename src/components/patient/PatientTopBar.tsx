@@ -2,7 +2,8 @@
 
 import { useState } from "react";
 import Link from "next/link";
-import { MapPin, ChevronDown, Locate, ArrowRight, X } from "lucide-react";
+import { useRouter } from "next/navigation";
+import { MapPin, ChevronDown, Locate, ArrowRight, X, ArrowLeft } from "lucide-react";
 import { Logo } from "@/components/Logo";
 import type { CityOption } from "@/data/patient";
 import { cityLabel } from "@/data/patient";
@@ -23,6 +24,8 @@ interface PatientTopBarProps {
   onCityChange?: (city: CityOption | null) => void;
   /** Called when user explicitly allows location detection */
   onRequestLocation?: () => void;
+  /** Whether to show a native-style back button instead of the logo on mobile */
+  showBackButton?: boolean;
 }
 
 export default function PatientTopBar({
@@ -31,8 +34,10 @@ export default function PatientTopBar({
   cities = [],
   onCityChange,
   onRequestLocation,
+  showBackButton = false,
 }: PatientTopBarProps) {
   const { t } = useTranslation();
+  const router = useRouter();
   const [showDropdown, setShowDropdown] = useState(false);
   const [showPrompt, setShowPrompt] = useState(false);
 
@@ -62,8 +67,24 @@ export default function PatientTopBar({
     <>
       <header className="sticky top-0 z-50 w-full bg-white/70 backdrop-blur-xl border-b border-white/20 shadow-sm transition-all duration-300">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 sm:h-20 flex items-center justify-between gap-3">
-          {/* ── Left: Logo + Brand Title ── */}
-          <Link href="/" className="flex items-center gap-2 sm:gap-3 shrink-0 select-none group">
+          {/* ── Left: Logo + Brand Title or Back Button ── */}
+          {showBackButton ? (
+            <button
+              onClick={() => router.back()}
+              className="flex items-center gap-2 text-slate-700 hover:text-brand-teal transition-colors py-2 pr-4 md:hidden active:scale-95"
+            >
+              <ArrowLeft className="w-5 h-5" />
+              <span className="font-semibold text-sm">Back</span>
+            </button>
+          ) : null}
+          
+          <Link 
+            href="/" 
+            className={cn(
+              "items-center gap-2 sm:gap-3 shrink-0 select-none group",
+              showBackButton ? "hidden md:flex" : "flex"
+            )}
+          >
             <Logo textSize="text-base sm:text-xl" />
             <div className="hidden sm:flex items-center gap-2.5">
               <span className="w-px h-6 bg-slate-200/60" />
