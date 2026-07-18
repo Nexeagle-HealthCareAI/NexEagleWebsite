@@ -2,6 +2,10 @@ import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 import { specialties } from "@/data/patient";
 import HomeClient from "@/app/home-client";
+import { getAllDoctors } from "@/lib/api/server";
+import { filterDoctorsByLocation } from "@/lib/filters/doctorLocation";
+
+export const revalidate = 3600;
 
 interface PageProps {
   params: { specialty: string };
@@ -28,9 +32,14 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
   };
 }
 
-export default function SpecialtyPage({ params }: PageProps) {
+export default async function SpecialtyPage({ params }: PageProps) {
   const specialty = specialties.find((s) => s.id === params.specialty);
   if (!specialty) notFound();
+
+  // Server-fetched + pre-filtered so this page ships real doctor content in the
+  // raw HTML — see src/lib/api/server.ts's getAllDoctors.
+  const { doctors } = await getAllDoctors();
+  const initialDoctors = filterDoctorsByLocation(doctors, { specialtyId: specialty.id });
 
   const faqSchema = {
     "@context": "https://schema.org",
@@ -61,7 +70,7 @@ export default function SpecialtyPage({ params }: PageProps) {
         type="application/ld+json"
         dangerouslySetInnerHTML={{ __html: JSON.stringify(faqSchema) }}
       />
-      <HomeClient initialSpecialtyId={specialty.id} />
+      <HomeClient initialSpecialtyId={specialty.id} initialDoctors={initialDoctors} />
     </>
   );
 }

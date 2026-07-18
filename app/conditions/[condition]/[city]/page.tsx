@@ -1,10 +1,11 @@
 import type { Metadata } from "next";
 import { notFound } from "next/navigation";
-import { CITIES, doctors as mockDoctors } from "@/data/patient";
+import { CITIES } from "@/data/patient";
 import HomeClient from "@/app/home-client";
-import { easyhmsFetch } from "@/lib/api/server";
-import { mapDoctors } from "@/lib/api/mappers";
-import type { DoctorsResponseDto } from "@/lib/api/types";
+import { getAllDoctors } from "@/lib/api/server";
+import { filterDoctorsByCondition, filterDoctorsByLocation } from "@/lib/filters/doctorLocation";
+
+export const revalidate = 3600;
 
 interface PageProps {
   params: { condition: string; city: string };
@@ -19,13 +20,7 @@ function unslugify(slug: string) {
 }
 
 export async function generateStaticParams() {
-  let doctors = mockDoctors;
-  try {
-    const result = await easyhmsFetch<DoctorsResponseDto>("/public/doctors");
-    if (!result.notConfigured && result.data) {
-      doctors = mapDoctors(result.data.doctors);
-    }
-  } catch {}
+  const { doctors } = await getAllDoctors();
 
   const conditionSet = new Set<string>();
   for (const d of doctors) {
@@ -59,11 +54,26 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
   };
 }
 
-export default function ConditionCityPage({ params }: PageProps) {
+export default async function ConditionCityPage({ params }: PageProps) {
   const city = CITIES.find((c) => c.id === params.city);
   if (!city) notFound();
 
   const conditionName = unslugify(params.condition);
 
-  return <HomeClient initialQuery={conditionName} initialCityId={city.id} />;
+  // Server-fetched + pre-filtered so this page ships real doctor content in the
+  // raw HTML — see src/lib/api/server.ts's getAllDoctors.
+  const { doctors } = await getAllDoctors();
+  const conditionMatched = filterDoctorsByCondition(doctors, params.condition);
+  const initialDoctors = filterDoctorsByLocation(conditionMatched, {
+    city: city.name,
+    state: city.state,
+  });
+
+  return (
+    <HomeClient
+      initialQuery={conditionName}
+      initialCityId={city.id}
+      initialDoctors={initialDoctors}
+    />
+  );
 }

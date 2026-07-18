@@ -1,5 +1,6 @@
 "use client";
 
+import { forwardRef } from "react";
 import Link from "next/link";
 import Image from "next/image";
 import { motion } from "framer-motion";
@@ -18,12 +19,20 @@ interface DoctorCardProps {
   index?: number;
 }
 
-export default function DoctorCard({ doctor, index = 0 }: DoctorCardProps) {
+// forwardRef because this renders directly inside AnimatePresence for exit
+// animations — Framer Motion's PopChild clones the child with a ref to measure
+// it before it unmounts, which silently fails (and can desync from the SSR
+// pass) unless the component itself forwards that ref through to a DOM node.
+const DoctorCard = forwardRef<HTMLDivElement, DoctorCardProps>(function DoctorCard(
+  { doctor, index = 0 },
+  ref
+) {
   const { t, locale } = useTranslation();
   const clinicLabel = doctor.hospitalName ?? doctor.clinic;
 
   return (
     <motion.div
+      ref={ref}
       initial={{ opacity: 0, y: 28 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.42, delay: index * 0.07, ease: [0.22, 1, 0.36, 1] }}
@@ -146,18 +155,26 @@ export default function DoctorCard({ doctor, index = 0 }: DoctorCardProps) {
                   </p>
                 )}
               </div>
-              {/* Directions micro-link */}
+              {/* Directions micro-link — a <button>, not a nested <a>: the whole
+                  card is already a Link, and an <a> inside an <a> is invalid
+                  HTML (causes a hydration mismatch as the browser un-nests it). */}
               {doctor.latitude != null && doctor.longitude != null ? (
-                <a
-                  href={`https://www.google.com/maps/dir/?api=1&destination=${doctor.latitude},${doctor.longitude}`}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  onClick={(e) => e.stopPropagation()}
+                <button
+                  type="button"
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    e.preventDefault();
+                    window.open(
+                      `https://www.google.com/maps/dir/?api=1&destination=${doctor.latitude},${doctor.longitude}`,
+                      "_blank",
+                      "noopener,noreferrer"
+                    );
+                  }}
                   className="shrink-0 text-[10px] font-bold text-brand-teal hover:text-teal-700 underline underline-offset-2 mt-0.5 whitespace-nowrap cursor-pointer"
                   title="Get Directions"
                 >
                   Directions ↗
-                </a>
+                </button>
               ) : (
                 <span
                   className="shrink-0 text-[10px] font-semibold text-slate-400 mt-0.5 whitespace-nowrap cursor-not-allowed"
@@ -296,4 +313,6 @@ export default function DoctorCard({ doctor, index = 0 }: DoctorCardProps) {
       </Link>
     </motion.div>
   );
-}
+});
+
+export default DoctorCard;
