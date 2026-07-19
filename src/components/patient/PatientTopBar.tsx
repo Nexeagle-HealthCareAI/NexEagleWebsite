@@ -93,7 +93,7 @@ export default function PatientTopBar({
                 enough room for the location pill / hospital CTA / language toggle that also live
                 in this row on a narrow screen. Full logo (icon + "NexEagle" text) from sm: up. */}
             <span className="sm:hidden">
-              <Logo iconOnly iconClassName="w-9 h-9" />
+              <Logo iconOnly iconClassName="w-12 h-12" />
             </span>
             <span className="hidden sm:flex items-center gap-3">
               <Logo textSize="text-base sm:text-xl" />
