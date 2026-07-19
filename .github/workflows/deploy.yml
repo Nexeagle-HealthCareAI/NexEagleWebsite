@@ -21,9 +21,10 @@
 #                         should be identified/revocable separately from anonymous
 #                         callers. Issued via easyHMSAPI's tools/IssuePublicApiKey
 #                         console tool (see easyHMSAPI/docs/OPS-ISSUE-PUBLIC-API-KEY.md).
-#   DEV_SSH_HOST          151.185.45.77
-#   DEV_SSH_USER          root
-#   DEV_SSH_KEY_B64       base64-encoded SSH private key for Dev App VM
+#   SSH_HOST              151.185.45.77 (Dev App VM — legacy unprefixed name, predates the
+#                         dev/prod split; password auth via appleboy/ssh-action, not a key)
+#   SSH_USER              root
+#   SSH_PASSWORD          SSH password for the Dev App VM
 #   EASYHMS_DEV_API_KEY   OPTIONAL, same as EASYHMS_PROD_API_KEY, for the dev environment.
 #   ANTHROPIC_API_KEY     OPTIONAL — powers the AI search fallback (app/api/search/parse).
 #                         Same key used for both dev and prod. Leave unset to disable —
@@ -108,12 +109,8 @@ jobs:
           cache-from: type=gha
           cache-to: type=gha,mode=max
 
-      - name: Prepare SSH key
-        run: |
-          echo "${{ secrets.DEV_SSH_KEY_B64 }}" | base64 -d > /tmp/deploy_key
-          chmod 600 /tmp/deploy_key
-
       - name: Deploy to Dev VM
+        uses: appleboy/ssh-action@v1.0.3
         env:
           IMAGE: ${{ steps.vars.outputs.image }}:${{ steps.vars.outputs.tag }}
           PULL_TOKEN: ${{ secrets.GITHUB_TOKEN }}
@@ -121,29 +118,35 @@ jobs:
           EASYHMS_API_KEY: ${{ secrets.EASYHMS_DEV_API_KEY }}
           ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
           PROXY_SECRET: ${{ secrets.INTERNAL_PROXY_SECRET }}
-        run: |
-          IMAGE_LC=$(printf '%s' "$IMAGE" | tr '[:upper:]' '[:lower:]')
-          ssh -i /tmp/deploy_key -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null \
-              ${{ secrets.DEV_SSH_USER }}@${{ secrets.DEV_SSH_HOST }} \
-              "echo '$PULL_TOKEN' | docker login ghcr.io -u '$ACTOR' --password-stdin && \
-               docker pull '$IMAGE_LC' && \
-               docker rm -f nexeagle-website-dev 2>/dev/null || true; \
-               docker run -d --name nexeagle-website-dev --restart unless-stopped \
-                 -p 8080:80 \
-                 -e EASYHMS_API_BASE_URL='http://151.185.45.77:5001' \
-                 -e EASYHMS_API_KEY='$EASYHMS_API_KEY' \
-                 -e EASYHMS_API_KEY_HEADER='X-Api-Key' \
-                 -e ANTHROPIC_API_KEY='$ANTHROPIC_API_KEY' \
-                 -e EASYHMS_TRUSTED_PROXY_SECRET='$PROXY_SECRET' \
-                 '$IMAGE_LC' && \
-               docker image prune -f"
+        with:
+          host: ${{ secrets.SSH_HOST }}
+          username: ${{ secrets.SSH_USER }}
+          password: ${{ secrets.SSH_PASSWORD }}
+          port: 22
+          command_timeout: 10m
+          envs: IMAGE,PULL_TOKEN,ACTOR,EASYHMS_API_KEY,ANTHROPIC_API_KEY,PROXY_SECRET
+          script: |
+            set -e
+            IMAGE_LC=$(printf '%s' "$IMAGE" | tr '[:upper:]' '[:lower:]')
+            echo "$PULL_TOKEN" | docker login ghcr.io -u "$ACTOR" --password-stdin
+            docker pull "$IMAGE_LC"
+            docker rm -f nexeagle-website-dev 2>/dev/null || true
+            docker run -d --name nexeagle-website-dev --restart unless-stopped \
+              -p 8080:80 \
+              -e EASYHMS_API_BASE_URL='http://151.185.45.77:5001' \
+              -e EASYHMS_API_KEY="$EASYHMS_API_KEY" \
+              -e EASYHMS_API_KEY_HEADER='X-Api-Key' \
+              -e ANTHROPIC_API_KEY="$ANTHROPIC_API_KEY" \
+              -e EASYHMS_TRUSTED_PROXY_SECRET="$PROXY_SECRET" \
+              "$IMAGE_LC"
+            docker image prune -f || true
 
       - name: Health check
         run: |
           sleep 5
           for i in 1 2 3 4 5; do
             S=$(curl -s -o /dev/null -w '%{http_code}' \
-                http://${{ secrets.DEV_SSH_HOST }}:8080 2>/dev/null || echo 000)
+                http://${{ secrets.SSH_HOST }}:8080 2>/dev/null || echo 000)
             echo "Attempt $i — HTTP $S"
             [ "$S" = "200" ] && echo "✅ NexEagle Website (dev) is live" && exit 0
             sleep 5
@@ -156,7 +159,7 @@ jobs:
         run: |
           echo "## 🌐 NexEagle Website — Dev" >> $GITHUB_STEP_SUMMARY
           [ "${{ job.status }}" = "success" ] \
-            && echo "**Status:** ✅ Live at http://${{ secrets.DEV_SSH_HOST }}:8080" >> $GITHUB_STEP_SUMMARY \
+            && echo "**Status:** ✅ Live at http://${{ secrets.SSH_HOST }}:8080" >> $GITHUB_STEP_SUMMARY \
             || echo "**Status:** ❌ Failed" >> $GITHUB_STEP_SUMMARY
           echo "| Commit | \`${{ github.sha }}\` |" >> $GITHUB_STEP_SUMMARY
 
