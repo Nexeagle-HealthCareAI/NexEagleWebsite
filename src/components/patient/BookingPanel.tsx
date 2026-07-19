@@ -248,7 +248,14 @@ export default function BookingPanel({ doctor }: BookingPanelProps) {
           {doctor.fee !== undefined && step !== "done" && (
             <div className="text-right shrink-0 bg-white/60 backdrop-blur-sm px-3 py-1.5 rounded-xl border border-teal-100/50 shadow-sm">
               <span className="block text-[9px] font-bold text-slate-400 uppercase tracking-widest leading-none mb-1">{t("doctorDetail.consultationFee" as any)}</span>
-              <span className="font-display text-base font-extrabold text-slate-900 leading-none">₹{doctor.fee}</span>
+              {doctor.discountedFee !== undefined ? (
+                <span className="inline-flex items-baseline gap-1.5 leading-none">
+                  <span className="text-[11px] font-semibold text-slate-400 line-through">₹{doctor.fee}</span>
+                  <span className="font-display text-base font-extrabold text-emerald-600">₹{doctor.discountedFee}</span>
+                </span>
+              ) : (
+                <span className="font-display text-base font-extrabold text-slate-900 leading-none">₹{doctor.fee}</span>
+              )}
             </div>
           )}
         </div>

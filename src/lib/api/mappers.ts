@@ -117,7 +117,7 @@ export function mapDoctor(dto: DoctorDto): Doctor {
     about: dto.bio ?? "",
     focusAreas: dto.specializations ?? [],
     verified: true,
-    promoted: false,
+    promoted: dto.isFeatured ?? false,
 
     // The real public API doesn't return per-doctor patient counts or sub-locality (area) —
     // left undefined/empty so the UI hides these sections instead of showing fake zero values —
@@ -130,6 +130,8 @@ export function mapDoctor(dto: DoctorDto): Doctor {
     recommendationPct: undefined,
     waitTimeMins: undefined,
     fee: dto.fee ?? undefined,
+    discountPercent: dto.discountPercent ?? undefined,
+    discountedFee: dto.discountedFee ?? undefined,
     hospitalName: dto.hospitalName ?? undefined,
     address: dto.address ?? undefined,
     city: dto.city ?? "",
