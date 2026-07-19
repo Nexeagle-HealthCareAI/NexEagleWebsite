@@ -131,6 +131,8 @@ jobs:
             echo "$PULL_TOKEN" | docker login ghcr.io -u "$ACTOR" --password-stdin
             docker pull "$IMAGE_LC"
             docker rm -f nexeagle-website-dev 2>/dev/null || true
+            PORT_HOG=$(docker ps -q --filter "publish=8080")
+            [ -n "$PORT_HOG" ] && docker rm -f $PORT_HOG || true
             docker run -d --name nexeagle-website-dev --restart unless-stopped \
               -p 8080:80 \
               -e EASYHMS_API_BASE_URL='http://151.185.45.77:5001' \
@@ -219,6 +221,7 @@ jobs:
               "echo '$PULL_TOKEN' | docker login ghcr.io -u '$ACTOR' --password-stdin && \
                docker pull '$IMAGE_LC' && \
                docker rm -f nexeagle-website 2>/dev/null || true; \
+               PORT_HOG=\$(docker ps -q --filter \"publish=8080\"); [ -n \"\$PORT_HOG\" ] && docker rm -f \$PORT_HOG || true; \
                docker run -d --name nexeagle-website --restart unless-stopped \
                  -p 8080:80 \
                  -e EASYHMS_API_BASE_URL='https://1hms-api.nexeagle.com' \
