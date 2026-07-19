@@ -34,6 +34,10 @@ export interface Doctor {
   waitTimeMins?: number;   // typical waiting time at the clinic
 
   fee?: number;            // consultation fee, INR
+  // CMS-controlled marketing discount — only populated when currently active (real API only,
+  // same optional/hide-when-absent convention as the KPI fields above).
+  discountPercent?: number;
+  discountedFee?: number;
   // Which hospital this doctor belongs to — populated from the real API's
   // hospitalName now that the directory spans every publicly-listed hospital.
   // Mock data leaves this undefined and uses `clinic` instead — see DoctorCard.tsx.

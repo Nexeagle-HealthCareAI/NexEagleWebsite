@@ -18,6 +18,10 @@ export const metadata: Metadata = {
     "verified doctors India",
     "online appointment booking",
     "NexEagle",
+    "1HMS",
+    "1Rad",
+    "1Lab",
+    "1Pharma",
   ],
   alternates: { canonical: "/" },
   openGraph: {

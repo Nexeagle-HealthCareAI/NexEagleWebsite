@@ -6,7 +6,7 @@ import Image from "next/image";
 import { motion } from "framer-motion";
 import {
   BadgeCheck, MapPin, Award, CalendarCheck, Star,
-  Clock, Users, ThumbsUp, Languages, ArrowRight,
+  Clock, Users, ThumbsUp, Languages, ArrowRight, Percent,
 } from "lucide-react";
 import type { Doctor } from "@/data/patient";
 import { doctorSlug, formatCount } from "@/data/patient";
@@ -46,6 +46,14 @@ const DoctorCard = forwardRef<HTMLDivElement, DoctorCardProps>(function DoctorCa
           <div className="absolute top-4 right-4 z-10 px-3 py-1 rounded-full bg-slate-900/90 backdrop-blur-sm text-white text-[10px] font-bold tracking-widest uppercase shadow-md flex items-center gap-1.5">
             <Star className="w-3 h-3 text-amber-400 fill-amber-400" />
             {t("doctorCard.featured")}
+          </div>
+        )}
+        {/* Discount ribbon — deliberately high-contrast/prominent per the marketing requirement,
+            distinct green accent so it never gets confused with the amber Featured badge. */}
+        {doctor.discountPercent !== undefined && (
+          <div className="absolute top-4 left-4 z-10 px-3 py-1 rounded-full bg-emerald-600 text-white text-[10px] font-extrabold tracking-widest uppercase shadow-[0_4px_14px_0_rgba(5,150,105,0.4)] flex items-center gap-1">
+            <Percent className="w-3 h-3" />
+            {doctor.discountPercent}% OFF
           </div>
         )}
         {/* Gradient mesh */}
@@ -288,7 +296,12 @@ const DoctorCard = forwardRef<HTMLDivElement, DoctorCardProps>(function DoctorCa
 
               <div className="text-right shrink-0">
                 <span className="block text-[9px] font-bold text-slate-400 uppercase tracking-widest leading-none mb-0.5">Fee</span>
-                {doctor.fee !== undefined ? (
+                {doctor.discountedFee !== undefined && doctor.fee !== undefined ? (
+                  <span className="inline-flex items-baseline gap-1.5">
+                    <span className="text-[11px] font-semibold text-slate-400 line-through">₹{doctor.fee}</span>
+                    <span className="font-display text-base font-extrabold text-emerald-600">₹{doctor.discountedFee}</span>
+                  </span>
+                ) : doctor.fee !== undefined ? (
                   <span className="font-display text-base font-bold text-slate-900">₹{doctor.fee}</span>
                 ) : (
                   <span className="text-xs text-slate-400 font-medium">—</span>
