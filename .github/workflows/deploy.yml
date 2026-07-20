@@ -219,8 +219,8 @@ jobs:
 
       - name: Prepare SSH key
         run: |
-          echo "${{ secrets.PROD_SSH_KEY_B64 }}" | base64 -d > /tmp/deploy_key
-          chmod 600 /tmp/deploy_key
+          echo "${{ secrets.PROD_SSH_KEY_B64 }}" | base64 -d > "$GITHUB_WORKSPACE/deploy_key"
+          chmod 600 "$GITHUB_WORKSPACE/deploy_key"
 
       - name: Deploy to Prod VM
         uses: appleboy/ssh-action@v1.0.3
@@ -234,7 +234,10 @@ jobs:
         with:
           host: ${{ secrets.PROD_SSH_HOST }}
           username: ${{ secrets.PROD_SSH_USER }}
-          key_path: /tmp/deploy_key
+          # appleboy/ssh-action runs inside its own Docker container, which only mounts the
+          # checked-out workspace (not /tmp on the runner) — the key file must live here, not
+          # in /tmp, or getKeyFile fails with "no such file or directory" (see incident 2026-07-20).
+          key_path: deploy_key
           port: 22
           command_timeout: 10m
           envs: IMAGE,PULL_TOKEN,ACTOR,EASYHMS_API_KEY,ANTHROPIC_API_KEY,PROXY_SECRET
