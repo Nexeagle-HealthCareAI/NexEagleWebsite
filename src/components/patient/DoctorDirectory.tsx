@@ -8,7 +8,7 @@ import DoctorCard from "./DoctorCard";
 import { specialties, cityLabel } from "@/data/patient";
 import type { CityOption, Doctor } from "@/data/patient";
 import { useDoctors, useSmartSearch, type SmartSearchIntent } from "@/lib/api/hooks";
-import { haversineDistance, type GeoStatus } from "@/lib/geo";
+import { haversineDistance, getDrivingDistances, type GeoStatus } from "@/lib/geo";
 import { cn } from "@/lib/utils";
 import { trackEvent } from "@/lib/analytics";
 import { useTranslation } from "@/lib/i18n/I18nContext";
@@ -54,6 +54,7 @@ export default function DoctorDirectory({
   const { t, locale } = useTranslation();
   const [sort, setSort] = useState<SortKey>("relevance");
   const [radius, setRadius] = useState<number>(100);
+  const [drivingData, setDrivingData] = useState<Record<string, { distanceKm: number, durationMin: number }>>({});
 
   const hasSeedData = initialDoctors !== undefined;
   const { data, isLoading: queryIsLoading } = useDoctors(
@@ -167,7 +168,16 @@ export default function DoctorDirectory({
 
   const filtered = useMemo(() => {
     const base = usingAiResults && aiFiltered ? aiFiltered : keywordFiltered;
-    const sorted = [...base];
+    // Inject driving data if available
+    const mapped = base.map(d => {
+      const drive = drivingData[d.id];
+      if (drive) {
+        return { ...d, distanceKm: drive.distanceKm, drivingDurationMin: drive.durationMin };
+      }
+      return d;
+    });
+
+    const sorted = [...mapped];
     switch (sort) {
       case "distance":
         sorted.sort((a, b) => (a.distanceKm ?? 999999) - (b.distanceKm ?? 999999));
@@ -191,7 +201,31 @@ export default function DoctorDirectory({
         });
     }
     return sorted;
-  }, [keywordFiltered, aiFiltered, usingAiResults, sort]);
+  }, [keywordFiltered, aiFiltered, usingAiResults, sort, drivingData]);
+
+  // Fetch real driving distances from OSRM for the top displayed doctors
+  useEffect(() => {
+    if (!coords) return;
+    
+    // Find doctors in the current list that have GPS but lack driving data
+    const pending = filtered
+      .filter(d => d.latitude != null && d.longitude != null && !drivingData[d.id])
+      .slice(0, 50); // limit to 50 to respect OSRM public API limits
+      
+    if (pending.length === 0) return;
+
+    const destinations = pending.map(d => ({
+      id: d.id,
+      lat: d.latitude!,
+      lon: d.longitude!
+    }));
+
+    getDrivingDistances(coords.lat, coords.lon, destinations).then(results => {
+      if (Object.keys(results).length > 0) {
+        setDrivingData(prev => ({ ...prev, ...results }));
+      }
+    });
+  }, [filtered, coords, drivingData]);
 
   // Debounced "search settled" tracking for the CMS "All Searches" report — fires ~800ms after
   // the last change to query/specialty/results rather than per keystroke, and only when there's

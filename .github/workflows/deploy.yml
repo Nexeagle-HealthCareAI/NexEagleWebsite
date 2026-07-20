@@ -110,6 +110,10 @@ jobs:
             ${{ steps.vars.outputs.image }}:dev-latest
           cache-from: type=gha
           cache-to: type=gha,mode=max
+          # NEXT_PUBLIC_* vars are inlined at build time — LiveChat.tsx reads this to reach
+          # CMSAPI's /chathub on the Dev VM (CMS API — CI/CD deploys CMSAPI to port 5002 there).
+          build-args: |
+            NEXT_PUBLIC_API_URL=http://151.185.45.77:5002
 
       - name: Deploy to Dev VM
         uses: appleboy/ssh-action@v1.0.3
@@ -216,6 +220,13 @@ jobs:
             ${{ steps.vars.outputs.image }}:latest
           cache-from: type=gha
           cache-to: type=gha,mode=max
+          # NEXT_PUBLIC_* vars are inlined at build time — LiveChat.tsx reads this to reach
+          # CMSAPI's /chathub. HTTPS + a real domain, not the raw IP:5002 — this page is served
+          # over HTTPS (https://1hms.nexeagle.com), and browsers block a plain-http WebSocket/XHR
+          # connection from an https page ("mixed content"). Requires cms-api.nexeagle.com to be
+          # reverse-proxied to the Prod VM's :5002 with a valid TLS cert (see CMSAPI repo notes).
+          build-args: |
+            NEXT_PUBLIC_API_URL=https://cms-api.nexeagle.com
 
       - name: Prepare SSH key
         run: |

@@ -44,67 +44,95 @@ export default function NexEagleAIPage() {
 
           <div className="grid grid-cols-1 md:grid-cols-2 gap-8 max-w-5xl mx-auto">
             {/* Card 1: Burnout Reduction */}
-            <div className="bg-white border border-slate-200/80 rounded-2xl p-6 md:p-8 hover:shadow-lg hover:border-brand-teal/40 hover:-translate-y-1 transition-all duration-300 flex flex-col justify-between">
-              <div className="space-y-4">
-                <div className="w-12 h-12 rounded-xl bg-brand-teal/10 flex items-center justify-center text-brand-teal">
-                  <BrainCircuit className="w-6 h-6" />
+            <div className="bg-white border border-slate-200/80 rounded-2xl p-6 md:p-8 hover:shadow-xl hover:shadow-brand-teal/5 hover:border-brand-teal/40 hover:-translate-y-1 transition-all duration-300 flex flex-col justify-between relative overflow-hidden group">
+              <div className="space-y-4 relative z-10">
+                <div className="flex items-start justify-between">
+                  <div className="w-12 h-12 rounded-xl bg-brand-teal/10 flex items-center justify-center text-brand-teal group-hover:scale-110 transition-transform">
+                    <BrainCircuit className="w-6 h-6" />
+                  </div>
+                  <div className="flex flex-col items-end text-right">
+                    <span className="text-4xl font-extrabold text-transparent bg-clip-text bg-gradient-to-br from-brand-teal to-brand-sky">50%</span>
+                    <span className="text-[10px] font-bold uppercase tracking-wider text-slate-400 mt-1">Less Charting</span>
+                  </div>
                 </div>
                 <h3 className="text-xl font-bold text-slate-900">Combating Clinical Burnout</h3>
                 <p className="text-sm text-slate-600 font-light leading-relaxed">
-                  By converting verbal patient-doctor conversations directly into structured EMR data, clinical AI eliminates the manual &quot;typing tax&quot;, reducing charting work by up to 50% and restoring joy to practice.
+                  By converting verbal patient-doctor conversations directly into structured EMR data, clinical AI eliminates the manual &quot;typing tax&quot;, significantly reducing charting work and restoring joy to practice.
                 </p>
               </div>
-              <div className="mt-6 pt-4 border-t border-slate-200/60 text-[11px] text-slate-500 font-medium">
+              <div className="mt-6 pt-4 border-t border-slate-200/60 text-[11px] text-slate-500 font-medium relative z-10">
                 <span className="text-brand-teal font-semibold">Evidence:</span> &quot;The EHR Typing Tax &amp; Provider Burnout&quot;, <em>Annals of Internal Medicine</em>.
               </div>
+              <div className="absolute -right-12 -top-12 w-48 h-48 bg-brand-teal/5 rounded-full blur-3xl group-hover:bg-brand-teal/10 transition-colors pointer-events-none"></div>
             </div>
 
             {/* Card 2: Clinical Error Prevention */}
-            <div className="bg-white border border-slate-200/80 rounded-2xl p-6 md:p-8 hover:shadow-lg hover:border-brand-sky/40 hover:-translate-y-1 transition-all duration-300 flex flex-col justify-between">
-              <div className="space-y-4">
-                <div className="w-12 h-12 rounded-xl bg-brand-sky/10 flex items-center justify-center text-brand-sky">
-                  <Activity className="w-6 h-6" />
+            <div className="bg-white border border-slate-200/80 rounded-2xl p-6 md:p-8 hover:shadow-xl hover:shadow-brand-sky/5 hover:border-brand-sky/40 hover:-translate-y-1 transition-all duration-300 flex flex-col justify-between relative overflow-hidden group">
+              <div className="space-y-4 relative z-10">
+                <div className="flex items-start justify-between">
+                  <div className="w-12 h-12 rounded-xl bg-brand-sky/10 flex items-center justify-center text-brand-sky group-hover:scale-110 transition-transform">
+                    <Activity className="w-6 h-6" />
+                  </div>
+                  <div className="flex flex-col items-end text-right">
+                    <span className="text-4xl font-extrabold text-transparent bg-clip-text bg-gradient-to-br from-brand-sky to-brand-iris">24/7</span>
+                    <span className="text-[10px] font-bold uppercase tracking-wider text-slate-400 mt-1">Safety Net</span>
+                  </div>
                 </div>
                 <h3 className="text-xl font-bold text-slate-900">Reducing Diagnostic & Prescription Errors</h3>
                 <p className="text-sm text-slate-600 font-light leading-relaxed">
-                  AI co-pilots act as real-time safety nets. By cross-referencing patient records, lab values, and radiological findings, clinical algorithms flag adverse drug events and subtle diagnostic oversights.
+                  AI co-pilots act as real-time safety nets. By cross-referencing patient records, lab values, and radiological findings, clinical algorithms instantly flag adverse drug events and subtle diagnostic oversights.
                 </p>
               </div>
-              <div className="mt-6 pt-4 border-t border-slate-200/60 text-[11px] text-slate-500 font-medium">
+              <div className="mt-6 pt-4 border-t border-slate-200/60 text-[11px] text-slate-500 font-medium relative z-10">
                 <span className="text-brand-sky font-semibold">Evidence:</span> &quot;Clinical Decision Support Systems for Safety&quot;, <em>Journal of Patient Safety</em>.
               </div>
+              <div className="absolute -right-12 -top-12 w-48 h-48 bg-brand-sky/5 rounded-full blur-3xl group-hover:bg-brand-sky/10 transition-colors pointer-events-none"></div>
             </div>
 
             {/* Card 3: Intelligent Triage */}
-            <div className="bg-white border border-slate-200/80 rounded-2xl p-6 md:p-8 hover:shadow-lg hover:border-brand-sky/40 hover:-translate-y-1 transition-all duration-300 flex flex-col justify-between">
-              <div className="space-y-4">
-                <div className="w-12 h-12 rounded-xl bg-brand-sky/10 flex items-center justify-center text-brand-sky">
-                  <Sparkles className="w-6 h-6" />
+            <div className="bg-white border border-slate-200/80 rounded-2xl p-6 md:p-8 hover:shadow-xl hover:shadow-brand-sky/5 hover:border-brand-sky/40 hover:-translate-y-1 transition-all duration-300 flex flex-col justify-between relative overflow-hidden group">
+              <div className="space-y-4 relative z-10">
+                <div className="flex items-start justify-between">
+                  <div className="w-12 h-12 rounded-xl bg-brand-sky/10 flex items-center justify-center text-brand-sky group-hover:scale-110 transition-transform">
+                    <Sparkles className="w-6 h-6" />
+                  </div>
+                  <div className="flex flex-col items-end text-right">
+                    <span className="text-4xl font-extrabold text-transparent bg-clip-text bg-gradient-to-br from-brand-sky to-brand-iris">30%</span>
+                    <span className="text-[10px] font-bold uppercase tracking-wider text-slate-400 mt-1">Faster Triage</span>
+                  </div>
                 </div>
                 <h3 className="text-xl font-bold text-slate-900">Accelerated Patient Triage</h3>
                 <p className="text-sm text-slate-600 font-light leading-relaxed">
-                  Automated scan sweeps instantly flag acute emergencies (like stroke signs or critical nodules) and prioritize them on radiologist worklists, reducing critical patient time-to-treatment by 30%.
+                  Automated scan sweeps instantly flag acute emergencies (like stroke signs or critical nodules) and prioritize them on radiologist worklists, dramatically reducing critical patient time-to-treatment.
                 </p>
               </div>
-              <div className="mt-6 pt-4 border-t border-slate-200/60 text-[11px] text-slate-500 font-medium">
+              <div className="mt-6 pt-4 border-t border-slate-200/60 text-[11px] text-slate-500 font-medium relative z-10">
                 <span className="text-brand-sky font-semibold">Evidence:</span> &quot;AI-Driven Clinical Triage in Emergency Radiology&quot;, <em>Academic Radiology</em>.
               </div>
+              <div className="absolute -right-12 -top-12 w-48 h-48 bg-brand-sky/5 rounded-full blur-3xl group-hover:bg-brand-sky/10 transition-colors pointer-events-none"></div>
             </div>
 
             {/* Card 4: Administrative Speed */}
-            <div className="bg-white border border-slate-200/80 rounded-2xl p-6 md:p-8 hover:shadow-lg hover:border-brand-teal/40 hover:-translate-y-1 transition-all duration-300 flex flex-col justify-between">
-              <div className="space-y-4">
-                <div className="w-12 h-12 rounded-xl bg-brand-teal/10 flex items-center justify-center text-brand-teal">
-                  <FileText className="w-6 h-6" />
+            <div className="bg-white border border-slate-200/80 rounded-2xl p-6 md:p-8 hover:shadow-xl hover:shadow-brand-teal/5 hover:border-brand-teal/40 hover:-translate-y-1 transition-all duration-300 flex flex-col justify-between relative overflow-hidden group">
+              <div className="space-y-4 relative z-10">
+                <div className="flex items-start justify-between">
+                  <div className="w-12 h-12 rounded-xl bg-brand-teal/10 flex items-center justify-center text-brand-teal group-hover:scale-110 transition-transform">
+                    <FileText className="w-6 h-6" />
+                  </div>
+                  <div className="flex flex-col items-end text-right">
+                    <span className="text-4xl font-extrabold text-transparent bg-clip-text bg-gradient-to-br from-brand-teal to-brand-sky">20%</span>
+                    <span className="text-[10px] font-bold uppercase tracking-wider text-slate-400 mt-1">Faster Discharge</span>
+                  </div>
                 </div>
                 <h3 className="text-xl font-bold text-slate-900">Optimized Discharge & Throughput</h3>
                 <p className="text-sm text-slate-600 font-light leading-relaxed">
-                  AI auto-compiles clinical discharge notes and structures inpatient summaries, reducing insurer pre-authorization delays and speeding up hospital discharge operations by 20%.
+                  AI auto-compiles clinical discharge notes and structures inpatient summaries, heavily reducing insurer pre-authorization delays and actively speeding up hospital discharge operations.
                 </p>
               </div>
-              <div className="mt-6 pt-4 border-t border-slate-200/60 text-[11px] text-slate-500 font-medium">
+              <div className="mt-6 pt-4 border-t border-slate-200/60 text-[11px] text-slate-500 font-medium relative z-10">
                 <span className="text-brand-teal font-semibold">Evidence:</span> &quot;Natural Language Processing in Discharge Summaries&quot;, <em>BMC Medical Informatics</em>.
               </div>
+              <div className="absolute -right-12 -top-12 w-48 h-48 bg-brand-teal/5 rounded-full blur-3xl group-hover:bg-brand-teal/10 transition-colors pointer-events-none"></div>
             </div>
           </div>
         </div>

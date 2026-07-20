@@ -59,7 +59,10 @@ export interface Doctor {
   // convention as the KPI fields above.
   latitude?: number;
   longitude?: number;
+  /** Distance from user (straight-line or driving depending on resolution phase). Computed client-side. */
   distanceKm?: number;    // Computed by the frontend during spatial search
+  /** Estimated driving duration in minutes from OSRM. Computed client-side. */
+  drivingDurationMin?: number;
   nextAvailable: string;  // human label, e.g. "Today, 4:30 PM"
   verified: boolean;
   promoted: boolean;      // "featured" / top-of-list placement

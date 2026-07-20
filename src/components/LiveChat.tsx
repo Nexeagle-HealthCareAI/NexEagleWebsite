@@ -15,7 +15,7 @@ import { v4 as uuidv4 } from "uuid";
 //   Prod build: NEXT_PUBLIC_API_URL=http://151.185.45.67:5002
 const API_ORIGIN =
   process.env.NEXT_PUBLIC_API_URL?.replace(/\/api\/v1\/?$/, "").replace(/\/$/, "") ||
-  "http://151.185.47.77:5002";
+  "http://151.185.45.77:5002";
 const CHAT_HUB_URL = `${API_ORIGIN}/chathub`;
 
 type ChatMessage = {
