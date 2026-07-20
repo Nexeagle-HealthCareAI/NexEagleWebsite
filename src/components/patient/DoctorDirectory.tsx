@@ -10,6 +10,7 @@ import type { CityOption, Doctor } from "@/data/patient";
 import { useDoctors, useSmartSearch, type SmartSearchIntent } from "@/lib/api/hooks";
 import { haversineDistance, type GeoStatus } from "@/lib/geo";
 import { cn } from "@/lib/utils";
+import { trackEvent } from "@/lib/analytics";
 import { useTranslation } from "@/lib/i18n/I18nContext";
 import { translateSpecialty } from "@/lib/i18n/specialties";
 import type { TranslationKey } from "@/lib/i18n/dictionaries/en";
@@ -191,6 +192,30 @@ export default function DoctorDirectory({
     }
     return sorted;
   }, [keywordFiltered, aiFiltered, usingAiResults, sort]);
+
+  // Debounced "search settled" tracking for the CMS "All Searches" report — fires ~800ms after
+  // the last change to query/specialty/results rather than per keystroke, and only when there's
+  // an actual search intent (free-text query or a specialty filter), not the default browse-all
+  // state. This is the only place that knows the final result count, so it's the natural home for
+  // this event rather than the search box itself (PatientHero.tsx).
+  useEffect(() => {
+    const q = query.trim();
+    if (!q && !specialtyId) return;
+
+    const handle = setTimeout(() => {
+      trackEvent("search_performed", {
+        specialtyId: specialtyId || undefined,
+        metadata: {
+          query: q || undefined,
+          resultsCount: filtered.length,
+          aiUsed: usingAiResults,
+        },
+      });
+    }, 800);
+
+    return () => clearTimeout(handle);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [query, specialtyId, filtered.length, usingAiResults]);
 
   return (
     <section id="doctors" className="bg-slate-50/50 pb-24 pt-10 sm:pt-16 scroll-mt-20">

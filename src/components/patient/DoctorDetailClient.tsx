@@ -1,5 +1,6 @@
 "use client";
 
+import { useEffect } from "react";
 import Image from "next/image";
 import Link from "next/link";
 import {
@@ -25,6 +26,7 @@ import ShareButton from "@/components/patient/ShareButton";
 import { RatingBadge } from "@/components/patient/StarRating";
 import { getDirectionsUrl, formatCount, type Doctor } from "@/data/patient";
 import { useTranslation } from "@/lib/i18n/I18nContext";
+import { trackEvent } from "@/lib/analytics";
 
 interface DoctorDetailClientProps {
   doctor: Doctor;
@@ -35,6 +37,14 @@ interface DoctorDetailClientProps {
 
 export default function DoctorDetailClient({ doctor, similarDoctors, canonicalSlug, locationLine }: DoctorDetailClientProps) {
   const { t } = useTranslation();
+
+  // "Search-to-View Rate" + "Specialty Demand" for the CMS Insights tab — this is the one place
+  // that knows both doctorId and specialtyId together for a profile view (a plain WebsiteVisit
+  // page-view row only has the URL path, not the specialty).
+  useEffect(() => {
+    trackEvent("doctor_profile_viewed", { doctorId: doctor.id, specialtyId: doctor.specialtyId });
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [doctor.id]);
 
   return (
     <div className="min-h-screen bg-slate-50 flex flex-col font-sans text-slate-800">

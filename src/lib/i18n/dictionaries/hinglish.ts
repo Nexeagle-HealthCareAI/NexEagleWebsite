@@ -182,14 +182,6 @@ export const hinglish: Record<keyof typeof en, string> = {
   "reviews.hoursAgo": "{n}h pehle",
   "reviews.daysAgo": "{n}d pehle",
 
-  "howItWorks.heading": "Appointment book karna aasaan hai",
-  "howItWorks.step1Title": "Apna doctor dhoondhein",
-  "howItWorks.step1Desc": "Department, experience aur patients ke hisaab se verified specialists dekhein.",
-  "howItWorks.step2Title": "Slot chunein",
-  "howItWorks.step2Desc": "Apni pasand ki date aur time chunein aur ek minute se bhi kam mein confirm karein.",
-  "howItWorks.step3Title": "Clinic visit karein",
-  "howItWorks.step3Desc": "Apne slot par jaayein, counter par payment karein, aur doctor se milein.",
-
   "footer.needHelp": "Booking mein help chahiye?",
   "footer.areYouProvider": "Kya aap ek provider hain?",
   "footer.providerDesc": "Apne clinic, hospital, lab ya pharmacy ko AI-powered tools, scribes aur billing se lais karein.",

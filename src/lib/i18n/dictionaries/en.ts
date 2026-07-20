@@ -198,15 +198,6 @@ export const en = {
   "reviews.hoursAgo": "{n}h ago",
   "reviews.daysAgo": "{n}d ago",
 
-  // ── How it works ─────────────────────────────────────────────────────────
-  "howItWorks.heading": "Booking an appointment is simple",
-  "howItWorks.step1Title": "Find your doctor",
-  "howItWorks.step1Desc": "Browse verified specialists by department, experience and patients served.",
-  "howItWorks.step2Title": "Pick a slot",
-  "howItWorks.step2Desc": "Choose a date and time that suits you and confirm in under a minute.",
-  "howItWorks.step3Title": "Visit the clinic",
-  "howItWorks.step3Desc": "Walk in at your slot, pay at the desk, and get consulted in person.",
-
   // ── Footer ────────────────────────────────────────────────────────────────
   "footer.needHelp": "Need help booking?",
   "footer.areYouProvider": "Are you a provider?",
