@@ -220,7 +220,12 @@ jobs:
       - name: Prepare SSH key
         run: |
           echo "${{ secrets.PROD_SSH_KEY_B64 }}" | base64 -d > "$GITHUB_WORKSPACE/deploy_key"
-          chmod 600 "$GITHUB_WORKSPACE/deploy_key"
+          # appleboy/ssh-action reads this file from INSIDE its own Docker container, as a
+          # different UID than the runner that wrote it — chmod 600 locks it to the runner's own
+          # UID and the container gets EACCES ("permission denied") trying to open it. Go's SSH key
+          # parser does no permission-strictness check of its own (unlike the OpenSSH CLI), so
+          # world-readable is safe here; the file only exists briefly on an ephemeral CI runner.
+          chmod 644 "$GITHUB_WORKSPACE/deploy_key"
 
       - name: Deploy to Prod VM
         uses: appleboy/ssh-action@v1.0.3
