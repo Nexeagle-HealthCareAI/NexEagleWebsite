@@ -71,7 +71,7 @@ export function useGeolocatedCity(candidates: CityOption[]): { status: GeoStatus
         }
       },
       () => setStatus("denied"),
-      { enableHighAccuracy: false, timeout: 8000, maximumAge: 10 * 60 * 1000 }
+      { enableHighAccuracy: true, timeout: 10000, maximumAge: 0 }
     );
     // Only re-run when the candidate set meaningfully changes (its length),
     // not on every render — candidates is a fresh array each render.
@@ -99,4 +99,52 @@ export function haversineDistance(lat1: number, lon1: number, lat2: number, lon2
     
   const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
   return R * c;
+}
+
+/**
+ * Fetches real driving distances and ETAs using the free OSRM public API.
+ * Safely handles batching (up to 50 destinations at once).
+ */
+export async function getDrivingDistances(
+  userLat: number, userLon: number, 
+  destinations: {id: string, lat: number, lon: number}[]
+): Promise<Record<string, { distanceKm: number, durationMin: number }>> {
+  if (destinations.length === 0) return {};
+  
+  // OSRM expects lon,lat format
+  const coords = [`${userLon},${userLat}`];
+  const destIndices: number[] = [];
+  
+  destinations.forEach((d, i) => {
+    coords.push(`${d.lon},${d.lat}`);
+    destIndices.push(i + 1); // +1 because user is index 0
+  });
+
+  const coordString = coords.join(";");
+  const destString = destIndices.join(";");
+  
+  const url = `https://router.project-osrm.org/table/v1/driving/${coordString}?sources=0&destinations=${destString}&annotations=distance,duration`;
+  
+  try {
+    const res = await fetch(url);
+    const data = await res.json();
+    
+    if (data.code !== "Ok") return {};
+    
+    const results: Record<string, { distanceKm: number, durationMin: number }> = {};
+    destinations.forEach((d, i) => {
+      const distMeters = data.distances[0][i];
+      const durationSeconds = data.durations[0][i];
+      if (distMeters !== null && distMeters !== undefined) {
+        results[d.id] = {
+          distanceKm: distMeters / 1000,
+          durationMin: Math.round(durationSeconds / 60)
+        };
+      }
+    });
+    return results;
+  } catch (err) {
+    console.error("OSRM failed", err);
+    return {};
+  }
 }

@@ -48,13 +48,24 @@ const DoctorCard = forwardRef<HTMLDivElement, DoctorCardProps>(function DoctorCa
             {t("doctorCard.featured")}
           </div>
         )}
-        {/* Discount ribbon — deliberately high-contrast/prominent per the marketing requirement,
-            distinct green accent so it never gets confused with the amber Featured badge. */}
+        {/* Premium Discount Ribbon — High visibility with glowing animated border */}
         {doctor.discountPercent !== undefined && (
-          <div className="absolute top-4 left-4 z-10 px-3 py-1 rounded-full bg-emerald-600 text-white text-[10px] font-extrabold tracking-widest uppercase shadow-[0_4px_14px_0_rgba(5,150,105,0.4)] flex items-center gap-1">
-            <Percent className="w-3 h-3" />
-            {doctor.discountPercent}% OFF
-          </div>
+          <motion.div 
+            initial={{ scale: 0.9, opacity: 0 }}
+            animate={{ scale: 1, opacity: 1 }}
+            transition={{ delay: (index ?? 0) * 0.07 + 0.3, type: "spring" }}
+            className="absolute top-4 left-4 z-30 group-hover:-translate-y-0.5 transition-transform duration-300"
+          >
+            <div className="relative overflow-hidden rounded-full p-[1.5px] shadow-[0_4px_20px_-2px_rgba(244,63,94,0.5)]">
+              {/* Spinning conic gradient border effect */}
+              <span className="absolute inset-[-1000%] animate-[spin_4s_linear_infinite] bg-[conic-gradient(from_90deg_at_50%_50%,#fff1f2_0%,#f43f5e_50%,#fff1f2_100%)]" />
+              {/* Inner gradient pill */}
+              <div className="relative flex items-center gap-1 rounded-full bg-gradient-to-r from-rose-500 to-pink-600 px-3 py-1 text-[11px] font-extrabold tracking-widest text-white uppercase backdrop-blur-xl">
+                <Percent className="w-3.5 h-3.5 text-white/90" />
+                <span className="drop-shadow-sm">{doctor.discountPercent}% OFF</span>
+              </div>
+            </div>
+          </motion.div>
         )}
         {/* Gradient mesh */}
         <div className="absolute top-0 left-0 right-0 h-28 bg-gradient-to-b from-slate-50/80 to-transparent pointer-events-none" />
@@ -157,7 +168,7 @@ const DoctorCard = forwardRef<HTMLDivElement, DoctorCardProps>(function DoctorCa
                     <span>{[doctor.area, doctor.city, doctor.state, doctor.pincode].filter(Boolean).join(", ")}</span>
                     {doctor.distanceKm !== undefined && doctor.distanceKm < 999999 && (
                       <span className="inline-flex items-center font-bold text-brand-teal bg-teal-50 px-1.5 py-0.5 rounded-md border border-teal-100">
-                        🚗 {doctor.distanceKm < 1 ? "< 1" : doctor.distanceKm.toFixed(1)} km away
+                        🚗 {doctor.distanceKm < 1 ? "< 1" : doctor.distanceKm.toFixed(1)} km {doctor.drivingDurationMin !== undefined ? `• ${doctor.drivingDurationMin} min drive` : 'away'}
                       </span>
                     )}
                   </p>
@@ -297,9 +308,14 @@ const DoctorCard = forwardRef<HTMLDivElement, DoctorCardProps>(function DoctorCa
               <div className="text-right shrink-0">
                 <span className="block text-[9px] font-bold text-slate-400 uppercase tracking-widest leading-none mb-0.5">Fee</span>
                 {doctor.discountedFee !== undefined && doctor.fee !== undefined ? (
-                  <span className="inline-flex items-baseline gap-1.5">
+                  <span className="inline-flex items-baseline gap-1.5 flex-wrap justify-end">
                     <span className="text-[11px] font-semibold text-slate-400 line-through">₹{doctor.fee}</span>
-                    <span className="font-display text-base font-extrabold text-emerald-600">₹{doctor.discountedFee}</span>
+                    {doctor.discountPercent !== undefined && (
+                      <span className="text-[10px] font-extrabold text-rose-500 bg-rose-50 px-1 rounded-sm">
+                        (-{doctor.discountPercent}%)
+                      </span>
+                    )}
+                    <span className="font-display text-base font-extrabold text-emerald-600 ml-0.5">₹{doctor.discountedFee}</span>
                   </span>
                 ) : doctor.fee !== undefined ? (
                   <span className="font-display text-base font-bold text-slate-900">₹{doctor.fee}</span>
