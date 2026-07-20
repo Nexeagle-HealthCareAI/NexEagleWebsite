@@ -5,7 +5,6 @@ import AnalyticsTracker from "@/components/AnalyticsTracker";
 import PatientTopBar from "@/components/patient/PatientTopBar";
 import PatientHero from "@/components/patient/PatientHero";
 import DoctorDirectory from "@/components/patient/DoctorDirectory";
-import HowItWorks from "@/components/patient/HowItWorks";
 import PatientFooter from "@/components/patient/PatientFooter";
 import { CITIES, cityId as makeCityId, type CityOption, type Doctor } from "@/data/patient";
 import { useDoctors } from "@/lib/api/hooks";
@@ -126,8 +125,6 @@ export default function HomeClient({
           specialtyId={specialtyId}
           initialDoctors={initialDoctors}
         />
-
-        <HowItWorks />
       </main>
 
       <PatientFooter />
