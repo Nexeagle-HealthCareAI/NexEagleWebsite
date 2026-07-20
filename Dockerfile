@@ -8,6 +8,13 @@ RUN npm ci
 COPY . .
 # Disable telemetry during build
 ENV NEXT_TELEMETRY_DISABLED=1
+
+# NEXT_PUBLIC_* vars are inlined into the client bundle at BUILD time, not read at container
+# runtime — LiveChat.tsx (a "use client" component) reads this to reach CMSAPI's /chathub
+# SignalR endpoint, so it must arrive as a build-arg here, not a `docker run -e`.
+ARG NEXT_PUBLIC_API_URL
+ENV NEXT_PUBLIC_API_URL=$NEXT_PUBLIC_API_URL
+
 RUN npm run build
 
 # ── Stage 2: Serve ────────────────────────────────────────────────────────────

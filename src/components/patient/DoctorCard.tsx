@@ -12,6 +12,7 @@ import type { Doctor } from "@/data/patient";
 import { doctorSlug, formatCount } from "@/data/patient";
 import { useTranslation } from "@/lib/i18n/I18nContext";
 import { translateSpecialty } from "@/lib/i18n/specialties";
+import { useNetworkStatus } from "@/lib/hooks/useNetworkStatus";
 
 interface DoctorCardProps {
   doctor: Doctor;
@@ -28,6 +29,7 @@ const DoctorCard = forwardRef<HTMLDivElement, DoctorCardProps>(function DoctorCa
   ref
 ) {
   const { t, locale } = useTranslation();
+  const network = useNetworkStatus();
   const clinicLabel = doctor.hospitalName ?? doctor.clinic;
 
   return (
@@ -85,6 +87,7 @@ const DoctorCard = forwardRef<HTMLDivElement, DoctorCardProps>(function DoctorCa
                   alt={doctor.name}
                   width={80}
                   height={80}
+                  quality={network.type === "2g" || network.type === "slow-2g" || network.saveData ? 30 : 75}
                   className="w-20 h-20 rounded-2xl object-cover shadow-[0_6px_18px_rgba(0,0,0,0.08)] border border-slate-100 bg-slate-100"
                 />
               ) : (

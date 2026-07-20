@@ -1,23 +1,7 @@
 "use client";
 
-import { useEffect, useState } from "react";
-import { WifiOff, Wifi } from "lucide-react";
-
-type ConnectionState = "online" | "offline" | "slow";
-
-// Network Information API — Chrome/Android only (not in the DOM lib types, and Safari
-// never shipped it), so this is read defensively and treated as absent everywhere else.
-interface NetworkInformation extends EventTarget {
-  effectiveType?: "slow-2g" | "2g" | "3g" | "4g";
-}
-
-function readState(): ConnectionState {
-  if (typeof navigator === "undefined") return "online";
-  if (!navigator.onLine) return "offline";
-  const conn = (navigator as Navigator & { connection?: NetworkInformation }).connection;
-  if (conn?.effectiveType === "slow-2g" || conn?.effectiveType === "2g") return "slow";
-  return "online";
-}
+import { WifiOff, Wifi, Zap } from "lucide-react";
+import { useNetworkStatus } from "@/lib/hooks/useNetworkStatus";
 
 // Site-wide "you're offline" / "slow connection" indicator — mounted once in
 // app/layout.tsx. Renders nothing in the common case (online, decent connection);
@@ -27,40 +11,37 @@ function readState(): ConnectionState {
 // coming from cache, not a live fetch — this is what makes that visible instead of
 // silently stale.
 export default function ConnectionStatusBanner() {
-  const [state, setState] = useState<ConnectionState>("online");
+  const { type, saveData } = useNetworkStatus();
 
-  useEffect(() => {
-    setState(readState());
-    const update = () => setState(readState());
+  // If we don't know the network status, or it's high speed 4G (without Data Saver), hide the banner.
+  if (type === "unknown" || (type === "4g" && !saveData)) return null;
 
-    window.addEventListener("online", update);
-    window.addEventListener("offline", update);
-    const conn = (navigator as Navigator & { connection?: NetworkInformation }).connection;
-    conn?.addEventListener?.("change", update);
+  const isOffline = type === "offline";
+  const isSlow = type === "2g" || type === "slow-2g";
 
-    return () => {
-      window.removeEventListener("online", update);
-      window.removeEventListener("offline", update);
-      conn?.removeEventListener?.("change", update);
-    };
-  }, []);
-
-  if (state === "online") return null;
-
-  const offline = state === "offline";
+  let bannerColor = "bg-amber-500";
+  if (isOffline) bannerColor = "bg-slate-700";
+  if (saveData) bannerColor = "bg-brand-teal"; // Less urgent, just informative
 
   return (
     <div
       role="status"
-      className={`flex items-center justify-center gap-2 px-4 py-2 text-xs font-semibold text-white ${
-        offline ? "bg-slate-700" : "bg-amber-500"
-      }`}
+      className={`flex items-center justify-center gap-2 px-4 py-2 text-xs font-semibold text-white ${bannerColor}`}
     >
-      {offline ? <WifiOff className="w-3.5 h-3.5 shrink-0" /> : <Wifi className="w-3.5 h-3.5 shrink-0" />}
+      {isOffline ? (
+        <WifiOff className="w-3.5 h-3.5 shrink-0" />
+      ) : saveData ? (
+        <Zap className="w-3.5 h-3.5 shrink-0" />
+      ) : (
+        <Wifi className="w-3.5 h-3.5 shrink-0" />
+      )}
+      
       <span>
-        {offline
+        {isOffline
           ? "You're offline — showing saved results"
-          : "Slow connection detected — showing saved results while we catch up"}
+          : saveData 
+          ? `Data Saver Active (${type.toUpperCase()}) — optimizing images`
+          : `Slow connection detected (${type.toUpperCase()}) — showing saved results while we catch up`}
       </span>
     </div>
   );
