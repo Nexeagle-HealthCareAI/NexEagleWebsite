@@ -115,79 +115,7 @@ export default function PatientTopBar({
           {/* ── Right: Location pill + Provider CTA ── */}
           <div className="flex items-center gap-1.5 sm:gap-5">
             
-            {/* Desktop / iPad — Profile avatar with dropdown */}
-            <div className="hidden md:block relative shrink-0 mr-2" ref={profileMenuRef}>
-              <button
-                onClick={() => setShowProfileMenu(v => !v)}
-                aria-label="Account menu"
-                className={`group flex items-center gap-2.5 pl-1 pr-3 py-1 rounded-full border transition-all duration-200 ${
-                  showProfileMenu
-                    ? 'bg-teal-50 border-teal-200 shadow-md'
-                    : 'bg-white/60 border-slate-200/60 hover:bg-white hover:border-teal-100 hover:shadow-sm'
-                }`}
-              >
-                {/* Avatar circle */}
-                <span className="flex items-center justify-center w-8 h-8 rounded-full bg-gradient-to-br from-brand-teal to-sky-500 shadow-sm">
-                  <User className="w-4 h-4 text-white" />
-                </span>
-                <span className="text-sm font-semibold text-slate-700 group-hover:text-brand-teal transition-colors">
-                  My Account
-                </span>
-                <ChevronDown className={`w-3.5 h-3.5 text-slate-400 transition-transform duration-200 ${showProfileMenu ? 'rotate-180 text-brand-teal' : ''}`} />
-              </button>
 
-              {/* Dropdown menu */}
-              {showProfileMenu && (
-                <div className="absolute right-0 top-[calc(100%+10px)] w-52 bg-white/95 backdrop-blur-xl border border-slate-200/60 rounded-2xl shadow-[0_10px_40px_-10px_rgba(0,0,0,0.12)] z-50 py-2 ring-1 ring-black/5 animate-in fade-in zoom-in-95 duration-150">
-                  {/* Header */}
-                  <div className="px-4 py-2.5 border-b border-slate-100">
-                    <p className="text-[11px] font-bold uppercase tracking-widest text-slate-400">My Account</p>
-                  </div>
-
-                  <div className="py-1.5 px-2">
-                    <Link
-                      href="/appointments"
-                      onClick={() => setShowProfileMenu(false)}
-                      className="flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-semibold text-slate-700 hover:text-brand-teal hover:bg-teal-50 transition-all duration-150 group"
-                    >
-                      <span className="flex items-center justify-center w-8 h-8 rounded-xl bg-teal-50 group-hover:bg-white border border-teal-100/60 group-hover:border-teal-200 transition-all shadow-sm">
-                        <Calendar className="w-4 h-4 text-brand-teal" />
-                      </span>
-                      <div>
-                        <p className="leading-tight">Appointments</p>
-                        <p className="text-[11px] text-slate-400 font-medium leading-tight">Your bookings</p>
-                      </div>
-                    </Link>
-
-                    <Link
-                      href="/profile"
-                      onClick={() => setShowProfileMenu(false)}
-                      className="flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-semibold text-slate-700 hover:text-brand-teal hover:bg-teal-50 transition-all duration-150 group"
-                    >
-                      <span className="flex items-center justify-center w-8 h-8 rounded-xl bg-slate-50 group-hover:bg-white border border-slate-200/60 group-hover:border-teal-200 transition-all shadow-sm">
-                        <User className="w-4 h-4 text-slate-500 group-hover:text-brand-teal transition-colors" />
-                      </span>
-                      <div>
-                        <p className="leading-tight">Profile</p>
-                        <p className="text-[11px] text-slate-400 font-medium leading-tight">Your details</p>
-                      </div>
-                    </Link>
-                  </div>
-
-                  {/* Footer login hint */}
-                  <div className="px-4 py-2 border-t border-slate-100">
-                    <Link
-                      href="/login"
-                      onClick={() => setShowProfileMenu(false)}
-                      className="flex items-center gap-2 text-[12px] font-semibold text-brand-teal hover:text-teal-600 transition-colors"
-                    >
-                      <LogIn className="w-3.5 h-3.5" />
-                      Sign in / Register
-                    </Link>
-                  </div>
-                </div>
-              )}
-            </div>
 
             {/* Location pill (Glassmorphic) */}
             {hasLocationProps && (
@@ -289,6 +217,74 @@ export default function PatientTopBar({
 
             {/* Language toggle — persistent, top-right, per the feature spec */}
             <LanguageToggle />
+
+            {/* Desktop / iPad — Profile avatar with dropdown (rightmost) */}
+            <div className="hidden md:block relative shrink-0" ref={profileMenuRef}>
+              <button
+                onClick={() => setShowProfileMenu(v => !v)}
+                aria-label="Account menu"
+                className={`group flex items-center gap-2.5 pl-1 pr-3 py-1 rounded-full border transition-all duration-200 ${
+                  showProfileMenu
+                    ? 'bg-teal-50 border-teal-200 shadow-md'
+                    : 'bg-white/60 border-slate-200/60 hover:bg-white hover:border-teal-100 hover:shadow-sm'
+                }`}
+              >
+                <span className="flex items-center justify-center w-8 h-8 rounded-full bg-gradient-to-br from-brand-teal to-sky-500 shadow-sm">
+                  <User className="w-4 h-4 text-white" />
+                </span>
+                <span className="text-sm font-semibold text-slate-700 group-hover:text-brand-teal transition-colors">
+                  My Account
+                </span>
+                <ChevronDown className={`w-3.5 h-3.5 text-slate-400 transition-transform duration-200 ${showProfileMenu ? 'rotate-180 text-brand-teal' : ''}`} />
+              </button>
+
+              {/* Dropdown menu */}
+              {showProfileMenu && (
+                <div className="absolute right-0 top-[calc(100%+10px)] w-52 bg-white/95 backdrop-blur-xl border border-slate-200/60 rounded-2xl shadow-[0_10px_40px_-10px_rgba(0,0,0,0.12)] z-50 py-2 ring-1 ring-black/5 animate-in fade-in zoom-in-95 duration-150">
+                  <div className="px-4 py-2.5 border-b border-slate-100">
+                    <p className="text-[11px] font-bold uppercase tracking-widest text-slate-400">My Account</p>
+                  </div>
+                  <div className="py-1.5 px-2">
+                    <Link
+                      href="/appointments"
+                      onClick={() => setShowProfileMenu(false)}
+                      className="flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-semibold text-slate-700 hover:text-brand-teal hover:bg-teal-50 transition-all duration-150 group"
+                    >
+                      <span className="flex items-center justify-center w-8 h-8 rounded-xl bg-teal-50 group-hover:bg-white border border-teal-100/60 group-hover:border-teal-200 transition-all shadow-sm">
+                        <Calendar className="w-4 h-4 text-brand-teal" />
+                      </span>
+                      <div>
+                        <p className="leading-tight">Appointments</p>
+                        <p className="text-[11px] text-slate-400 font-medium leading-tight">Your bookings</p>
+                      </div>
+                    </Link>
+                    <Link
+                      href="/profile"
+                      onClick={() => setShowProfileMenu(false)}
+                      className="flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-semibold text-slate-700 hover:text-brand-teal hover:bg-teal-50 transition-all duration-150 group"
+                    >
+                      <span className="flex items-center justify-center w-8 h-8 rounded-xl bg-slate-50 group-hover:bg-white border border-slate-200/60 group-hover:border-teal-200 transition-all shadow-sm">
+                        <User className="w-4 h-4 text-slate-500 group-hover:text-brand-teal transition-colors" />
+                      </span>
+                      <div>
+                        <p className="leading-tight">Profile</p>
+                        <p className="text-[11px] text-slate-400 font-medium leading-tight">Your details</p>
+                      </div>
+                    </Link>
+                  </div>
+                  <div className="px-4 py-2 border-t border-slate-100">
+                    <Link
+                      href="/login"
+                      onClick={() => setShowProfileMenu(false)}
+                      className="flex items-center gap-2 text-[12px] font-semibold text-brand-teal hover:text-teal-600 transition-colors"
+                    >
+                      <LogIn className="w-3.5 h-3.5" />
+                      Sign in / Register
+                    </Link>
+                  </div>
+                </div>
+              )}
+            </div>
           </div>
         </div>
       </header>
