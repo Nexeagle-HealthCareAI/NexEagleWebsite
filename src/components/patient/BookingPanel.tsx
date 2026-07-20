@@ -1,6 +1,6 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import {
   ChevronLeft,
   CheckCircle2,
@@ -22,6 +22,7 @@ import { useCreateAppointment, useDoctorAvailability, useSubmitReview } from "@/
 import { getSavedRating, markRated } from "@/lib/ratingGuard";
 import { reportEngagement } from "@/lib/pwaInstall";
 import { useGuestAppointments } from "@/hooks/useGuestAppointments";
+import { trackEvent } from "@/lib/analytics";
 import { cn } from "@/lib/utils";
 import { useTranslation } from "@/lib/i18n/I18nContext";
 import type { TranslationKey } from "@/lib/i18n/dictionaries/en";
@@ -74,6 +75,16 @@ const TIME_RANGES: { id: string; labelKey: TranslationKey; time: string; icon: R
 export default function BookingPanel({ doctor }: BookingPanelProps) {
   const { t, locale } = useTranslation();
   const [step, setStep] = useState<Step>("visit");
+
+  // Booking Funnel Drop-off for the CMS Insights tab — fires once per step, including the initial
+  // "visit" (date/time selection) step on mount, since arriving at this widget is itself the first
+  // funnel step after Profile View. "details" = Confirm Details, "done" = Success — there's no
+  // separate payment step in this product (pay-at-hospital-counter, see handleDetailsSubmit).
+  useEffect(() => {
+    trackEvent("booking_step_reached", { doctorId: doctor.id, specialtyId: doctor.specialtyId, metadata: { step } });
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [step, doctor.id]);
+
   const [date, setDate] = useState("");
   const [timeRange, setTimeRange] = useState("");
   const [preferredTime, setPreferredTime] = useState<string | undefined>();

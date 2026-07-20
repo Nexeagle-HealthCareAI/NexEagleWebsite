@@ -1,32 +1,11 @@
 "use client";
 
 import { useEffect } from "react";
+import { getOrCreateSessionId } from "@/lib/analytics";
 
 type Props = {
   title: string;
 };
-
-const SESSION_ID_KEY = "neg_visit_session_id";
-
-// Client-generated id persisted in localStorage — groups page views into one visit/session so the
-// CMS "Site Visits" report can distinguish unique visitors from raw page-view counts. Not a
-// cookie/tracking-consent concern: it carries no PII, just an opaque random id.
-function getOrCreateSessionId(): string {
-  try {
-    const existing = window.localStorage.getItem(SESSION_ID_KEY);
-    if (existing) return existing;
-    const created =
-      typeof crypto !== "undefined" && "randomUUID" in crypto
-        ? crypto.randomUUID()
-        : `${Date.now()}-${Math.random().toString(36).slice(2)}`;
-    window.localStorage.setItem(SESSION_ID_KEY, created);
-    return created;
-  } catch {
-    // localStorage unavailable (private browsing, etc.) — fall back to a per-page-load id rather
-    // than failing the beacon entirely.
-    return `${Date.now()}-${Math.random().toString(36).slice(2)}`;
-  }
-}
 
 export default function AnalyticsTracker({ title }: Props) {
   useEffect(() => {
