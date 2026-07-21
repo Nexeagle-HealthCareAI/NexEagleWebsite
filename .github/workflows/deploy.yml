@@ -31,6 +31,11 @@
 #   ANTHROPIC_API_KEY     OPTIONAL — powers the AI search fallback (app/api/search/parse).
 #                         Same key used for both dev and prod. Leave unset to disable —
 #                         search stays literal-keyword-only, no error, nothing breaks.
+#                         NLP_ROUTER_BASE_URL (not a secret, hardcoded in the docker run below,
+#                         same pattern as EASYHMS_API_BASE_URL) is tried BEFORE this — see the
+#                         1HMS-NLP-Router repo. Anthropic remains the fallback for anything the
+#                         NLP router can't confidently classify, so nothing here changes if
+#                         that service is ever down.
 #   INTERNAL_PROXY_SECRET OPTIONAL — lets easyHMSAPI's public rate limiters see each real
 #                         visitor's IP instead of this container's own IP (every call to the
 #                         API is server-to-server — see src/lib/api/server.ts). Same key used
@@ -148,6 +153,7 @@ jobs:
                   -e EASYHMS_API_KEY_HEADER='X-Api-Key' \
                   -e ANTHROPIC_API_KEY="$ANTHROPIC_API_KEY" \
                   -e EASYHMS_TRUSTED_PROXY_SECRET="$PROXY_SECRET" \
+                  -e NLP_ROUTER_BASE_URL='http://151.185.45.77:5003' \
                   "$IMAGE_LC"; then
                 break
               fi
@@ -274,6 +280,7 @@ jobs:
                   -e EASYHMS_API_KEY_HEADER='X-Api-Key' \
                   -e ANTHROPIC_API_KEY="$ANTHROPIC_API_KEY" \
                   -e EASYHMS_TRUSTED_PROXY_SECRET="$PROXY_SECRET" \
+                  -e NLP_ROUTER_BASE_URL='https://nlp-api.nexeagle.com' \
                   "$IMAGE_LC"; then
                 break
               fi
