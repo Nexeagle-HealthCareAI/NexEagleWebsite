@@ -116,7 +116,9 @@ export function mapDoctor(dto: DoctorDto): Doctor {
     experienceYears: dto.experienceYears ?? 0,
     about: dto.bio ?? "",
     focusAreas: dto.specializations ?? [],
-    verified: true,
+    // Was hardcoded true for every doctor — now reflects the CMS admin's actual manual NMC
+    // registration confirmation (see Doctor.IsRegistrationVerified).
+    verified: dto.isRegistrationVerified ?? false,
     promoted: dto.isFeatured ?? false,
 
     // The real public API doesn't return per-doctor patient counts or sub-locality (area) —
