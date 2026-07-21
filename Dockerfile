@@ -15,6 +15,18 @@ ENV NEXT_TELEMETRY_DISABLED=1
 ARG NEXT_PUBLIC_API_URL
 ENV NEXT_PUBLIC_API_URL=$NEXT_PUBLIC_API_URL
 
+# EASYHMS_API_BASE_URL is a runtime-only var everywhere else (read server-side per request via
+# `docker run -e`, see deploy.yml) — EXCEPT for statically-generated pages (the
+# /specialties/[specialty]/[city]/[area] tree, prerendered with getStaticProps), which fetch
+# doctor data once at THIS build step, not at request time. `next build` always loads
+# .env.production regardless of which environment's image is being built (Next.js runs every
+# build in production mode), and .env.production hardcodes the PROD api url — so without this,
+# every environment's static pages silently bake in prod's doctor data. Setting it as a real
+# process env var here (before the build) takes precedence over .env.production, the same way
+# NEXT_PUBLIC_API_URL above already does.
+ARG EASYHMS_API_BASE_URL
+ENV EASYHMS_API_BASE_URL=$EASYHMS_API_BASE_URL
+
 RUN npm run build
 
 # ── Stage 2: Serve ────────────────────────────────────────────────────────────

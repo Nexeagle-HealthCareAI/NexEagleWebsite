@@ -117,8 +117,12 @@ jobs:
           cache-to: type=gha,mode=max
           # NEXT_PUBLIC_* vars are inlined at build time — LiveChat.tsx reads this to reach
           # CMSAPI's /chathub on the Dev VM (CMS API — CI/CD deploys CMSAPI to port 5002 there).
+          # EASYHMS_API_BASE_URL is ALSO needed at build time here (not just via `docker run -e`
+          # below) — see the Dockerfile comment: without it, the statically-generated specialty
+          # pages silently bake in .env.production's PROD api url instead of Dev's.
           build-args: |
             NEXT_PUBLIC_API_URL=http://151.185.45.77:5002
+            EASYHMS_API_BASE_URL=http://151.185.45.77:5001
 
       - name: Deploy to Dev VM
         uses: appleboy/ssh-action@v1.0.3
@@ -231,8 +235,12 @@ jobs:
           # over HTTPS (https://1hms.nexeagle.com), and browsers block a plain-http WebSocket/XHR
           # connection from an https page ("mixed content"). Requires cms-api.nexeagle.com to be
           # reverse-proxied to the Prod VM's :5002 with a valid TLS cert (see CMSAPI repo notes).
+          # EASYHMS_API_BASE_URL is ALSO needed at build time here (not just via the SSH deploy
+          # step below) — see the Dockerfile comment: this happens to already match what
+          # .env.production bakes in by default, which is why this side of the bug was invisible.
           build-args: |
             NEXT_PUBLIC_API_URL=https://cms-api.nexeagle.com
+            EASYHMS_API_BASE_URL=https://1hms-api.nexeagle.com
 
       - name: Prepare SSH key
         run: |
