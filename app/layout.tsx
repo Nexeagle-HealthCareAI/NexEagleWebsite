@@ -79,6 +79,28 @@ export const viewport: Viewport = {
   themeColor: "#1ea99b",
 };
 
+// Sitewide entity schema (NEX-9) — every page shares one @id so Google/AI
+// crawlers resolve "NexEagle" to a single, consistent, verifiable entity
+// rather than re-deriving it per page.
+const organizationSchema = {
+  "@context": "https://schema.org",
+  "@type": "MedicalOrganization",
+  "@id": "https://nexeagle.com/#organization",
+  name: "NexEagle",
+  url: "https://nexeagle.com",
+  logo: "https://nexeagle.com/assets/logo.webp",
+  description:
+    "NexEagle connects patients with verified doctors across its network of hospitals for online appointment booking.",
+  sameAs: ["https://linkedin.com/company/nexeagle"],
+  contactPoint: {
+    "@type": "ContactPoint",
+    telephone: "+91-8074906808",
+    email: "info@nexeagle.com",
+    contactType: "customer service",
+    areaServed: "IN",
+  },
+};
+
 export default function RootLayout({
   children,
 }: {
@@ -89,6 +111,10 @@ export default function RootLayout({
       <head>
         <link rel="preconnect" href="https://1hms-api.nexeagle.com" crossOrigin="anonymous" />
         <link rel="dns-prefetch" href="https://1hms-api.nexeagle.com" />
+        <script
+          type="application/ld+json"
+          dangerouslySetInnerHTML={{ __html: JSON.stringify(organizationSchema) }}
+        />
       </head>
       <body className="min-h-screen bg-white">
         <Providers>
