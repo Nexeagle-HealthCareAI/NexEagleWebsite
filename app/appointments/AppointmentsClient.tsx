@@ -1,9 +1,9 @@
 "use client";
 
 import { useMemo, useState } from "react";
-import { useQueries } from "@tanstack/react-query";
+import { useQueries, useQuery } from "@tanstack/react-query";
 import PatientTopBar from "@/components/patient/PatientTopBar";
-import { Calendar, Clock, MapPin, ChevronRight, LogIn, Smartphone } from "lucide-react";
+import { Calendar, Clock, MapPin, ChevronRight, ChevronDown, LogIn, Smartphone, FileText, Paperclip } from "lucide-react";
 import Link from "next/link";
 import { useGuestAppointments } from "@/hooks/useGuestAppointments";
 import { usePatientAuth, type PatientAppointment } from "@/hooks/usePatientAuth";
@@ -16,7 +16,76 @@ async function fetchGuestAppointment(id: string): Promise<PatientAppointment | n
   return json?.appointment ?? null;
 }
 
-function AppointmentCard({ appt }: { appt: PatientAppointment }) {
+interface AppointmentDocument {
+  attachmentId: string;
+  reportType: string | null;
+  fileName: string | null;
+  storageUrl: string | null;
+  notes: string | null;
+  uploadedAt: string | null;
+}
+
+async function fetchAppointmentDocuments(id: string): Promise<AppointmentDocument[]> {
+  const res = await fetch(`/api/public/appointments/${id}/documents`);
+  const json = await res.json().catch(() => null);
+  return json?.documents ?? [];
+}
+
+// Documents are only reachable for a logged-in session (the backend checks the OTP-verified
+// mobile against PatientRegistration.Mobile) — guest-tracked cards never show this section since
+// there's no session cookie to authenticate the request.
+function DocumentsSection({ appointmentId }: { appointmentId: string }) {
+  const [expanded, setExpanded] = useState(false);
+  const { data: documents, isLoading } = useQuery({
+    queryKey: ["appointment-documents", appointmentId],
+    queryFn: () => fetchAppointmentDocuments(appointmentId),
+    enabled: expanded,
+    staleTime: 30_000,
+  });
+
+  return (
+    <div className="mt-3 pt-3 border-t border-slate-100">
+      <button
+        onClick={() => setExpanded((v) => !v)}
+        className="flex items-center gap-1.5 text-xs font-bold text-brand-teal hover:text-teal-700 transition-colors"
+      >
+        <Paperclip className="w-3.5 h-3.5" />
+        Documents
+        <ChevronDown className={cn("w-3.5 h-3.5 transition-transform", expanded && "rotate-180")} />
+      </button>
+
+      {expanded && (
+        <div className="mt-3 space-y-2">
+          {isLoading ? (
+            <div className="flex justify-center py-3">
+              <div className="w-4 h-4 border-2 border-brand-teal/20 border-t-brand-teal rounded-full animate-spin" />
+            </div>
+          ) : documents && documents.length > 0 ? (
+            documents.map((doc) => (
+              <a
+                key={doc.attachmentId}
+                href={doc.storageUrl ?? undefined}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="flex items-center gap-2.5 p-2.5 rounded-xl bg-slate-50 hover:bg-slate-100 transition-colors"
+              >
+                <FileText className="w-4 h-4 text-slate-400 shrink-0" />
+                <div className="min-w-0 flex-1">
+                  <p className="text-xs font-semibold text-slate-800 truncate">{doc.fileName || doc.reportType || "Document"}</p>
+                  {doc.reportType && <p className="text-[10px] text-slate-400">{doc.reportType}</p>}
+                </div>
+              </a>
+            ))
+          ) : (
+            <p className="text-xs text-slate-400 py-1">No documents uploaded for this appointment yet.</p>
+          )}
+        </div>
+      )}
+    </div>
+  );
+}
+
+function AppointmentCard({ appt, canViewDocuments }: { appt: PatientAppointment; canViewDocuments: boolean }) {
   const isCancelled = appt.status === "Cancelled";
   const isPending = appt.status === "Pending Confirmation";
   return (
@@ -48,6 +117,8 @@ function AppointmentCard({ appt }: { appt: PatientAppointment }) {
           <span className="line-clamp-2">{appt.hospitalName}</span>
         </div>
       </div>
+
+      {canViewDocuments && <DocumentsSection appointmentId={appt.appointmentId} />}
 
       <div className="mt-5 pt-4 border-t border-slate-100 flex items-center justify-between">
         <span className="text-[11px] font-semibold text-slate-400">Ref: {appt.appointmentId.slice(0, 8).toUpperCase()}</span>
@@ -136,7 +207,7 @@ export default function AppointmentsClient() {
             {isLoggedIn && myAppointments.length > 0 && (
               <div className="space-y-4">
                 {myAppointments.map((a) => (
-                  <AppointmentCard key={a.appointmentId} appt={a} />
+                  <AppointmentCard key={a.appointmentId} appt={a} canViewDocuments />
                 ))}
               </div>
             )}
@@ -150,7 +221,7 @@ export default function AppointmentsClient() {
                 )}
                 <div className="space-y-4">
                   {guestAppointments.map((a) => (
-                    <AppointmentCard key={a.appointmentId} appt={a} />
+                    <AppointmentCard key={a.appointmentId} appt={a} canViewDocuments={false} />
                   ))}
                 </div>
               </div>

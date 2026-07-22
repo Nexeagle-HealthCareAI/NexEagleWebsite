@@ -8,8 +8,9 @@ import DoctorCard from "./DoctorCard";
 import { specialties, cityLabel } from "@/data/patient";
 import type { CityOption, Doctor } from "@/data/patient";
 import { useDoctors, useSmartSearch, type SmartSearchIntent } from "@/lib/api/hooks";
-import { haversineDistance, type GeoStatus } from "@/lib/geo";
+import { haversineDistance, getDrivingDistances, type GeoStatus } from "@/lib/geo";
 import { cn } from "@/lib/utils";
+import { trackEvent } from "@/lib/analytics";
 import { useTranslation } from "@/lib/i18n/I18nContext";
 import { translateSpecialty } from "@/lib/i18n/specialties";
 import type { TranslationKey } from "@/lib/i18n/dictionaries/en";
@@ -53,6 +54,7 @@ export default function DoctorDirectory({
   const { t, locale } = useTranslation();
   const [sort, setSort] = useState<SortKey>("relevance");
   const [radius, setRadius] = useState<number>(100);
+  const [drivingData, setDrivingData] = useState<Record<string, { distanceKm: number, durationMin: number }>>({});
 
   const hasSeedData = initialDoctors !== undefined;
   const { data, isLoading: queryIsLoading } = useDoctors(
@@ -166,7 +168,16 @@ export default function DoctorDirectory({
 
   const filtered = useMemo(() => {
     const base = usingAiResults && aiFiltered ? aiFiltered : keywordFiltered;
-    const sorted = [...base];
+    // Inject driving data if available
+    const mapped = base.map(d => {
+      const drive = drivingData[d.id];
+      if (drive) {
+        return { ...d, distanceKm: drive.distanceKm, drivingDurationMin: drive.durationMin };
+      }
+      return d;
+    });
+
+    const sorted = [...mapped];
     switch (sort) {
       case "distance":
         sorted.sort((a, b) => (a.distanceKm ?? 999999) - (b.distanceKm ?? 999999));
@@ -190,7 +201,55 @@ export default function DoctorDirectory({
         });
     }
     return sorted;
-  }, [keywordFiltered, aiFiltered, usingAiResults, sort]);
+  }, [keywordFiltered, aiFiltered, usingAiResults, sort, drivingData]);
+
+  // Fetch real driving distances from OSRM for the top displayed doctors
+  useEffect(() => {
+    if (!coords) return;
+    
+    // Find doctors in the current list that have GPS but lack driving data
+    const pending = filtered
+      .filter(d => d.latitude != null && d.longitude != null && !drivingData[d.id])
+      .slice(0, 50); // limit to 50 to respect OSRM public API limits
+      
+    if (pending.length === 0) return;
+
+    const destinations = pending.map(d => ({
+      id: d.id,
+      lat: d.latitude!,
+      lon: d.longitude!
+    }));
+
+    getDrivingDistances(coords.lat, coords.lon, destinations).then(results => {
+      if (Object.keys(results).length > 0) {
+        setDrivingData(prev => ({ ...prev, ...results }));
+      }
+    });
+  }, [filtered, coords, drivingData]);
+
+  // Debounced "search settled" tracking for the CMS "All Searches" report — fires ~800ms after
+  // the last change to query/specialty/results rather than per keystroke, and only when there's
+  // an actual search intent (free-text query or a specialty filter), not the default browse-all
+  // state. This is the only place that knows the final result count, so it's the natural home for
+  // this event rather than the search box itself (PatientHero.tsx).
+  useEffect(() => {
+    const q = query.trim();
+    if (!q && !specialtyId) return;
+
+    const handle = setTimeout(() => {
+      trackEvent("search_performed", {
+        specialtyId: specialtyId || undefined,
+        metadata: {
+          query: q || undefined,
+          resultsCount: filtered.length,
+          aiUsed: usingAiResults,
+        },
+      });
+    }, 800);
+
+    return () => clearTimeout(handle);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [query, specialtyId, filtered.length, usingAiResults]);
 
   return (
     <section id="doctors" className="bg-slate-50/50 pb-24 pt-10 sm:pt-16 scroll-mt-20">

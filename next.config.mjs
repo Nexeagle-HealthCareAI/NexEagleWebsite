@@ -21,26 +21,43 @@ const withSerwist = withSerwistInit({
   additionalPrecacheEntries: [{ url: "/offline", revision: String(Date.now()) }],
 });
 
+const securityHeaders = [
+  { key: 'X-DNS-Prefetch-Control', value: 'on' },
+  { key: 'Strict-Transport-Security', value: 'max-age=63072000; includeSubDomains; preload' },
+  { key: 'X-Frame-Options', value: 'SAMEORIGIN' },
+  { key: 'X-Content-Type-Options', value: 'nosniff' },
+  { key: 'Referrer-Policy', value: 'origin-when-cross-origin' },
+  { key: 'Content-Security-Policy', value: "default-src 'self'; script-src 'self' 'unsafe-eval' 'unsafe-inline'; style-src 'self' 'unsafe-inline'; img-src 'self' data: https://nexeagle-dev.in-south1-objectstore.e2enetworks.net; connect-src 'self' https://api.bigdatacloud.net https://router.project-osrm.org https://1hms-api.nexeagle.com;" }
+];
+
 /** @type {import('next').NextConfig} */
 const nextConfig = {
   reactStrictMode: true,
-  // During migration, ignore TypeScript and ESLint build errors
   typescript: {
     ignoreBuildErrors: true,
   },
   eslint: {
     ignoreDuringBuilds: true,
   },
+  experimental: {
+    optimizePackageImports: ['lucide-react', 'framer-motion', '@radix-ui/react-icons'],
+  },
   images: {
+    minimumCacheTTL: 86400, // 24 hours caching for avatars
     remotePatterns: [
-      // EasyHMS object store — real doctor profile pictures (presigned S3-style
-      // URLs, so match on hostname only; the query string carries a per-request
-      // signature/expiry that next/image doesn't need to know about).
       {
         protocol: "https",
         hostname: "nexeagle-dev.in-south1-objectstore.e2enetworks.net",
       },
     ],
+  },
+  async headers() {
+    return [
+      {
+        source: '/(.*)',
+        headers: securityHeaders,
+      },
+    ];
   },
 };
 

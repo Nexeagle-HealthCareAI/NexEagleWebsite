@@ -5,6 +5,7 @@ import { Phone, ArrowRight, ShieldCheck, RefreshCw } from "lucide-react";
 import { InputOTP, InputOTPGroup, InputOTPSlot } from "@/components/ui/input-otp";
 import { cn } from "@/lib/utils";
 import { usePatientAuth } from "@/hooks/usePatientAuth";
+import { trackEvent } from "@/lib/analytics";
 
 interface PhoneVerificationProps {
   onVerified: () => void;
@@ -26,6 +27,14 @@ export default function PhoneVerification({ onVerified }: PhoneVerificationProps
     return () => clearInterval(timer);
   }, [resendIn]);
 
+  // Fires once per mount, regardless of which page/button rendered this component — the single
+  // instrumentation point for "Login Initiation Rate" across every entry point (Appointments,
+  // Profile, and any future ones), rather than tracking every individual trigger button.
+  useEffect(() => {
+    trackEvent("login_initiated");
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
   const doSendOtp = async () => {
     if (phone.length !== 10) {
       setError("Please enter a valid 10-digit mobile number");
@@ -37,6 +46,7 @@ export default function PhoneVerification({ onVerified }: PhoneVerificationProps
       setError(res.message);
       return;
     }
+    trackEvent("otp_sent", { mobile: phone });
     setOtp("");
     setStep("otp");
     setResendIn(RESEND_COOLDOWN_SECONDS);
@@ -53,10 +63,12 @@ export default function PhoneVerification({ onVerified }: PhoneVerificationProps
     setError(null);
     const res = await verifyOtp.mutateAsync({ mobile: phone, otp: val });
     if (!res.success) {
+      trackEvent("otp_verify_failed", { mobile: phone });
       setError(res.message);
       setOtp("");
       return;
     }
+    trackEvent("otp_verified", { mobile: phone });
     onVerified();
   };
 

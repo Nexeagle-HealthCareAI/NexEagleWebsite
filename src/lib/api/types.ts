@@ -46,6 +46,15 @@ export interface DoctorDto {
   // OPD_CONSULT DoctorFees.Amount at this doctor's hospital — null when no active fee is
   // configured, in which case the UI falls back to "Accepting patients".
   fee?: number | null;
+  // CMS-controlled marketing fields — discountPercent/discountedFee are only non-null when the
+  // doctor's scheduled discount window is currently active (same null-means-nothing-to-show
+  // convention as fee above).
+  discountPercent?: number | null;
+  discountedFee?: number | null;
+  isFeatured?: boolean;
+  // Set by a CMS admin only after manually confirming this doctor's registration against the
+  // NMC's Indian Medical Register — drives the "Verified profile" badge (see mapDoctor below).
+  isRegistrationVerified?: boolean;
 }
 
 export interface DoctorsResponseDto {

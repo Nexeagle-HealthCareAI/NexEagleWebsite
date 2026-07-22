@@ -34,6 +34,10 @@ export interface Doctor {
   waitTimeMins?: number;   // typical waiting time at the clinic
 
   fee?: number;            // consultation fee, INR
+  // CMS-controlled marketing discount — only populated when currently active (real API only,
+  // same optional/hide-when-absent convention as the KPI fields above).
+  discountPercent?: number;
+  discountedFee?: number;
   // Which hospital this doctor belongs to — populated from the real API's
   // hospitalName now that the directory spans every publicly-listed hospital.
   // Mock data leaves this undefined and uses `clinic` instead — see DoctorCard.tsx.
@@ -55,7 +59,10 @@ export interface Doctor {
   // convention as the KPI fields above.
   latitude?: number;
   longitude?: number;
+  /** Distance from user (straight-line or driving depending on resolution phase). Computed client-side. */
   distanceKm?: number;    // Computed by the frontend during spatial search
+  /** Estimated driving duration in minutes from OSRM. Computed client-side. */
+  drivingDurationMin?: number;
   nextAvailable: string;  // human label, e.g. "Today, 4:30 PM"
   verified: boolean;
   promoted: boolean;      // "featured" / top-of-list placement

@@ -1,0 +1,12 @@
+node_modules
+.next
+.git
+.github
+# Next.js auto-loads these during `next build` regardless of which environment's image is being
+# built (it always builds in production mode) — a checked-in .env.production silently overrides
+# whatever this specific build actually needs (see Dockerfile's EASYHMS_API_BASE_URL comment).
+# Every value these files provide must instead be passed explicitly as a --build-arg or
+# `docker run -e`, per environment.
+.env
+.env.*
+!.env.example

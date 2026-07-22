@@ -180,14 +180,6 @@ export const hi: Record<keyof typeof en, string> = {
   "reviews.hoursAgo": "{n} घंटे पहले",
   "reviews.daysAgo": "{n} दिन पहले",
 
-  "howItWorks.heading": "अपॉइंटमेंट बुक करना आसान है",
-  "howItWorks.step1Title": "अपना डॉक्टर खोजें",
-  "howItWorks.step1Desc": "विभाग, अनुभव और मरीज़ों की संख्या के आधार पर प्रमाणित विशेषज्ञ देखें।",
-  "howItWorks.step2Title": "स्लॉट चुनें",
-  "howItWorks.step2Desc": "अपनी पसंद की तारीख और समय चुनें और एक मिनट से भी कम समय में पुष्टि करें।",
-  "howItWorks.step3Title": "क्लिनिक जाएं",
-  "howItWorks.step3Desc": "अपने स्लॉट पर जाएं, काउंटर पर भुगतान करें, और डॉक्टर से मिलें।",
-
   "footer.needHelp": "बुकिंग में मदद चाहिए?",
   "footer.areYouProvider": "क्या आप एक प्रदाता हैं?",
   "footer.providerDesc": "अपने क्लिनिक, अस्पताल, लैब या फ़ार्मेसी को AI-आधारित टूल, स्क्राइब और बिलिंग से लैस करें।",

@@ -60,8 +60,11 @@ export function usePatientAuth() {
       });
       return (await res.json()) as { success: boolean; message: string };
     },
-    onSuccess: (data) => {
-      if (data.success) queryClient.invalidateQueries({ queryKey: MINE_QUERY_KEY });
+    // Awaited (not fire-and-forget) — mutateAsync only resolves once onSuccess finishes, so
+    // callers that close the login UI right after awaiting verifyOtp (see PhoneVerification's
+    // onVerified) don't render a "not logged in" flash before the fresh session data lands.
+    onSuccess: async (data) => {
+      if (data.success) await queryClient.invalidateQueries({ queryKey: MINE_QUERY_KEY });
     },
   });
 
@@ -70,8 +73,8 @@ export function usePatientAuth() {
       const res = await fetch("/api/patient-auth/logout", { method: "POST" });
       return res.json();
     },
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: MINE_QUERY_KEY });
+    onSuccess: async () => {
+      await queryClient.invalidateQueries({ queryKey: MINE_QUERY_KEY });
     },
   });
 

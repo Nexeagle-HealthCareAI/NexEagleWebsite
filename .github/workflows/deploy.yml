@@ -3,12 +3,14 @@
 # ═══════════════════════════════════════════════════════════════════════════════
 #
 #   Stage 1 — Build       npm ci + next build  (runs on push + PRs)
-#   Stage 2 — Deploy      build Node image (next start) → push GHCR → run on VM :8080
-#             dev branch  -> Dev VM   (151.185.45.77)
-#             main branch -> Prod VM  (151.185.45.67)
+#   Stage 2 — Deploy      build Node image (next start) → push GHCR → run on VM
+#             dev branch  -> Dev VM   (151.185.45.77) :82
+#             main branch -> Prod VM  (151.185.45.67) :8080
 #
-# The site is served on host port 8080 on both VMs (port 80 is used by 1Rad
-# easyrad UI on Prod; kept the same port on Dev for consistency).
+# The site is served on host port 8080 on Prod (port 80 is used by 1Rad easyrad
+# UI there). On Dev, 8080 is already held by Watchtower's HTTP API (host-network
+# mode, invisible to `docker ps --filter publish=`) — Dev uses :82 instead,
+# following the existing convention on that VM (81=easyhms-web-dev, 83=cms-web-dev).
 #
 # ─────────────────────────────────────────────────────────────────────────────
 # SECRETS (Settings → Secrets → Actions):
@@ -21,13 +23,19 @@
 #                         should be identified/revocable separately from anonymous
 #                         callers. Issued via easyHMSAPI's tools/IssuePublicApiKey
 #                         console tool (see easyHMSAPI/docs/OPS-ISSUE-PUBLIC-API-KEY.md).
-#   DEV_SSH_HOST          151.185.45.77
-#   DEV_SSH_USER          root
-#   DEV_SSH_KEY_B64       base64-encoded SSH private key for Dev App VM
+#   SSH_HOST              151.185.45.77 (Dev App VM — legacy unprefixed name, predates the
+#                         dev/prod split; password auth via appleboy/ssh-action, not a key)
+#   SSH_USER              root
+#   SSH_PASSWORD          SSH password for the Dev App VM
 #   EASYHMS_DEV_API_KEY   OPTIONAL, same as EASYHMS_PROD_API_KEY, for the dev environment.
 #   ANTHROPIC_API_KEY     OPTIONAL — powers the AI search fallback (app/api/search/parse).
 #                         Same key used for both dev and prod. Leave unset to disable —
 #                         search stays literal-keyword-only, no error, nothing breaks.
+#                         NLP_ROUTER_BASE_URL (not a secret, hardcoded in the docker run below,
+#                         same pattern as EASYHMS_API_BASE_URL) is tried BEFORE this — see the
+#                         1HMS-NLP-Router repo. Anthropic remains the fallback for anything the
+#                         NLP router can't confidently classify, so nothing here changes if
+#                         that service is ever down.
 #   INTERNAL_PROXY_SECRET OPTIONAL — lets easyHMSAPI's public rate limiters see each real
 #                         visitor's IP instead of this container's own IP (every call to the
 #                         API is server-to-server — see src/lib/api/server.ts). Same key used
@@ -107,13 +115,17 @@ jobs:
             ${{ steps.vars.outputs.image }}:dev-latest
           cache-from: type=gha
           cache-to: type=gha,mode=max
-
-      - name: Prepare SSH key
-        run: |
-          echo "${{ secrets.DEV_SSH_KEY_B64 }}" | base64 -d > /tmp/deploy_key
-          chmod 600 /tmp/deploy_key
+          # NEXT_PUBLIC_* vars are inlined at build time — LiveChat.tsx reads this to reach
+          # CMSAPI's /chathub on the Dev VM (CMS API — CI/CD deploys CMSAPI to port 5002 there).
+          # EASYHMS_API_BASE_URL is ALSO needed at build time here (not just via `docker run -e`
+          # below) — see the Dockerfile comment: without it, the statically-generated specialty
+          # pages silently bake in .env.production's PROD api url instead of Dev's.
+          build-args: |
+            NEXT_PUBLIC_API_URL=http://151.185.45.77:5002
+            EASYHMS_API_BASE_URL=http://151.185.45.77:5001
 
       - name: Deploy to Dev VM
+        uses: appleboy/ssh-action@v1.0.3
         env:
           IMAGE: ${{ steps.vars.outputs.image }}:${{ steps.vars.outputs.tag }}
           PULL_TOKEN: ${{ secrets.GITHUB_TOKEN }}
@@ -121,29 +133,52 @@ jobs:
           EASYHMS_API_KEY: ${{ secrets.EASYHMS_DEV_API_KEY }}
           ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
           PROXY_SECRET: ${{ secrets.INTERNAL_PROXY_SECRET }}
-        run: |
-          IMAGE_LC=$(printf '%s' "$IMAGE" | tr '[:upper:]' '[:lower:]')
-          ssh -i /tmp/deploy_key -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null \
-              ${{ secrets.DEV_SSH_USER }}@${{ secrets.DEV_SSH_HOST }} \
-              "echo '$PULL_TOKEN' | docker login ghcr.io -u '$ACTOR' --password-stdin && \
-               docker pull '$IMAGE_LC' && \
-               docker rm -f nexeagle-website-dev 2>/dev/null || true; \
-               docker run -d --name nexeagle-website-dev --restart unless-stopped \
-                 -p 8080:80 \
-                 -e EASYHMS_API_BASE_URL='http://151.185.45.77:5001' \
-                 -e EASYHMS_API_KEY='$EASYHMS_API_KEY' \
-                 -e EASYHMS_API_KEY_HEADER='X-Api-Key' \
-                 -e ANTHROPIC_API_KEY='$ANTHROPIC_API_KEY' \
-                 -e EASYHMS_TRUSTED_PROXY_SECRET='$PROXY_SECRET' \
-                 '$IMAGE_LC' && \
-               docker image prune -f"
+        with:
+          host: ${{ secrets.SSH_HOST }}
+          username: ${{ secrets.SSH_USER }}
+          password: ${{ secrets.SSH_PASSWORD }}
+          port: 22
+          command_timeout: 10m
+          envs: IMAGE,PULL_TOKEN,ACTOR,EASYHMS_API_KEY,ANTHROPIC_API_KEY,PROXY_SECRET
+          script: |
+            set -e
+            IMAGE_LC=$(printf '%s' "$IMAGE" | tr '[:upper:]' '[:lower:]')
+            echo "$PULL_TOKEN" | docker login ghcr.io -u "$ACTOR" --password-stdin
+            docker pull "$IMAGE_LC"
+            docker rm -f nexeagle-website-dev 2>/dev/null || true
+            PORT_HOG=$(docker ps -q --filter "publish=82")
+            [ -n "$PORT_HOG" ] && docker rm -f $PORT_HOG || true
+
+            for i in 1 2 3 4 5; do
+              if docker run -d --name nexeagle-website-dev --restart unless-stopped \
+                  -p 82:80 \
+                  -e EASYHMS_API_BASE_URL='http://151.185.45.77:5001' \
+                  -e EASYHMS_API_KEY="$EASYHMS_API_KEY" \
+                  -e EASYHMS_API_KEY_HEADER='X-Api-Key' \
+                  -e ANTHROPIC_API_KEY="$ANTHROPIC_API_KEY" \
+                  -e EASYHMS_TRUSTED_PROXY_SECRET="$PROXY_SECRET" \
+                  -e NLP_ROUTER_BASE_URL='http://151.185.45.77:5003' \
+                  "$IMAGE_LC"; then
+                break
+              fi
+              echo "Port 82 still busy (attempt $i) — what's holding it:"
+              (ss -tlnp 2>/dev/null || netstat -tlnp 2>/dev/null || true) | grep ':82 ' || echo "  (nothing found via ss/netstat)"
+              docker ps -a --format 'table {{.Names}}\t{{.Status}}\t{{.Ports}}' || true
+              if [ "$i" = 5 ]; then
+                echo "Giving up after 5 attempts — see diagnostics above for what's actually on :82."
+                exit 1
+              fi
+              sleep 3
+              docker rm -f nexeagle-website-dev 2>/dev/null || true
+            done
+            docker image prune -f || true
 
       - name: Health check
         run: |
           sleep 5
           for i in 1 2 3 4 5; do
             S=$(curl -s -o /dev/null -w '%{http_code}' \
-                http://${{ secrets.DEV_SSH_HOST }}:8080 2>/dev/null || echo 000)
+                http://${{ secrets.SSH_HOST }}:82 2>/dev/null || echo 000)
             echo "Attempt $i — HTTP $S"
             [ "$S" = "200" ] && echo "✅ NexEagle Website (dev) is live" && exit 0
             sleep 5
@@ -156,7 +191,7 @@ jobs:
         run: |
           echo "## 🌐 NexEagle Website — Dev" >> $GITHUB_STEP_SUMMARY
           [ "${{ job.status }}" = "success" ] \
-            && echo "**Status:** ✅ Live at http://${{ secrets.DEV_SSH_HOST }}:8080" >> $GITHUB_STEP_SUMMARY \
+            && echo "**Status:** ✅ Live at http://${{ secrets.SSH_HOST }}:82" >> $GITHUB_STEP_SUMMARY \
             || echo "**Status:** ❌ Failed" >> $GITHUB_STEP_SUMMARY
           echo "| Commit | \`${{ github.sha }}\` |" >> $GITHUB_STEP_SUMMARY
 
@@ -195,13 +230,30 @@ jobs:
             ${{ steps.vars.outputs.image }}:latest
           cache-from: type=gha
           cache-to: type=gha,mode=max
+          # NEXT_PUBLIC_* vars are inlined at build time — LiveChat.tsx reads this to reach
+          # CMSAPI's /chathub. HTTPS + a real domain, not the raw IP:5002 — this page is served
+          # over HTTPS (https://1hms.nexeagle.com), and browsers block a plain-http WebSocket/XHR
+          # connection from an https page ("mixed content"). Requires cms-api.nexeagle.com to be
+          # reverse-proxied to the Prod VM's :5002 with a valid TLS cert (see CMSAPI repo notes).
+          # EASYHMS_API_BASE_URL is ALSO needed at build time here (not just via the SSH deploy
+          # step below) — see the Dockerfile comment: this happens to already match what
+          # .env.production bakes in by default, which is why this side of the bug was invisible.
+          build-args: |
+            NEXT_PUBLIC_API_URL=https://cms-api.nexeagle.com
+            EASYHMS_API_BASE_URL=https://1hms-api.nexeagle.com
 
       - name: Prepare SSH key
         run: |
-          echo "${{ secrets.PROD_SSH_KEY_B64 }}" | base64 -d > /tmp/deploy_key
-          chmod 600 /tmp/deploy_key
+          echo "${{ secrets.PROD_SSH_KEY_B64 }}" | base64 -d > "$GITHUB_WORKSPACE/deploy_key"
+          # appleboy/ssh-action reads this file from INSIDE its own Docker container, as a
+          # different UID than the runner that wrote it — chmod 600 locks it to the runner's own
+          # UID and the container gets EACCES ("permission denied") trying to open it. Go's SSH key
+          # parser does no permission-strictness check of its own (unlike the OpenSSH CLI), so
+          # world-readable is safe here; the file only exists briefly on an ephemeral CI runner.
+          chmod 644 "$GITHUB_WORKSPACE/deploy_key"
 
       - name: Deploy to Prod VM
+        uses: appleboy/ssh-action@v1.0.3
         env:
           IMAGE: ${{ steps.vars.outputs.image }}:${{ steps.vars.outputs.tag }}
           PULL_TOKEN: ${{ secrets.GITHUB_TOKEN }}
@@ -209,22 +261,48 @@ jobs:
           EASYHMS_API_KEY: ${{ secrets.EASYHMS_PROD_API_KEY }}
           ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
           PROXY_SECRET: ${{ secrets.INTERNAL_PROXY_SECRET }}
-        run: |
-          IMAGE_LC=$(printf '%s' "$IMAGE" | tr '[:upper:]' '[:lower:]')
-          ssh -i /tmp/deploy_key -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null \
-              ${{ secrets.PROD_SSH_USER }}@${{ secrets.PROD_SSH_HOST }} \
-              "echo '$PULL_TOKEN' | docker login ghcr.io -u '$ACTOR' --password-stdin && \
-               docker pull '$IMAGE_LC' && \
-               docker rm -f nexeagle-website 2>/dev/null || true; \
-               docker run -d --name nexeagle-website --restart unless-stopped \
-                 -p 8080:80 \
-                 -e EASYHMS_API_BASE_URL='https://1hms-api.nexeagle.com' \
-                 -e EASYHMS_API_KEY='$EASYHMS_API_KEY' \
-                 -e EASYHMS_API_KEY_HEADER='X-Api-Key' \
-                 -e ANTHROPIC_API_KEY='$ANTHROPIC_API_KEY' \
-                 -e EASYHMS_TRUSTED_PROXY_SECRET='$PROXY_SECRET' \
-                 '$IMAGE_LC' && \
-               docker image prune -f"
+        with:
+          host: ${{ secrets.PROD_SSH_HOST }}
+          username: ${{ secrets.PROD_SSH_USER }}
+          # appleboy/ssh-action runs inside its own Docker container, which only mounts the
+          # checked-out workspace (not /tmp on the runner) — the key file must live here, not
+          # in /tmp, or getKeyFile fails with "no such file or directory" (see incident 2026-07-20).
+          key_path: deploy_key
+          port: 22
+          command_timeout: 10m
+          envs: IMAGE,PULL_TOKEN,ACTOR,EASYHMS_API_KEY,ANTHROPIC_API_KEY,PROXY_SECRET
+          script: |
+            set -e
+            IMAGE_LC=$(printf '%s' "$IMAGE" | tr '[:upper:]' '[:lower:]')
+            echo "$PULL_TOKEN" | docker login ghcr.io -u "$ACTOR" --password-stdin
+            docker pull "$IMAGE_LC"
+            docker rm -f nexeagle-website 2>/dev/null || true
+            PORT_HOG=$(docker ps -q --filter "publish=8080")
+            [ -n "$PORT_HOG" ] && docker rm -f $PORT_HOG || true
+
+            for i in 1 2 3 4 5; do
+              if docker run -d --name nexeagle-website --restart unless-stopped \
+                  -p 8080:80 \
+                  -e EASYHMS_API_BASE_URL='https://1hms-api.nexeagle.com' \
+                  -e EASYHMS_API_KEY="$EASYHMS_API_KEY" \
+                  -e EASYHMS_API_KEY_HEADER='X-Api-Key' \
+                  -e ANTHROPIC_API_KEY="$ANTHROPIC_API_KEY" \
+                  -e EASYHMS_TRUSTED_PROXY_SECRET="$PROXY_SECRET" \
+                  -e NLP_ROUTER_BASE_URL='https://nlp-api.nexeagle.com' \
+                  "$IMAGE_LC"; then
+                break
+              fi
+              echo "Port 8080 still busy (attempt $i) — what's holding it:"
+              (ss -tlnp 2>/dev/null || netstat -tlnp 2>/dev/null || true) | grep ':8080' || echo "  (nothing found via ss/netstat)"
+              docker ps -a --format 'table {{.Names}}\t{{.Status}}\t{{.Ports}}' || true
+              if [ "$i" = 5 ]; then
+                echo "Giving up after 5 attempts — see diagnostics above for what's actually on :8080."
+                exit 1
+              fi
+              sleep 3
+              docker rm -f nexeagle-website 2>/dev/null || true
+            done
+            docker image prune -f || true
 
       - name: Health check
         run: |

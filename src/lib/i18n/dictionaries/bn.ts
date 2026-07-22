@@ -180,14 +180,6 @@ export const bn: Record<keyof typeof en, string> = {
   "reviews.hoursAgo": "{n} ঘণ্টা আগে",
   "reviews.daysAgo": "{n} দিন আগে",
 
-  "howItWorks.heading": "অ্যাপয়েন্টমেন্ট বুক করা সহজ",
-  "howItWorks.step1Title": "আপনার ডাক্তার খুঁজুন",
-  "howItWorks.step1Desc": "বিভাগ, অভিজ্ঞতা ও রোগীর সংখ্যা অনুযায়ী প্রমাণিত বিশেষজ্ঞ দেখুন।",
-  "howItWorks.step2Title": "স্লট বেছে নিন",
-  "howItWorks.step2Desc": "আপনার পছন্দের তারিখ ও সময় বেছে নিন এবং এক মিনিটের মধ্যে নিশ্চিত করুন।",
-  "howItWorks.step3Title": "ক্লিনিকে যান",
-  "howItWorks.step3Desc": "আপনার স্লটে যান, কাউন্টারে পেমেন্ট করুন এবং সরাসরি ডাক্তার দেখান।",
-
   "footer.needHelp": "বুকিং করতে সাহায্য দরকার?",
   "footer.areYouProvider": "আপনি কি একজন প্রোভাইডার?",
   "footer.providerDesc": "আপনার ক্লিনিক, হাসপাতাল, ল্যাব বা ফার্মেসিকে AI-চালিত টুল, স্ক্রাইব ও বিলিং দিয়ে সাজিয়ে নিন।",
