@@ -35,9 +35,26 @@ function hashIndex(seed: string, len: number): number {
   return h % len;
 }
 
+// Department-name synonyms seen from real hospital data that don't literally match a
+// curated specialty's id/name but ARE the same patient-facing category — e.g. a hospital
+// might title a doctor's department "Family Medicine" rather than our "General Physician"
+// tile. Without this, such doctors get a synthesized id (e.g. "family-medicine") that isn't
+// one of the static specialties, so they'd never appear on a /specialties/{specialty}/{city}
+// page at all — same class of fix as PATIENT_CATEGORY_TO_SPECIALTY_ID above, one level down.
+const DEPARTMENT_NAME_ALIASES: Record<string, string> = {
+  "family medicine": "general",
+  "internal medicine": "general",
+  "general medicine": "general",
+};
+
 /** Match a free-text department/specialization string to one of our taxonomy ids. */
 function matchSpecialtyId(name: string): { id: string; label: string } {
   const norm = name.trim().toLowerCase();
+  const aliasedId = DEPARTMENT_NAME_ALIASES[norm];
+  if (aliasedId) {
+    const matched = specialties.find((s) => s.id === aliasedId);
+    if (matched) return { id: matched.id, label: matched.name };
+  }
   const found: Specialty | undefined = specialties.find(
     (s) => s.name.toLowerCase() === norm || s.id === norm || norm.includes(s.id)
   );
