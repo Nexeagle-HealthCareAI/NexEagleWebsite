@@ -237,19 +237,30 @@ export default function DoctorDirectory({
     if (!q && !specialtyId) return;
 
     const handle = setTimeout(() => {
+      // When the AI path drove the results, log what it ACTUALLY predicted (aiIntent's own
+      // specialtyId) rather than the manual filter chip's specialtyId state — the two aren't
+      // the same thing: the AI fallback only fires when there's no manual filter match, so
+      // logging the ambient `specialtyId` here would either be empty or, worse, stale from a
+      // previous manual selection. This is what feeds the 1HMS-NLP-Router feedback loop, so
+      // getting the predicted value right matters.
+      const loggedSpecialtyId = usingAiResults ? aiIntent?.specialtyId ?? undefined : specialtyId || undefined;
+
       trackEvent("search_performed", {
-        specialtyId: specialtyId || undefined,
+        specialtyId: loggedSpecialtyId,
         metadata: {
           query: q || undefined,
           resultsCount: filtered.length,
           aiUsed: usingAiResults,
+          method: usingAiResults ? aiIntent?.method ?? undefined : undefined,
+          confidence: usingAiResults ? aiIntent?.confidence ?? undefined : undefined,
+          modelVersion: usingAiResults ? aiIntent?.modelVersion ?? undefined : undefined,
         },
       });
     }, 800);
 
     return () => clearTimeout(handle);
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [query, specialtyId, filtered.length, usingAiResults]);
+  }, [query, specialtyId, filtered.length, usingAiResults, aiIntent]);
 
   return (
     <section id="doctors" className="bg-slate-50/50 pb-24 pt-10 sm:pt-16 scroll-mt-20">

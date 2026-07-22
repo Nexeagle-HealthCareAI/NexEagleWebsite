@@ -18,6 +18,12 @@ const NLP_ROUTER_BASE_URL = process.env.NLP_ROUTER_BASE_URL ?? "";
 interface NlpRouterResult {
   specialtyIds: string[];
   usedDefault: boolean;
+  // The method/confidence that produced specialtyIds[0] specifically — passed through to the
+  // client so DoctorDirectory.tsx's search_performed tracking can log what actually drove the
+  // suggestion (see the 1HMS-NLP-Router feedback loop this feeds).
+  method: string | null;
+  confidence: number | null;
+  modelVersion: string | null;
 }
 
 async function callNlpRouter(query: string): Promise<NlpRouterResult | null> {
@@ -34,6 +40,9 @@ async function callNlpRouter(query: string): Promise<NlpRouterResult | null> {
     return {
       specialtyIds: Array.isArray(data?.specialtyIds) ? data.specialtyIds : [],
       usedDefault: Boolean(data?.usedDefault),
+      method: typeof data?.method === "string" ? data.method : null,
+      confidence: typeof data?.confidence === "number" ? data.confidence : null,
+      modelVersion: typeof data?.modelVersion === "string" ? data.modelVersion : null,
     };
   } catch (err) {
     console.error("NLP router call failed, falling back to Anthropic:", err);
@@ -127,6 +136,9 @@ export async function POST(req: NextRequest) {
       specialtyId: nlpResult.specialtyIds[0],
       city: extractCityFromQuery(query),
       keywords: query.split(/\s+/).filter((w) => w.length >= 3),
+      method: nlpResult.method,
+      confidence: nlpResult.confidence,
+      modelVersion: nlpResult.modelVersion,
     });
   }
 

@@ -185,6 +185,12 @@ export interface SmartSearchIntent {
   city: string | null;
   keywords: string[];
   notConfigured: boolean;
+  // Only populated when the NLP router (not Anthropic) produced this result — lets
+  // DoctorDirectory.tsx's search_performed tracking log what actually drove the suggestion,
+  // feeding the 1HMS-NLP-Router feedback loop.
+  method: string | null;
+  confidence: number | null;
+  modelVersion: string | null;
 }
 
 export function useSmartSearch() {
@@ -196,13 +202,18 @@ export function useSmartSearch() {
         body: JSON.stringify({ query }),
       });
       const json = await res.json();
-      if (json?.notConfigured) return { specialtyId: null, city: null, keywords: [], notConfigured: true };
+      if (json?.notConfigured) {
+        return { specialtyId: null, city: null, keywords: [], notConfigured: true, method: null, confidence: null, modelVersion: null };
+      }
       if (!res.ok) throw new Error(json?.error || `Search interpretation failed: ${res.status}`);
       return {
         specialtyId: json?.specialtyId ?? null,
         city: json?.city ?? null,
         keywords: Array.isArray(json?.keywords) ? json.keywords : [],
         notConfigured: false,
+        method: typeof json?.method === "string" ? json.method : null,
+        confidence: typeof json?.confidence === "number" ? json.confidence : null,
+        modelVersion: typeof json?.modelVersion === "string" ? json.modelVersion : null,
       };
     },
   });
