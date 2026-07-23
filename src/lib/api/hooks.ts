@@ -10,7 +10,7 @@
 // can fall back to the local mock data in src/data/patient.ts.
 // ─────────────────────────────────────────────────────────────────────────────
 
-import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import { useInfiniteQuery, useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import type { Doctor } from "@/data/patient";
 import {
   mapAvailability,
@@ -37,11 +37,18 @@ export interface DoctorsResult {
 // page.tsx Server Component. Seeding `initialData` makes the FIRST render (server AND
 // client hydration pass) show real doctors immediately, instead of an empty array
 // while the client's own live re-fetch is still in flight.
+//
+// Whole-directory fetch (pageSize=2000, matching server.ts's SSR calls) — used for
+// deriving the full city list (home-client.tsx's dynamicCities) and anywhere else that
+// needs to see every doctor at once. The actual results grid uses usePaginatedDoctors
+// below instead, now that /api/public/doctors defaults to a paginated 24-per-page
+// response — this hook would otherwise silently drop to 24 results on its next
+// background refetch if it didn't ask for pageSize explicitly.
 export function useDoctors(seed?: DoctorsResult) {
   return useQuery<DoctorsResult>({
     queryKey: ["public", "doctors"],
     queryFn: async () => {
-      const json = await getJson("/api/public/doctors");
+      const json = await getJson("/api/public/doctors?pageSize=2000");
       if (json?.notConfigured) return { doctors: [], notConfigured: true };
       // Accept either a bare array or { doctors: [...] }.
       const list = Array.isArray(json) ? json : json?.doctors ?? json?.data;
@@ -50,6 +57,72 @@ export function useDoctors(seed?: DoctorsResult) {
     initialData: seed,
     staleTime: 5 * 60 * 1000,
   });
+}
+
+// ── Paginated doctors (results grid) ────────────────────────────────────────────
+export interface DoctorsFilterParams {
+  city?: string;
+  state?: string;
+  specialtyCategory?: string;
+  search?: string;
+}
+
+const DOCTORS_PAGE_SIZE = 24;
+
+interface DoctorsPage {
+  doctors: Doctor[];
+  notConfigured: boolean;
+  totalCount: number;
+}
+
+// Backs DoctorDirectory.tsx's results grid via React Query's useInfiniteQuery — pages
+// are fetched 24 at a time as the user scrolls (fetchNextPage), instead of the old
+// useDoctors() pulling the entire platform-wide directory into the DOM at once. `seed`
+// (server-fetched initialDoctors, same prop as useDoctors above) only pre-populates page
+// 1 when no filter is active — a filtered/deep-linked view (e.g. a specialty+city page)
+// wasn't what `seed` was fetched for, so it starts from a normal loading state instead.
+export function usePaginatedDoctors(filters: DoctorsFilterParams, seed?: Doctor[]) {
+  const hasNoFilters = !filters.city && !filters.state && !filters.specialtyCategory && !filters.search;
+
+  const query = useInfiniteQuery<DoctorsPage>({
+    queryKey: ["public", "doctors", "paginated", filters],
+    initialPageParam: 1,
+    queryFn: async ({ pageParam }) => {
+      const params = new URLSearchParams({ page: String(pageParam), pageSize: String(DOCTORS_PAGE_SIZE) });
+      if (filters.city) params.set("city", filters.city);
+      if (filters.state) params.set("state", filters.state);
+      if (filters.specialtyCategory) params.set("specialtyCategory", filters.specialtyCategory);
+      if (filters.search) params.set("search", filters.search);
+
+      const json = await getJson(`/api/public/doctors?${params.toString()}`);
+      if (json?.notConfigured) return { doctors: [], notConfigured: true, totalCount: 0 };
+      const list = Array.isArray(json) ? json : json?.doctors ?? [];
+      return { doctors: mapDoctors(list), notConfigured: false, totalCount: json?.totalCount ?? list.length };
+    },
+    getNextPageParam: (lastPage, allPages) => {
+      const loaded = allPages.reduce((sum, p) => sum + p.doctors.length, 0);
+      return loaded < lastPage.totalCount ? allPages.length + 1 : undefined;
+    },
+    initialData:
+      hasNoFilters && seed && seed.length > 0
+        ? {
+            pages: [{ doctors: seed.slice(0, DOCTORS_PAGE_SIZE), notConfigured: false, totalCount: seed.length }],
+            pageParams: [1],
+          }
+        : undefined,
+    staleTime: 5 * 60 * 1000,
+  });
+
+  const pages = query.data?.pages ?? [];
+  return {
+    doctors: pages.flatMap((p) => p.doctors),
+    notConfigured: pages[0]?.notConfigured ?? false,
+    totalCount: pages[0]?.totalCount ?? 0,
+    isLoading: query.isLoading,
+    isFetchingNextPage: query.isFetchingNextPage,
+    hasNextPage: query.hasNextPage ?? false,
+    fetchNextPage: query.fetchNextPage,
+  };
 }
 
 // ── Availability ─────────────────────────────────────────────────────────────

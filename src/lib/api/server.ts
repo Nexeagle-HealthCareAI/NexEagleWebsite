@@ -96,7 +96,10 @@ export interface GetDoctorByIdResult {
 // directory size; if the platform-wide directory grows large, this is the spot
 // to swap in a dedicated GET /public/doctors/{id} backend endpoint instead.
 export async function getDoctorById(doctorId: string): Promise<GetDoctorByIdResult> {
-  const result = await easyhmsFetch<DoctorsResponseDto>("/public/doctors");
+  // pageSize=2000 — this endpoint is now paginated (default 24) for the client-side browsing
+  // UI, but there's still no dedicated GET /public/doctors/{id}; explicitly asking for the
+  // whole directory here keeps this scan-by-id working exactly as before.
+  const result = await easyhmsFetch<DoctorsResponseDto>("/public/doctors?pageSize=2000");
   if (result.notConfigured) return { doctor: null, notConfigured: true };
 
   const dto = result.data?.doctors?.find((d) => d.doctorId === doctorId);
@@ -141,7 +144,9 @@ const fetchAllDoctorsCached = unstable_cache(
       return { doctors: mockDoctors, notConfigured: true };
     }
 
-    const result = await easyhmsFetch<DoctorsResponseDto>("/public/doctors");
+    // pageSize=2000 — see getDoctorById's comment above; this feeds ~400 statically generated
+    // listing pages and needs the whole directory, not the paginated browsing default.
+    const result = await easyhmsFetch<DoctorsResponseDto>("/public/doctors?pageSize=2000");
     if (result.notConfigured || !result.data) {
       return { doctors: mockDoctors, notConfigured: true };
     }
