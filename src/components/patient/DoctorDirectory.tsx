@@ -140,8 +140,13 @@ export default function DoctorDirectory({
   const aiFiltered = useMemo(() => {
     if (!aiIntent) return null;
     let list = baseFiltered;
-    if (aiIntent.specialtyId) {
-      list = list.filter((d) => d.specialtyId === aiIntent.specialtyId);
+    if (aiIntent.specialtyIds.length > 0) {
+      // Merge silently across every close-call candidate the router returned (not just the
+      // top pick) — a plain headache genuinely might mean Neurology OR General Physician,
+      // and forcing only #1 would hide correct doctors on ambiguous queries. Display order
+      // within this wider set is handled by aiCandidateRank below, in the main sort.
+      const idSet = new Set(aiIntent.specialtyIds);
+      list = list.filter((d) => idSet.has(d.specialtyId));
     }
     if (aiIntent.city && aiIntent.city !== "NEAR_ME") {
       const cityQ = aiIntent.city.toLowerCase();
@@ -161,6 +166,18 @@ export default function DoctorDirectory({
     }
     return list;
   }, [baseFiltered, aiIntent]);
+
+  // Position of each candidate specialty in the router's own ranking (0 = top pick) — used
+  // below so the merged multi-specialty result list still shows the top pick's doctors first,
+  // rather than interleaving them with runner-up specialties in arbitrary order.
+  const aiCandidateRank = useMemo(() => {
+    if (!aiIntent || aiIntent.specialtyIds.length < 2) return null;
+    const rank = new Map<string, number>();
+    aiIntent.specialtyIds.forEach((id, idx) => {
+      if (!rank.has(id)) rank.set(id, idx);
+    });
+    return rank;
+  }, [aiIntent]);
 
   const usingAiResults = keywordFiltered.length === 0 && aiFiltered !== null && aiFiltered.length > 0;
   const aiSpecialtyMeta = aiIntent?.specialtyId ? specialties.find((s) => s.id === aiIntent.specialtyId) : undefined;
@@ -191,8 +208,13 @@ export default function DoctorDirectory({
       case "fee":
         sorted.sort((a, b) => (a.fee ?? 9999) - (b.fee ?? 9999));
         break;
-      default: // relevance (promoted first, then rating, then experience)
+      default: // relevance (candidate rank when merged across specialties, then promoted, then rating/experience)
         sorted.sort((a, b) => {
+          if (usingAiResults && aiCandidateRank) {
+            const rankA = aiCandidateRank.get(a.specialtyId) ?? aiCandidateRank.size;
+            const rankB = aiCandidateRank.get(b.specialtyId) ?? aiCandidateRank.size;
+            if (rankA !== rankB) return rankA - rankB;
+          }
           if (a.promoted && !b.promoted) return -1;
           if (!a.promoted && b.promoted) return 1;
           const scoreA = (a.rating ?? 0) * 10 + a.experienceYears;
@@ -201,7 +223,7 @@ export default function DoctorDirectory({
         });
     }
     return sorted;
-  }, [keywordFiltered, aiFiltered, usingAiResults, sort, drivingData]);
+  }, [keywordFiltered, aiFiltered, usingAiResults, aiCandidateRank, sort, drivingData]);
 
   // Fetch real driving distances from OSRM for the top displayed doctors
   useEffect(() => {
@@ -254,6 +276,14 @@ export default function DoctorDirectory({
           method: usingAiResults ? aiIntent?.method ?? undefined : undefined,
           confidence: usingAiResults ? aiIntent?.confidence ?? undefined : undefined,
           modelVersion: usingAiResults ? aiIntent?.modelVersion ?? undefined : undefined,
+          // Full candidate set the router considered, not just the top pick — lets the
+          // feedback-log correlation (CMSAPI SymptomRouterRepository) tell a genuine
+          // misprediction apart from a booking that landed on a close-call runner-up we
+          // deliberately showed. See CANDIDATE_MARGIN in Model_1_Doctor_Dekho.py.
+          candidateSpecialtyIds:
+            usingAiResults && aiIntent && aiIntent.specialtyIds.length > 1
+              ? aiIntent.specialtyIds
+              : undefined,
         },
       });
     }, 800);

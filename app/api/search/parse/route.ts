@@ -118,6 +118,11 @@ function buildToolSchema() {
 
 export interface SearchIntent {
   specialtyId: string | null;
+  /** Full ordered candidate list (specialtyId is always specialtyIds[0]) — the NLP router
+   * surfaces close-margin runner-ups (see build_candidates() in Model_1_Doctor_Dekho.py)
+   * rather than forcing a single overconfident pick; the Anthropic fallback only ever
+   * produces one, so this is just [specialtyId] on that path. */
+  specialtyIds: string[];
   city: string | null;
   keywords: string[];
 }
@@ -134,6 +139,7 @@ export async function POST(req: NextRequest) {
   if (nlpResult && !nlpResult.usedDefault && nlpResult.specialtyIds.length > 0) {
     return NextResponse.json({
       specialtyId: nlpResult.specialtyIds[0],
+      specialtyIds: nlpResult.specialtyIds,
       city: extractCityFromQuery(query),
       keywords: query.split(/\s+/).filter((w) => w.length >= 3),
       method: nlpResult.method,
@@ -176,8 +182,10 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: "AI returned no structured result" }, { status: 502 });
     }
 
+    const specialtyId = toolUse.input.specialtyId ?? null;
     const intent: SearchIntent = {
-      specialtyId: toolUse.input.specialtyId ?? null,
+      specialtyId,
+      specialtyIds: specialtyId ? [specialtyId] : [],
       city: toolUse.input.city ?? null,
       keywords: Array.isArray(toolUse.input.keywords) ? toolUse.input.keywords : [],
     };

@@ -182,6 +182,10 @@ export function useMarkReviewHelpful(doctorId: string | undefined) {
 // notConfigured-aware hooks above.
 export interface SmartSearchIntent {
   specialtyId: string | null;
+  /** Full ordered candidate list (specialtyId is always specialtyIds[0]) — see
+   * app/api/search/parse/route.ts's SearchIntent. DoctorDirectory.tsx matches doctors
+   * against any of these, not just the top pick, when the router flags a close call. */
+  specialtyIds: string[];
   city: string | null;
   keywords: string[];
   notConfigured: boolean;
@@ -203,11 +207,12 @@ export function useSmartSearch() {
       });
       const json = await res.json();
       if (json?.notConfigured) {
-        return { specialtyId: null, city: null, keywords: [], notConfigured: true, method: null, confidence: null, modelVersion: null };
+        return { specialtyId: null, specialtyIds: [], city: null, keywords: [], notConfigured: true, method: null, confidence: null, modelVersion: null };
       }
       if (!res.ok) throw new Error(json?.error || `Search interpretation failed: ${res.status}`);
       return {
         specialtyId: json?.specialtyId ?? null,
+        specialtyIds: Array.isArray(json?.specialtyIds) ? json.specialtyIds : [],
         city: json?.city ?? null,
         keywords: Array.isArray(json?.keywords) ? json.keywords : [],
         notConfigured: false,
