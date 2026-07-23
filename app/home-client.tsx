@@ -119,7 +119,10 @@ export default function HomeClient({
           cities={dynamicCities}
           area={initialArea}
           geoStatus={geo.status}
-          coords={geo.coords}
+          // Once the user manually picks a city, stop filtering by raw GPS distance —
+          // otherwise the picked city only changed the display label while DoctorDirectory's
+          // coords-first filtering silently kept showing doctors near the real device location.
+          coords={userPicked ? null : geo.coords}
           onCityChange={handleCityChange}
           query={query}
           specialtyId={specialtyId}
