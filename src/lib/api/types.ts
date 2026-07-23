@@ -52,6 +52,9 @@ export interface DoctorDto {
   discountPercent?: number | null;
   discountedFee?: number | null;
   isFeatured?: boolean;
+  // Set by a CMS admin only after manually confirming this doctor's registration against the
+  // NMC's Indian Medical Register — drives the "Verified profile" badge (see mapDoctor below).
+  isRegistrationVerified?: boolean;
 }
 
 export interface DoctorsResponseDto {

@@ -47,15 +47,6 @@ const structuredData = {
         "query-input": "required name=search_term_string",
       },
     },
-    {
-      "@type": "MedicalOrganization",
-      "@id": "https://nexeagle.com/#organization",
-      name: "NexEagle",
-      url: "https://nexeagle.com",
-      logo: "https://nexeagle.com/assets/logo.webp",
-      description:
-        "NexEagle connects patients with verified doctors across its network of hospitals for online appointment booking.",
-    },
   ],
 };
 

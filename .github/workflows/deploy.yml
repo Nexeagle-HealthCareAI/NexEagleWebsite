@@ -31,6 +31,11 @@
 #   ANTHROPIC_API_KEY     OPTIONAL — powers the AI search fallback (app/api/search/parse).
 #                         Same key used for both dev and prod. Leave unset to disable —
 #                         search stays literal-keyword-only, no error, nothing breaks.
+#                         NLP_ROUTER_BASE_URL (not a secret, hardcoded in the docker run below,
+#                         same pattern as EASYHMS_API_BASE_URL) is tried BEFORE this — see the
+#                         1HMS-NLP-Router repo. Anthropic remains the fallback for anything the
+#                         NLP router can't confidently classify, so nothing here changes if
+#                         that service is ever down.
 #   INTERNAL_PROXY_SECRET OPTIONAL — lets easyHMSAPI's public rate limiters see each real
 #                         visitor's IP instead of this container's own IP (every call to the
 #                         API is server-to-server — see src/lib/api/server.ts). Same key used
@@ -112,8 +117,12 @@ jobs:
           cache-to: type=gha,mode=max
           # NEXT_PUBLIC_* vars are inlined at build time — LiveChat.tsx reads this to reach
           # CMSAPI's /chathub on the Dev VM (CMS API — CI/CD deploys CMSAPI to port 5002 there).
+          # EASYHMS_API_BASE_URL is ALSO needed at build time here (not just via `docker run -e`
+          # below) — see the Dockerfile comment: without it, the statically-generated specialty
+          # pages silently bake in .env.production's PROD api url instead of Dev's.
           build-args: |
             NEXT_PUBLIC_API_URL=http://151.185.45.77:5002
+            EASYHMS_API_BASE_URL=http://151.185.45.77:5001
 
       - name: Deploy to Dev VM
         uses: appleboy/ssh-action@v1.0.3
@@ -148,6 +157,7 @@ jobs:
                   -e EASYHMS_API_KEY_HEADER='X-Api-Key' \
                   -e ANTHROPIC_API_KEY="$ANTHROPIC_API_KEY" \
                   -e EASYHMS_TRUSTED_PROXY_SECRET="$PROXY_SECRET" \
+                  -e NLP_ROUTER_BASE_URL='http://151.185.45.77:5003' \
                   "$IMAGE_LC"; then
                 break
               fi
@@ -225,8 +235,12 @@ jobs:
           # over HTTPS (https://1hms.nexeagle.com), and browsers block a plain-http WebSocket/XHR
           # connection from an https page ("mixed content"). Requires cms-api.nexeagle.com to be
           # reverse-proxied to the Prod VM's :5002 with a valid TLS cert (see CMSAPI repo notes).
+          # EASYHMS_API_BASE_URL is ALSO needed at build time here (not just via the SSH deploy
+          # step below) — see the Dockerfile comment: this happens to already match what
+          # .env.production bakes in by default, which is why this side of the bug was invisible.
           build-args: |
             NEXT_PUBLIC_API_URL=https://cms-api.nexeagle.com
+            EASYHMS_API_BASE_URL=https://1hms-api.nexeagle.com
 
       - name: Prepare SSH key
         run: |
@@ -274,6 +288,7 @@ jobs:
                   -e EASYHMS_API_KEY_HEADER='X-Api-Key' \
                   -e ANTHROPIC_API_KEY="$ANTHROPIC_API_KEY" \
                   -e EASYHMS_TRUSTED_PROXY_SECRET="$PROXY_SECRET" \
+                  -e NLP_ROUTER_BASE_URL='https://nlp-api.nexeagle.com' \
                   "$IMAGE_LC"; then
                 break
               fi
