@@ -1,19 +1,27 @@
 "use client";
 
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { useIsRestoring } from "@tanstack/react-query";
-import { motion, AnimatePresence } from "framer-motion";
+import { useWindowVirtualizer } from "@tanstack/react-virtual";
+import { motion, useReducedMotion } from "framer-motion";
 import { Frown, Loader2, ChevronDown, SlidersHorizontal, MapPin, Sparkles } from "lucide-react";
 import DoctorCard from "./DoctorCard";
 import { specialties, cityLabel } from "@/data/patient";
 import type { CityOption, Doctor } from "@/data/patient";
-import { useDoctors, useSmartSearch, type SmartSearchIntent } from "@/lib/api/hooks";
+import { usePaginatedDoctors, useSmartSearch, type SmartSearchIntent } from "@/lib/api/hooks";
 import { haversineDistance, getDrivingDistances, type GeoStatus } from "@/lib/geo";
 import { cn } from "@/lib/utils";
 import { trackEvent } from "@/lib/analytics";
 import { useTranslation } from "@/lib/i18n/I18nContext";
 import { translateSpecialty } from "@/lib/i18n/specialties";
 import type { TranslationKey } from "@/lib/i18n/dictionaries/en";
+
+// Minimum visible-result count worth keeping on screen before auto-requesting another
+// server page — client-side filters (specialty chip, AI merge, coords/radius, keyword)
+// still run over whatever's been fetched so far, so a narrow filter over a broad
+// (unfiltered-by-specialty) server page can legitimately match very few of it. Keeps
+// fetching in the background until either this is met or the server runs out of pages.
+const MIN_VISIBLE_BEFORE_STOP_PREFETCH = 24;
 
 interface DoctorDirectoryProps {
   city: CityOption | null;
@@ -55,11 +63,24 @@ export default function DoctorDirectory({
   const [sort, setSort] = useState<SortKey>("relevance");
   const [radius, setRadius] = useState<number>(100);
   const [drivingData, setDrivingData] = useState<Record<string, { distanceKm: number, durationMin: number }>>({});
+  const reducedMotion = useReducedMotion();
+
+  // City/State are pushed server-side (the one unambiguous, always-correct filter — no
+  // fallback-matching concerns, unlike specialty text) whenever a fixed city is active.
+  // Live GPS "near me" browsing (coords set) has no server-side lat/lon filter, so it stays
+  // unscoped here and is narrowed by the existing client-side haversine+radius filter below,
+  // same as before pagination — just now applied incrementally as pages load in.
+  const serverCity = !coords && city ? city.name : undefined;
+  const serverState = !coords && city ? city.state : undefined;
 
   const hasSeedData = initialDoctors !== undefined;
-  const { data, isLoading: queryIsLoading } = useDoctors(
-    initialDoctors ? { doctors: initialDoctors, notConfigured: false } : undefined
-  );
+  const {
+    doctors: allDoctors,
+    isLoading: queryIsLoading,
+    isFetchingNextPage,
+    hasNextPage,
+    fetchNextPage,
+  } = usePaginatedDoctors({ city: serverCity, state: serverState }, initialDoctors);
   // The QueryClient persists to localStorage (see app/providers.tsx), so on a
   // repeat visit the client's very first render can already see a *restored*
   // cache — before the server ever rendered anything — while SSR always starts
@@ -73,14 +94,14 @@ export default function DoctorDirectory({
   // of mismatch this guard was written to prevent.
   const isRestoring = useIsRestoring();
   const isLoading = queryIsLoading || (isRestoring && !hasSeedData);
-  const allDoctors = data?.doctors ?? [];
 
   const specialtyMeta = specialties.find((s) => s.id === specialtyId);
   const specialtyName = specialtyMeta ? translateSpecialty(specialtyMeta.id, specialtyMeta.name, locale) : undefined;
 
-  // Location (coords/city/area) + specialty-chip filtering — everything except the free-text
+  // Location (coords/area) + specialty-chip filtering — everything except the free-text
   // query, since the AI fallback below needs to re-filter from this same base rather than
-  // the literal keyword match.
+  // the literal keyword match. City itself is already server-filtered above (serverCity/
+  // serverState); area isn't, so it's still applied here.
   const baseFiltered = useMemo(() => {
     let list = allDoctors;
     if (coords) {
@@ -90,11 +111,8 @@ export default function DoctorDirectory({
         }
         return { ...d, distanceKm: 999999 };
       }).filter(d => d.distanceKm! <= radius || d.distanceKm === 999999); // dynamic radius + include doctors missing GPS
-    } else if (city) {
-      list = list.filter((d) => d.city === city.name && d.state === city.state);
-      if (area) {
-        list = list.filter((d) => d.area === area);
-      }
+    } else if (city && area) {
+      list = list.filter((d) => d.area === area);
     }
     if (specialtyId) list = list.filter((d) => d.specialtyId === specialtyId);
     return list;
@@ -140,8 +158,13 @@ export default function DoctorDirectory({
   const aiFiltered = useMemo(() => {
     if (!aiIntent) return null;
     let list = baseFiltered;
-    if (aiIntent.specialtyId) {
-      list = list.filter((d) => d.specialtyId === aiIntent.specialtyId);
+    if (aiIntent.specialtyIds.length > 0) {
+      // Merge silently across every close-call candidate the router returned (not just the
+      // top pick) — a plain headache genuinely might mean Neurology OR General Physician,
+      // and forcing only #1 would hide correct doctors on ambiguous queries. Display order
+      // within this wider set is handled by aiCandidateRank below, in the main sort.
+      const idSet = new Set(aiIntent.specialtyIds);
+      list = list.filter((d) => idSet.has(d.specialtyId));
     }
     if (aiIntent.city && aiIntent.city !== "NEAR_ME") {
       const cityQ = aiIntent.city.toLowerCase();
@@ -161,6 +184,18 @@ export default function DoctorDirectory({
     }
     return list;
   }, [baseFiltered, aiIntent]);
+
+  // Position of each candidate specialty in the router's own ranking (0 = top pick) — used
+  // below so the merged multi-specialty result list still shows the top pick's doctors first,
+  // rather than interleaving them with runner-up specialties in arbitrary order.
+  const aiCandidateRank = useMemo(() => {
+    if (!aiIntent || aiIntent.specialtyIds.length < 2) return null;
+    const rank = new Map<string, number>();
+    aiIntent.specialtyIds.forEach((id, idx) => {
+      if (!rank.has(id)) rank.set(id, idx);
+    });
+    return rank;
+  }, [aiIntent]);
 
   const usingAiResults = keywordFiltered.length === 0 && aiFiltered !== null && aiFiltered.length > 0;
   const aiSpecialtyMeta = aiIntent?.specialtyId ? specialties.find((s) => s.id === aiIntent.specialtyId) : undefined;
@@ -191,8 +226,13 @@ export default function DoctorDirectory({
       case "fee":
         sorted.sort((a, b) => (a.fee ?? 9999) - (b.fee ?? 9999));
         break;
-      default: // relevance (promoted first, then rating, then experience)
+      default: // relevance (candidate rank when merged across specialties, then promoted, then rating/experience)
         sorted.sort((a, b) => {
+          if (usingAiResults && aiCandidateRank) {
+            const rankA = aiCandidateRank.get(a.specialtyId) ?? aiCandidateRank.size;
+            const rankB = aiCandidateRank.get(b.specialtyId) ?? aiCandidateRank.size;
+            if (rankA !== rankB) return rankA - rankB;
+          }
           if (a.promoted && !b.promoted) return -1;
           if (!a.promoted && b.promoted) return 1;
           const scoreA = (a.rating ?? 0) * 10 + a.experienceYears;
@@ -201,7 +241,18 @@ export default function DoctorDirectory({
         });
     }
     return sorted;
-  }, [keywordFiltered, aiFiltered, usingAiResults, sort, drivingData]);
+  }, [keywordFiltered, aiFiltered, usingAiResults, aiCandidateRank, sort, drivingData]);
+
+  // Server pages are only scoped by City/State — specialty/area/coords-radius/keyword all
+  // still filter client-side over whatever's loaded so far, so a narrow filter can leave too
+  // few visible results even though more doctors exist on later server pages. Keep pulling
+  // pages in the background until either there's enough to fill a screen or the server is
+  // genuinely out of matches — invisible to the user, just a few extra network round trips.
+  useEffect(() => {
+    if (isLoading || isFetchingNextPage || !hasNextPage) return;
+    if (filtered.length >= MIN_VISIBLE_BEFORE_STOP_PREFETCH) return;
+    fetchNextPage();
+  }, [filtered.length, isLoading, isFetchingNextPage, hasNextPage, fetchNextPage]);
 
   // Fetch real driving distances from OSRM for the top displayed doctors
   useEffect(() => {
@@ -237,19 +288,83 @@ export default function DoctorDirectory({
     if (!q && !specialtyId) return;
 
     const handle = setTimeout(() => {
+      // When the AI path drove the results, log what it ACTUALLY predicted (aiIntent's own
+      // specialtyId) rather than the manual filter chip's specialtyId state — the two aren't
+      // the same thing: the AI fallback only fires when there's no manual filter match, so
+      // logging the ambient `specialtyId` here would either be empty or, worse, stale from a
+      // previous manual selection. This is what feeds the 1HMS-NLP-Router feedback loop, so
+      // getting the predicted value right matters.
+      const loggedSpecialtyId = usingAiResults ? aiIntent?.specialtyId ?? undefined : specialtyId || undefined;
+
       trackEvent("search_performed", {
-        specialtyId: specialtyId || undefined,
+        specialtyId: loggedSpecialtyId,
         metadata: {
           query: q || undefined,
           resultsCount: filtered.length,
           aiUsed: usingAiResults,
+          method: usingAiResults ? aiIntent?.method ?? undefined : undefined,
+          confidence: usingAiResults ? aiIntent?.confidence ?? undefined : undefined,
+          modelVersion: usingAiResults ? aiIntent?.modelVersion ?? undefined : undefined,
+          // Full candidate set the router considered, not just the top pick — lets the
+          // feedback-log correlation (CMSAPI SymptomRouterRepository) tell a genuine
+          // misprediction apart from a booking that landed on a close-call runner-up we
+          // deliberately showed. See CANDIDATE_MARGIN in Model_1_Doctor_Dekho.py.
+          candidateSpecialtyIds:
+            usingAiResults && aiIntent && aiIntent.specialtyIds.length > 1
+              ? aiIntent.specialtyIds
+              : undefined,
         },
       });
     }, 800);
 
     return () => clearTimeout(handle);
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [query, specialtyId, filtered.length, usingAiResults]);
+  }, [query, specialtyId, filtered.length, usingAiResults, aiIntent]);
+
+  // ── Virtualized grid ─────────────────────────────────────────────────────
+  // Renders only the rows near the viewport, regardless of how many doctors matched —
+  // the DOM no longer grows with the platform's total doctor count. Tracks the same
+  // 1/2/3-column breakpoints the CSS grid used (md=768px, lg=1024px) so each virtual
+  // "row" holds exactly as many cards as actually render side by side.
+  const [columns, setColumns] = useState(1);
+  useEffect(() => {
+    const compute = () => setColumns(window.innerWidth >= 1024 ? 3 : window.innerWidth >= 768 ? 2 : 1);
+    compute();
+    window.addEventListener("resize", compute);
+    return () => window.removeEventListener("resize", compute);
+  }, []);
+
+  const rows = useMemo(() => {
+    const chunks: Doctor[][] = [];
+    for (let i = 0; i < filtered.length; i += columns) chunks.push(filtered.slice(i, i + columns));
+    return chunks;
+  }, [filtered, columns]);
+
+  const gridParentRef = useRef<HTMLDivElement | null>(null);
+  const [gridParentOffset, setGridParentOffset] = useState(0);
+  useEffect(() => {
+    setGridParentOffset(gridParentRef.current?.offsetTop ?? 0);
+  }, [isLoading]);
+
+  const rowVirtualizer = useWindowVirtualizer({
+    count: rows.length,
+    estimateSize: () => 460,
+    overscan: 4,
+    scrollMargin: gridParentOffset,
+  });
+
+  // Trigger the next server page as the user scrolls near the bottom of what's already
+  // been fetched — separate from (and in addition to) the backfill effect above, which
+  // only covers "too few results to fill a screen at all"; this covers "scrolled past
+  // what's loaded so far" for the common case where a page fully renders fine on its own.
+  const virtualItems = rowVirtualizer.getVirtualItems();
+  useEffect(() => {
+    const last = virtualItems[virtualItems.length - 1];
+    if (!last) return;
+    if (last.index >= rows.length - 2 && hasNextPage && !isFetchingNextPage) {
+      fetchNextPage();
+    }
+  }, [virtualItems, rows.length, hasNextPage, isFetchingNextPage, fetchNextPage]);
 
   return (
     <section id="doctors" className="bg-slate-50/50 pb-24 pt-10 sm:pt-16 scroll-mt-20">
@@ -367,16 +482,44 @@ export default function DoctorDirectory({
             <p className="text-base font-semibold">{t("directory.lookingBroadly")}</p>
           </div>
         ) : filtered.length > 0 ? (
-          <motion.div
-            layout
-            className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 sm:gap-8"
-          >
-            <AnimatePresence mode="popLayout">
-              {filtered.map((doctor, i) => (
-                <DoctorCard key={doctor.id} doctor={doctor} index={i} />
+          <>
+            <div
+              ref={gridParentRef}
+              style={{ position: "relative", height: rowVirtualizer.getTotalSize() }}
+            >
+              {virtualItems.map((virtualRow) => (
+                <div
+                  key={virtualRow.key}
+                  data-index={virtualRow.index}
+                  ref={rowVirtualizer.measureElement}
+                  style={{
+                    position: "absolute",
+                    top: 0,
+                    left: 0,
+                    width: "100%",
+                    transform: `translateY(${virtualRow.start - rowVirtualizer.options.scrollMargin}px)`,
+                  }}
+                >
+                  <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 sm:gap-8 pb-6 sm:pb-8">
+                    {rows[virtualRow.index]?.map((doctor, colIdx) => (
+                      <DoctorCard
+                        key={doctor.id}
+                        doctor={doctor}
+                        index={colIdx}
+                        reducedMotion={reducedMotion ?? false}
+                      />
+                    ))}
+                  </div>
+                </div>
               ))}
-            </AnimatePresence>
-          </motion.div>
+            </div>
+            {isFetchingNextPage && (
+              <div className="flex items-center justify-center gap-2 py-8 text-slate-400 text-sm">
+                <Loader2 className="w-5 h-5 animate-spin text-brand-teal" />
+                {t("directory.loading")}
+              </div>
+            )}
+          </>
         ) : (
           <motion.div
             initial={{ opacity: 0, scale: 0.97 }}

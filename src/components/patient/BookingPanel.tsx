@@ -16,6 +16,7 @@ import {
   Sunset,
   Moon,
   Star,
+  AlertCircle,
 } from "lucide-react";
 import { getDirectionsUrl, type Doctor } from "@/data/patient";
 import { useCreateAppointment, useDoctorAvailability, useSubmitReview } from "@/lib/api/hooks";
@@ -103,6 +104,7 @@ export default function BookingPanel({ doctor }: BookingPanelProps) {
   const [errors, setErrors] = useState<Record<string, string>>({});
 
   const [submitting, setSubmitting] = useState(false);
+  const [submitError, setSubmitError] = useState<string | null>(null);
   const [serverRef, setServerRef] = useState<string | null>(null);
   const [localBookingId] = useState(() => `NEX-${Math.floor(100000 + Math.random() * 900000)}`);
   const bookingId = serverRef ?? localBookingId;
@@ -165,6 +167,7 @@ export default function BookingPanel({ doctor }: BookingPanelProps) {
     if (!validateDetails()) return;
 
     setSubmitting(true);
+    setSubmitError(null);
     try {
       const selectedRange = TIME_RANGES.find((r) => r.id === timeRange);
       const res = await createAppointment.mutateAsync({
@@ -191,8 +194,15 @@ export default function BookingPanel({ doctor }: BookingPanelProps) {
         addAppointment(res.reference, phone);
       }
       reportEngagement("booking_success");
-    } catch { /* use local id */ }
-    finally { setSubmitting(false); setStep("done"); }
+      // Only reached on a confirmed server response — a thrown error (network/HTTP failure,
+      // exactly what "book from anywhere, any connection" needs to handle) now falls to the
+      // catch block below instead of silently advancing here with a fake local reference.
+      setStep("done");
+    } catch {
+      setSubmitError(t("booking.errorSubmitFailed"));
+    } finally {
+      setSubmitting(false);
+    }
   }
 
   function reset() {
@@ -200,7 +210,7 @@ export default function BookingPanel({ doctor }: BookingPanelProps) {
     setName(""); setAge(""); setSex("Male"); setPhone(""); setEmail(""); setReason("");
     setGuardianName(""); setGuardianRelation(GUARDIAN_RELATIONS[0]);
     setErrors({});
-    setSubmitting(false); setServerRef(null);
+    setSubmitting(false); setSubmitError(null); setServerRef(null);
     setServiceRating(getSavedRating(doctor.id) ?? 0); setServiceRatingSaving(false);
   }
 
@@ -323,6 +333,18 @@ export default function BookingPanel({ doctor }: BookingPanelProps) {
                 <div className="flex items-center justify-center gap-2 py-6 text-slate-400 text-sm">
                   <Loader2 className="w-5 h-5 animate-spin text-brand-teal" />
                   {t("booking.checkingAvailability")}
+                </div>
+              ) : availability.isError ? (
+                <div className="flex flex-col items-center gap-2 py-6 text-slate-400">
+                  <AlertCircle className="w-6 h-6 text-rose-400" />
+                  <p className="text-sm font-semibold text-slate-600">{t("booking.errorCheckingAvailability")}</p>
+                  <button
+                    type="button"
+                    onClick={() => availability.refetch()}
+                    className="text-xs font-bold text-brand-teal underline underline-offset-2"
+                  >
+                    {t("booking.retry")}
+                  </button>
                 </div>
               ) : apiActive && availability.data && !availability.data.isAvailable ? (
                 <div className="flex flex-col items-center gap-1.5 py-6 text-slate-400">
@@ -465,8 +487,15 @@ export default function BookingPanel({ doctor }: BookingPanelProps) {
             <input value={reason} onChange={(e) => setReason(e.target.value)} placeholder={t("booking.reasonPlaceholder")} className={inputCls()} />
           </Field>
 
+          {submitError && (
+            <div className="flex items-start gap-2 p-3 rounded-xl bg-rose-50 border border-rose-200 text-xs text-rose-700 font-semibold">
+              <AlertCircle className="w-4 h-4 shrink-0 mt-0.5" />
+              {submitError}
+            </div>
+          )}
+
           <button type="submit" disabled={submitting} className="w-full py-3.5 rounded-2xl bg-brand-teal text-white font-bold text-sm shadow-md shadow-teal-500/20 hover:bg-brand-teal/90 active:scale-[0.98] transition flex items-center justify-center gap-2 disabled:opacity-50">
-            {submitting ? <><Loader2 className="w-4 h-4 animate-spin" /> {t("booking.bookingInProgress")}</> : <><CheckCircle2 className="w-4 h-4" /> {t("booking.confirmAppointment")}</>}
+            {submitting ? <><Loader2 className="w-4 h-4 animate-spin" /> {t("booking.bookingInProgress")}</> : submitError ? <><AlertCircle className="w-4 h-4" /> {t("booking.retry")}</> : <><CheckCircle2 className="w-4 h-4" /> {t("booking.confirmAppointment")}</>}
           </button>
         </form>
       )}

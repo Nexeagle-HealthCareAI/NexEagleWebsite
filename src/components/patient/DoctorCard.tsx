@@ -13,11 +13,16 @@ import { doctorSlug, formatCount } from "@/data/patient";
 import { useTranslation } from "@/lib/i18n/I18nContext";
 import { translateSpecialty } from "@/lib/i18n/specialties";
 import { useNetworkStatus } from "@/lib/hooks/useNetworkStatus";
+import { cn } from "@/lib/utils";
 
 interface DoctorCardProps {
   doctor: Doctor;
-  /** Grid index — used to stagger entrance animations. */
+  /** Position within its row (0-2) — used to stagger entrance animations. Small and
+   * bounded now that DoctorDirectory.tsx virtualizes by row, not a flat list index. */
   index?: number;
+  /** From framer-motion's useReducedMotion() — disables the entrance stagger, the
+   * infinite spinning discount-ribbon border, and the pulsing "next available" dot. */
+  reducedMotion?: boolean;
 }
 
 // forwardRef because this renders directly inside AnimatePresence for exit
@@ -25,7 +30,7 @@ interface DoctorCardProps {
 // it before it unmounts, which silently fails (and can desync from the SSR
 // pass) unless the component itself forwards that ref through to a DOM node.
 const DoctorCard = forwardRef<HTMLDivElement, DoctorCardProps>(function DoctorCard(
-  { doctor, index = 0 },
+  { doctor, index = 0, reducedMotion = false },
   ref
 ) {
   const { t, locale } = useTranslation();
@@ -35,9 +40,9 @@ const DoctorCard = forwardRef<HTMLDivElement, DoctorCardProps>(function DoctorCa
   return (
     <motion.div
       ref={ref}
-      initial={{ opacity: 0, y: 28 }}
+      initial={reducedMotion ? false : { opacity: 0, y: 28 }}
       animate={{ opacity: 1, y: 0 }}
-      transition={{ duration: 0.42, delay: index * 0.07, ease: [0.22, 1, 0.36, 1] }}
+      transition={reducedMotion ? { duration: 0 } : { duration: 0.42, delay: index * 0.07, ease: [0.22, 1, 0.36, 1] }}
     >
       <Link
         href={`/doctors/${doctorSlug(doctor, doctor.city)}`}
@@ -52,15 +57,19 @@ const DoctorCard = forwardRef<HTMLDivElement, DoctorCardProps>(function DoctorCa
         )}
         {/* Premium Discount Ribbon — High visibility with glowing animated border */}
         {doctor.discountPercent !== undefined && (
-          <motion.div 
-            initial={{ scale: 0.9, opacity: 0 }}
+          <motion.div
+            initial={reducedMotion ? false : { scale: 0.9, opacity: 0 }}
             animate={{ scale: 1, opacity: 1 }}
-            transition={{ delay: (index ?? 0) * 0.07 + 0.3, type: "spring" }}
+            transition={reducedMotion ? { duration: 0 } : { delay: (index ?? 0) * 0.07 + 0.3, type: "spring" }}
             className="absolute top-4 left-4 z-30 group-hover:-translate-y-0.5 transition-transform duration-300"
           >
             <div className="relative overflow-hidden rounded-full p-[1.5px] shadow-[0_4px_20px_-2px_rgba(244,63,94,0.5)]">
-              {/* Spinning conic gradient border effect */}
-              <span className="absolute inset-[-1000%] animate-[spin_4s_linear_infinite] bg-[conic-gradient(from_90deg_at_50%_50%,#fff1f2_0%,#f43f5e_50%,#fff1f2_100%)]" />
+              {/* Spinning conic gradient border effect — a static ring instead when the
+                  visitor prefers reduced motion. */}
+              <span className={cn(
+                "absolute inset-[-1000%] bg-[conic-gradient(from_90deg_at_50%_50%,#fff1f2_0%,#f43f5e_50%,#fff1f2_100%)]",
+                !reducedMotion && "animate-[spin_4s_linear_infinite]"
+              )} />
               {/* Inner gradient pill */}
               <div className="relative flex items-center gap-1 rounded-full bg-gradient-to-r from-rose-500 to-pink-600 px-3 py-1 text-[11px] font-extrabold tracking-widest text-white uppercase backdrop-blur-xl">
                 <Percent className="w-3.5 h-3.5 text-white/90" />
@@ -235,9 +244,9 @@ const DoctorCard = forwardRef<HTMLDivElement, DoctorCardProps>(function DoctorCa
                   <div className="h-1.5 w-full bg-slate-100 rounded-full overflow-hidden">
                     <motion.div
                       className="h-full bg-gradient-to-r from-emerald-400 to-teal-500 rounded-full"
-                      initial={{ width: "0%" }}
+                      initial={reducedMotion ? { width: `${doctor.recommendationPct}%` } : { width: "0%" }}
                       animate={{ width: `${doctor.recommendationPct}%` }}
-                      transition={{ duration: 0.9, delay: index * 0.07 + 0.35, ease: "easeOut" }}
+                      transition={reducedMotion ? { duration: 0 } : { duration: 0.9, delay: index * 0.07 + 0.35, ease: "easeOut" }}
                     />
                   </div>
                 </div>
@@ -294,9 +303,11 @@ const DoctorCard = forwardRef<HTMLDivElement, DoctorCardProps>(function DoctorCa
             <div className="flex items-center justify-between gap-3 mb-3">
               {doctor.nextAvailable ? (
                 <span className="inline-flex items-center gap-1.5 text-[11px] font-bold text-emerald-700">
-                  {/* Pulsing live dot */}
+                  {/* Pulsing live dot — static when the visitor prefers reduced motion */}
                   <span className="relative flex h-2 w-2">
-                    <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75" />
+                    {!reducedMotion && (
+                      <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75" />
+                    )}
                     <span className="relative inline-flex rounded-full h-2 w-2 bg-emerald-500" />
                   </span>
                   {doctor.nextAvailable}
@@ -332,8 +343,8 @@ const DoctorCard = forwardRef<HTMLDivElement, DoctorCardProps>(function DoctorCa
             <div className="w-full py-3 rounded-xl bg-slate-900 group-hover:bg-brand-teal text-white text-sm font-bold shadow-[0_4px_14px_0_rgba(15,23,42,0.18)] group-hover:shadow-[0_8px_25px_-5px_rgba(20,184,166,0.4)] transition-all duration-500 flex items-center justify-center gap-2">
               Book Appointment
               <motion.span
-                animate={{ x: [0, 4, 0] }}
-                transition={{ repeat: Infinity, duration: 1.8, ease: "easeInOut", repeatDelay: 0.4 }}
+                animate={reducedMotion ? {} : { x: [0, 4, 0] }}
+                transition={reducedMotion ? { duration: 0 } : { repeat: Infinity, duration: 1.8, ease: "easeInOut", repeatDelay: 0.4 }}
                 className="opacity-50 group-hover:opacity-100 transition-opacity duration-300"
               >
                 <ArrowRight className="w-4 h-4" />

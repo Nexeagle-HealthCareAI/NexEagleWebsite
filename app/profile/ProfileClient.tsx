@@ -3,7 +3,7 @@
 import { useState } from "react";
 import PatientTopBar from "@/components/patient/PatientTopBar";
 import PhoneVerification from "@/components/patient/PhoneVerification";
-import { User, Shield, HelpCircle, LogOut, ChevronRight, LogIn } from "lucide-react";
+import { User, Shield, HelpCircle, LogOut, ChevronRight, LogIn, FolderHeart } from "lucide-react";
 import Link from "next/link";
 import { usePatientAuth } from "@/hooks/usePatientAuth";
 
@@ -80,6 +80,16 @@ export default function ProfileClient() {
                 </div>
                 <div className="flex-1">
                   <span className="block font-semibold text-slate-900 text-sm">My Appointments</span>
+                </div>
+                <ChevronRight className="w-4 h-4 text-slate-300" />
+              </Link>
+
+              <Link href="/profile/health-locker" className="flex items-center gap-4 p-5 hover:bg-slate-50 transition-colors border-b border-slate-100 active:bg-slate-100">
+                <div className="w-10 h-10 rounded-xl bg-slate-50 flex items-center justify-center text-slate-400">
+                  <FolderHeart className="w-5 h-5" />
+                </div>
+                <div className="flex-1">
+                  <span className="block font-semibold text-slate-900 text-sm">Health Locker</span>
                 </div>
                 <ChevronRight className="w-4 h-4 text-slate-300" />
               </Link>

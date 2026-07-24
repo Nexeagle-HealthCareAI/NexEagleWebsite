@@ -146,7 +146,12 @@ export default async function DoctorDetailPage({ params }: PageProps) {
           },
         }
       : {}),
-    ...(doctor.rating && doctor.reviewCount
+    // NEX-10: 5+ genuine reviews required before publishing AggregateRating —
+    // a handful of reviews reads as statistically meaningless (or manipulated)
+    // to both Google's guidelines and a skeptical patient. Sourced live from
+    // doctor.rating/reviewCount (real submitted reviews, see mappers.ts), so
+    // this naturally updates as more reviews come in — nothing to maintain.
+    ...(doctor.rating && doctor.reviewCount && doctor.reviewCount >= 5
       ? {
           aggregateRating: {
             "@type": "AggregateRating",
