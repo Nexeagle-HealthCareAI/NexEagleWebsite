@@ -5,7 +5,7 @@ import Link from "next/link";
 import Image from "next/image";
 import { motion } from "framer-motion";
 import {
-  BadgeCheck, MapPin, Award, CalendarCheck, Star,
+  BadgeCheck, MapPin, Award, CalendarCheck, CalendarX, Star,
   Clock, Users, ThumbsUp, Languages, ArrowRight, Percent,
 } from "lucide-react";
 import type { Doctor } from "@/data/patient";
@@ -301,7 +301,23 @@ const DoctorCard = forwardRef<HTMLDivElement, DoctorCardProps>(function DoctorCa
           <div className="mt-auto pt-5">
             {/* Next-available + fee */}
             <div className="flex items-center justify-between gap-3 mb-3">
-              {doctor.nextAvailable ? (
+              {doctor.isAvailableToday === false ? (
+                <span className="inline-flex items-center gap-1.5 text-[11px] font-bold text-slate-500">
+                  <CalendarX className="w-3.5 h-3.5" />
+                  Not available today
+                </span>
+              ) : doctor.isAvailableToday === true ? (
+                <span className="inline-flex items-center gap-1.5 text-[11px] font-bold text-emerald-700">
+                  {/* Pulsing live dot — static when the visitor prefers reduced motion */}
+                  <span className="relative flex h-2 w-2">
+                    {!reducedMotion && (
+                      <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75" />
+                    )}
+                    <span className="relative inline-flex rounded-full h-2 w-2 bg-emerald-500" />
+                  </span>
+                  Available today
+                </span>
+              ) : doctor.nextAvailable ? (
                 <span className="inline-flex items-center gap-1.5 text-[11px] font-bold text-emerald-700">
                   {/* Pulsing live dot — static when the visitor prefers reduced motion */}
                   <span className="relative flex h-2 w-2">

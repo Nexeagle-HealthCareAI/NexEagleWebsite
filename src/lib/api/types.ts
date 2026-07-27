@@ -55,6 +55,9 @@ export interface DoctorDto {
   // Set by a CMS admin only after manually confirming this doctor's registration against the
   // NMC's Indian Medical Register — drives the "Verified profile" badge (see mapDoctor below).
   isRegistrationVerified?: boolean;
+  // TimeOff > Override > Template precedence resolved for today's date, batched per page —
+  // drives the directory card's "Available today" / "Not available today" badge.
+  isAvailableToday?: boolean;
 }
 
 export interface DoctorsResponseDto {

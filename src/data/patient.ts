@@ -63,7 +63,11 @@ export interface Doctor {
   distanceKm?: number;    // Computed by the frontend during spatial search
   /** Estimated driving duration in minutes from OSRM. Computed client-side. */
   drivingDurationMin?: number;
-  nextAvailable: string;  // human label, e.g. "Today, 4:30 PM"
+  nextAvailable: string;  // human label, e.g. "Today, 4:30 PM" — mock data only, see isAvailableToday
+  // TimeOff > Override > Template precedence resolved for today's date — real API only, undefined
+  // for mock data (same optional/hide-when-absent convention as the other real-only fields above).
+  // Drives the card's live "Available today" / "Not available today" badge.
+  isAvailableToday?: boolean;
   verified: boolean;
   promoted: boolean;      // "featured" / top-of-list placement
   about: string;
