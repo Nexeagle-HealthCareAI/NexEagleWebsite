@@ -109,6 +109,16 @@ const DoctorCard = forwardRef<HTMLDivElement, DoctorCardProps>(function DoctorCa
                   <BadgeCheck className="w-3.5 h-3.5 text-brand-teal" />
                 </span>
               )}
+              {/* "Online now" — manual, doctor/staff-set presence signal, distinct from the
+                  schedule-derived "Available today" badge in the footer below. */}
+              {doctor.isOnlineNow && (
+                <span className="absolute -top-1.5 -left-1.5 flex h-4 w-4 items-center justify-center" title={t("doctorCard.onlineNow")}>
+                  {!reducedMotion && (
+                    <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75" />
+                  )}
+                  <span className="relative inline-flex h-3 w-3 rounded-full bg-emerald-500 border-2 border-white" />
+                </span>
+              )}
             </div>
 
             {/* Text block */}

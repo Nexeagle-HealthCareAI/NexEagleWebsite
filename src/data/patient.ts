@@ -68,6 +68,10 @@ export interface Doctor {
   // for mock data (same optional/hide-when-absent convention as the other real-only fields above).
   // Drives the card's live "Available today" / "Not available today" badge.
   isAvailableToday?: boolean;
+  // Manual, doctor/staff-set "online now" toggle — real API only, undefined for mock data
+  // (same optional/hide-when-absent convention as isAvailableToday above). Drives a distinct
+  // "Online now" pulsing-dot indicator on the avatar, separate from isAvailableToday.
+  isOnlineNow?: boolean;
   verified: boolean;
   promoted: boolean;      // "featured" / top-of-list placement
   about: string;

@@ -58,6 +58,9 @@ export interface DoctorDto {
   // TimeOff > Override > Template precedence resolved for today's date, batched per page —
   // drives the directory card's "Available today" / "Not available today" badge.
   isAvailableToday?: boolean;
+  // Manual, doctor/staff-set "online now" toggle (Doctor.IsOnlineNow) — separate from
+  // isAvailableToday's schedule-derived status. Drives a distinct "Online now" badge.
+  isOnlineNow?: boolean;
 }
 
 export interface DoctorsResponseDto {

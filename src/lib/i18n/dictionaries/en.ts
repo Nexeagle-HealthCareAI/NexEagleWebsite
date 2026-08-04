@@ -69,6 +69,7 @@ export const en = {
   "doctorCard.mapNotSet": "Map not set",
   "doctorCard.kmAway": "{km} away",
   "doctorCard.featured": "Featured",
+  "doctorCard.onlineNow": "Online now",
 
   // ── Doctor detail page chrome ────────────────────────────────────────────
   "doctorDetail.allDoctors": "All Doctors",
