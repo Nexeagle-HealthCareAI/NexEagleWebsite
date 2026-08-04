@@ -119,9 +119,9 @@ function buildToolSchema() {
 export interface SearchIntent {
   specialtyId: string | null;
   /** Full ordered candidate list (specialtyId is always specialtyIds[0]) — the NLP router
-   * surfaces close-margin runner-ups (see build_candidates() in Model_1_Doctor_Dekho.py)
-   * rather than forcing a single overconfident pick; the Anthropic fallback only ever
-   * produces one, so this is just [specialtyId] on that path. */
+   * surfaces close-margin runner-ups (see build_candidates() in the 1HMS-NLP-Router repo's
+   * nlp_brain/candidates.py) rather than forcing a single overconfident pick; the Anthropic
+   * fallback only ever produces one, so this is just [specialtyId] on that path. */
   specialtyIds: string[];
   city: string | null;
   keywords: string[];

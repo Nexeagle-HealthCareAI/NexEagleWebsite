@@ -308,7 +308,8 @@ export default function DoctorDirectory({
           // Full candidate set the router considered, not just the top pick — lets the
           // feedback-log correlation (CMSAPI SymptomRouterRepository) tell a genuine
           // misprediction apart from a booking that landed on a close-call runner-up we
-          // deliberately showed. See CANDIDATE_MARGIN in Model_1_Doctor_Dekho.py.
+          // deliberately showed. See CANDIDATE_MARGIN in the 1HMS-NLP-Router repo's
+          // nlp_brain/config.py.
           candidateSpecialtyIds:
             usingAiResults && aiIntent && aiIntent.specialtyIds.length > 1
               ? aiIntent.specialtyIds
