@@ -312,12 +312,15 @@ const DoctorCard = forwardRef<HTMLDivElement, DoctorCardProps>(function DoctorCa
             {/* Next-available + fee */}
             <div className="flex items-center justify-between gap-3 mb-3">
               {doctor.isAvailableToday === false ? (
-                <span className="inline-flex items-center gap-1.5 text-[11px] font-bold text-slate-500">
+                <span className="inline-flex items-center gap-1.5 text-[11px] font-bold text-red-600 bg-red-50 px-2 py-1 rounded-full">
+                  <span className="relative flex h-2 w-2 shrink-0">
+                    <span className="relative inline-flex rounded-full h-2 w-2 bg-red-500" />
+                  </span>
                   <CalendarX className="w-3.5 h-3.5" />
                   Not available today
                 </span>
               ) : doctor.isAvailableToday === true ? (
-                <span className="inline-flex items-center gap-1.5 text-[11px] font-bold text-emerald-700">
+                <span className="inline-flex items-center gap-1.5 text-[11px] font-bold text-emerald-700 bg-emerald-50 px-2 py-1 rounded-full">
                   {/* Pulsing live dot — static when the visitor prefers reduced motion */}
                   <span className="relative flex h-2 w-2">
                     {!reducedMotion && (
@@ -328,7 +331,7 @@ const DoctorCard = forwardRef<HTMLDivElement, DoctorCardProps>(function DoctorCa
                   Available today
                 </span>
               ) : doctor.nextAvailable ? (
-                <span className="inline-flex items-center gap-1.5 text-[11px] font-bold text-emerald-700">
+                <span className="inline-flex items-center gap-1.5 text-[11px] font-bold text-emerald-700 bg-emerald-50 px-2 py-1 rounded-full">
                   {/* Pulsing live dot — static when the visitor prefers reduced motion */}
                   <span className="relative flex h-2 w-2">
                     {!reducedMotion && (
@@ -339,7 +342,7 @@ const DoctorCard = forwardRef<HTMLDivElement, DoctorCardProps>(function DoctorCa
                   {doctor.nextAvailable}
                 </span>
               ) : (
-                <span className="inline-flex items-center gap-1 text-[11px] font-semibold text-emerald-600">
+                <span className="inline-flex items-center gap-1 text-[11px] font-semibold text-emerald-600 bg-emerald-50 px-2 py-1 rounded-full">
                   <CalendarCheck className="w-3.5 h-3.5" />
                   Accepting patients
                 </span>
