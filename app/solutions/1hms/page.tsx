@@ -7,6 +7,7 @@ import AnalyticsTracker from "@/components/AnalyticsTracker";
 
 const HospitalSolutions = dynamic(() => import("@/components/home/HospitalSolutions"), { ssr: false });
 const HMSWorkflowAnimation = dynamic(() => import("@/components/home/HMSWorkflowAnimation"), { ssr: false });
+const DeferredLiveChat = dynamic(() => import("@/components/DeferredLiveChat"), { ssr: false });
 
 export const metadata: Metadata = {
   title: "1HMS - Complete Hospital Management System & EMR Software",
@@ -203,6 +204,8 @@ export default function OneHMSPage() {
 
       {/* Content Section */}
       <HospitalSolutions />
+
+      <DeferredLiveChat />
     </main>
   );
 }

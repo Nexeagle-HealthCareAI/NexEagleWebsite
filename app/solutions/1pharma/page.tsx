@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import AnalyticsTracker from "@/components/AnalyticsTracker";
+import DeferredLiveChat from "@/components/DeferredLiveChat";
 
 export const metadata: Metadata = {
   title: "1Pharma - Retail Pharmacy & Hospital Inventory Management System",
@@ -73,6 +74,8 @@ export default function OnePharmaPage() {
         </h1>
         <p className="text-xl text-muted-foreground">Pharmacy Management System page coming soon...</p>
       </div>
+
+      <DeferredLiveChat />
     </main>
   );
 }
