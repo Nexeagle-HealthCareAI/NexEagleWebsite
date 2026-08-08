@@ -308,7 +308,8 @@ export default function DoctorDirectory({
           // Full candidate set the router considered, not just the top pick — lets the
           // feedback-log correlation (CMSAPI SymptomRouterRepository) tell a genuine
           // misprediction apart from a booking that landed on a close-call runner-up we
-          // deliberately showed. See CANDIDATE_MARGIN in Model_1_Doctor_Dekho.py.
+          // deliberately showed. See CANDIDATE_MARGIN in the 1HMS-NLP-Router repo's
+          // nlp_brain/config.py.
           candidateSpecialtyIds:
             usingAiResults && aiIntent && aiIntent.specialtyIds.length > 1
               ? aiIntent.specialtyIds
@@ -340,11 +341,23 @@ export default function DoctorDirectory({
     return chunks;
   }, [filtered, columns]);
 
+  // useWindowVirtualizer needs a real browser window to know what's actually visible —
+  // on the server (and on the client's very first render, before hydration completes)
+  // there isn't one, so it renders zero virtual items. Left unguarded, that means crawlers
+  // (and anyone whose JS hasn't run yet) see an empty grid — exactly the empty-shell problem
+  // this whole SSR effort exists to fix. `isMounted` gates which rendering path is used:
+  // the full, unvirtualized list until mount (matching server output exactly, so no
+  // hydration mismatch), then virtualized rendering once a real window exists to measure.
+  const [isMounted, setIsMounted] = useState(false);
+  useEffect(() => {
+    setIsMounted(true);
+  }, []);
+
   const gridParentRef = useRef<HTMLDivElement | null>(null);
   const [gridParentOffset, setGridParentOffset] = useState(0);
   useEffect(() => {
     setGridParentOffset(gridParentRef.current?.offsetTop ?? 0);
-  }, [isLoading]);
+  }, [isLoading, isMounted]);
 
   const rowVirtualizer = useWindowVirtualizer({
     count: rows.length,
@@ -483,25 +496,14 @@ export default function DoctorDirectory({
           </div>
         ) : filtered.length > 0 ? (
           <>
-            <div
-              ref={gridParentRef}
-              style={{ position: "relative", height: rowVirtualizer.getTotalSize() }}
-            >
-              {virtualItems.map((virtualRow) => (
-                <div
-                  key={virtualRow.key}
-                  data-index={virtualRow.index}
-                  ref={rowVirtualizer.measureElement}
-                  style={{
-                    position: "absolute",
-                    top: 0,
-                    left: 0,
-                    width: "100%",
-                    transform: `translateY(${virtualRow.start - rowVirtualizer.options.scrollMargin}px)`,
-                  }}
-                >
-                  <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 sm:gap-8 pb-6 sm:pb-8">
-                    {rows[virtualRow.index]?.map((doctor, colIdx) => (
+            {!isMounted ? (
+              // Server render + first client paint: full list, no virtualization — this is
+              // what crawlers and pre-hydration users actually see, and it must match between
+              // server and client exactly to avoid a hydration mismatch.
+              <div className="flex flex-col gap-6 sm:gap-8 pb-6 sm:pb-8">
+                {rows.map((row, rowIdx) => (
+                  <div key={rowIdx} className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 sm:gap-8">
+                    {row.map((doctor, colIdx) => (
                       <DoctorCard
                         key={doctor.id}
                         doctor={doctor}
@@ -510,9 +512,40 @@ export default function DoctorDirectory({
                       />
                     ))}
                   </div>
-                </div>
-              ))}
-            </div>
+                ))}
+              </div>
+            ) : (
+              <div
+                ref={gridParentRef}
+                style={{ position: "relative", height: rowVirtualizer.getTotalSize() }}
+              >
+                {virtualItems.map((virtualRow) => (
+                  <div
+                    key={virtualRow.key}
+                    data-index={virtualRow.index}
+                    ref={rowVirtualizer.measureElement}
+                    style={{
+                      position: "absolute",
+                      top: 0,
+                      left: 0,
+                      width: "100%",
+                      transform: `translateY(${virtualRow.start - rowVirtualizer.options.scrollMargin}px)`,
+                    }}
+                  >
+                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 sm:gap-8 pb-6 sm:pb-8">
+                      {rows[virtualRow.index]?.map((doctor, colIdx) => (
+                        <DoctorCard
+                          key={doctor.id}
+                          doctor={doctor}
+                          index={colIdx}
+                          reducedMotion={reducedMotion ?? false}
+                        />
+                      ))}
+                    </div>
+                  </div>
+                ))}
+              </div>
+            )}
             {isFetchingNextPage && (
               <div className="flex items-center justify-center gap-2 py-8 text-slate-400 text-sm">
                 <Loader2 className="w-5 h-5 animate-spin text-brand-teal" />

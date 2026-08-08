@@ -37,7 +37,11 @@ const LiveChat = () => {
   const [sessionId, setSessionId] = useState<string | null>(null);
   const [chatMessages, setChatMessages] = useState<ChatMessage[]>([]);
   const [isConnected, setIsConnected] = useState(false);
+  const [connectFailed, setConnectFailed] = useState(false);
+  const [retryToken, setRetryToken] = useState(0);
+  const [unreadCount, setUnreadCount] = useState(0);
   const messagesEndRef = useRef<HTMLDivElement>(null);
+  const messageInputRef = useRef<HTMLInputElement>(null);
 
   const scrollToBottom = () => {
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
@@ -47,11 +51,26 @@ const LiveChat = () => {
     scrollToBottom();
   }, [chatMessages]);
 
+  // Only messages that arrive while the panel isn't fully visible count as "unread"; clear
+  // the badge the moment the guest can actually see the transcript again.
+  useEffect(() => {
+    if (isOpen && !isMinimized) setUnreadCount(0);
+  }, [isOpen, isMinimized, chatMessages.length]);
+
+  // Auto-focus so a returning/reconnecting guest can start typing immediately.
+  useEffect(() => {
+    if (isOpen && !isMinimized && isRegistered && isConnected) {
+      messageInputRef.current?.focus();
+    }
+  }, [isOpen, isMinimized, isRegistered, isConnected]);
+
   // Build, start and own the SignalR connection while the widget is open and the guest is
   // registered. Tearing it down on close/unmount (and rebuilding on reopen) fixes the leak
   // and gives a recovery path after a permanent disconnect.
   useEffect(() => {
     if (!isOpen || !isRegistered) return;
+
+    setConnectFailed(false);
 
     const guestId = localStorage.getItem("nex_eagle_guest_id") || uuidv4();
     localStorage.setItem("nex_eagle_guest_id", guestId);
@@ -93,6 +112,7 @@ const LiveChat = () => {
     conn.on("ReceiveMessage", (msg: ChatMessage) => {
       if (msg.sessionId) setSessionId(msg.sessionId);
       setChatMessages((prev) => [...prev, msg]);
+      if (msg.senderType !== "Guest") setUnreadCount((c) => c + 1);
     });
 
     conn.on("SessionClosed", () => {
@@ -112,7 +132,12 @@ const LiveChat = () => {
       setIsConnected(true);
       joinSession();
     });
-    conn.onclose(() => setIsConnected(false));
+    // Fires once automatic-reconnect attempts are exhausted (or the connection never opened) —
+    // at that point SignalR has given up, so surface a manual retry instead of a silent hang.
+    conn.onclose(() => {
+      setIsConnected(false);
+      setConnectFailed(true);
+    });
 
     let cancelled = false;
     conn
@@ -124,7 +149,9 @@ const LiveChat = () => {
       })
       .catch((e) => {
         console.error("Connection failed: ", e);
+        if (cancelled) return;
         setIsConnected(false);
+        setConnectFailed(true);
       });
 
     setConnection(conn);
@@ -136,7 +163,7 @@ const LiveChat = () => {
       setSessionId(null);
       conn.stop().catch(() => {});
     };
-  }, [isOpen, isRegistered]);
+  }, [isOpen, isRegistered, retryToken]);
 
   // A guest may only post once the server has assigned a session id; never invent one.
   const sendText = async (text: string): Promise<boolean> => {
@@ -172,19 +199,27 @@ const LiveChat = () => {
     return (
       <button
         onClick={() => setIsOpen(true)}
-        className="fixed bottom-6 right-6 z-50 w-16 h-16 rounded-full bg-gradient-to-br from-blue-600 to-blue-700 text-white shadow-2xl hover:shadow-blue-500/50 hover:scale-110 transition-all duration-300 flex items-center justify-center group"
-        aria-label="Open chat"
+        className="fixed bottom-4 right-4 sm:bottom-6 sm:right-6 z-50 w-16 h-16 rounded-full bg-gradient-to-br from-blue-600 to-blue-700 text-white shadow-2xl hover:shadow-blue-500/50 hover:scale-110 transition-all duration-300 flex items-center justify-center group"
+        aria-label={unreadCount > 0 ? `Open chat, ${unreadCount} unread message${unreadCount === 1 ? "" : "s"}` : "Open chat"}
       >
         <MessageCircle className="w-7 h-7 group-hover:scale-110 transition-transform" />
-        <div className="absolute -top-1 -right-1 w-4 h-4 bg-green-500 rounded-full border-2 border-white animate-pulse"></div>
+        {unreadCount > 0 ? (
+          <div className="absolute -top-1 -right-1 min-w-[20px] h-5 px-1 rounded-full bg-red-500 border-2 border-white flex items-center justify-center text-[10px] font-bold leading-none">
+            {unreadCount > 9 ? "9+" : unreadCount}
+          </div>
+        ) : (
+          <div className="absolute -top-1 -right-1 w-4 h-4 bg-green-500 rounded-full border-2 border-white animate-pulse"></div>
+        )}
       </button>
     );
   }
 
   return (
     <div
-      className={`fixed bottom-6 right-6 z-50 w-96 bg-white rounded-2xl shadow-2xl border-2 border-slate-200 flex flex-col transition-all duration-300 ${
-        isMinimized ? "h-16" : "h-[600px]"
+      className={`fixed z-50 bg-white rounded-2xl shadow-2xl border-2 border-slate-200 flex flex-col transition-all duration-300 ${
+        isMinimized
+          ? "bottom-4 right-4 left-4 sm:left-auto sm:bottom-6 sm:right-6 sm:w-96 h-16"
+          : "left-4 right-4 top-20 bottom-4 sm:left-auto sm:top-auto sm:bottom-6 sm:right-6 sm:w-96 sm:h-[600px]"
       }`}
     >
       {/* Header */}
@@ -195,6 +230,11 @@ const LiveChat = () => {
               <MessageCircle className="w-5 h-5 text-blue-600" />
             </div>
             <div className="absolute bottom-0 right-0 w-3 h-3 bg-green-500 rounded-full border-2 border-white"></div>
+            {isMinimized && unreadCount > 0 && (
+              <div className="absolute -top-1 -right-1 min-w-[18px] h-[18px] px-1 rounded-full bg-red-500 border-2 border-white flex items-center justify-center text-[9px] font-bold leading-none text-white">
+                {unreadCount > 9 ? "9+" : unreadCount}
+              </div>
+            )}
           </div>
           <div>
             <h3 className="font-bold text-white">NexEagle Support</h3>
@@ -232,6 +272,7 @@ const LiveChat = () => {
                    value={guestName}
                    onChange={e => setGuestName(e.target.value)}
                    className="h-10"
+                   autoFocus
                  />
                  <Input
                    placeholder="Your Email (Optional)"
@@ -302,14 +343,40 @@ const LiveChat = () => {
             )}
           </div>
 
+          {/* Connection error */}
+          {connectFailed && (
+            <div className="px-4 pt-3 shrink-0">
+              <div className="flex items-center justify-between gap-3 rounded-xl border border-red-200 bg-red-50 px-3 py-2">
+                <p className="text-xs text-red-600">
+                  Couldn&apos;t connect to support. Check your connection and try again.
+                </p>
+                <button
+                  onClick={() => setRetryToken((t) => t + 1)}
+                  className="shrink-0 text-xs font-semibold text-red-700 hover:text-red-800 underline underline-offset-2"
+                >
+                  Retry
+                </button>
+              </div>
+            </div>
+          )}
+
           {/* Input Area */}
           <div className="p-4 border-t border-slate-200 bg-white rounded-b-2xl shrink-0">
             <div className="flex gap-2">
               <Input
+                ref={messageInputRef}
                 value={message}
                 onChange={(e) => setMessage(e.target.value)}
                 onKeyDown={(e) => e.key === "Enter" && handleSendMessage()}
-                placeholder={!isConnected ? "Connecting to support..." : !sessionId ? "Starting session..." : "Type your message..."}
+                placeholder={
+                  connectFailed
+                    ? "Connection failed — tap retry above"
+                    : !isConnected
+                    ? "Connecting to support..."
+                    : !sessionId
+                    ? "Starting session..."
+                    : "Type your message..."
+                }
                 className="flex-1 h-10 border-2 border-slate-200 focus:border-blue-500"
                 disabled={!isConnected}
               />

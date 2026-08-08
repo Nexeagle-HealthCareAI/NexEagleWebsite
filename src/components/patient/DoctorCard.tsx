@@ -5,7 +5,7 @@ import Link from "next/link";
 import Image from "next/image";
 import { motion } from "framer-motion";
 import {
-  BadgeCheck, MapPin, Award, CalendarCheck, Star,
+  BadgeCheck, MapPin, Award, CalendarCheck, CalendarX, Star,
   Clock, Users, ThumbsUp, Languages, ArrowRight, Percent,
 } from "lucide-react";
 import type { Doctor } from "@/data/patient";
@@ -107,6 +107,16 @@ const DoctorCard = forwardRef<HTMLDivElement, DoctorCardProps>(function DoctorCa
               {doctor.verified && (
                 <span className="absolute -bottom-2 -right-2 w-6 h-6 rounded-full bg-white border-2 border-white shadow flex items-center justify-center">
                   <BadgeCheck className="w-3.5 h-3.5 text-brand-teal" />
+                </span>
+              )}
+              {/* "Online now" — manual, doctor/staff-set presence signal, distinct from the
+                  schedule-derived "Available today" badge in the footer below. */}
+              {doctor.isOnlineNow && (
+                <span className="absolute -top-1.5 -left-1.5 flex h-4 w-4 items-center justify-center" title={t("doctorCard.onlineNow")}>
+                  {!reducedMotion && (
+                    <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75" />
+                  )}
+                  <span className="relative inline-flex h-3 w-3 rounded-full bg-emerald-500 border-2 border-white" />
                 </span>
               )}
             </div>
@@ -301,8 +311,27 @@ const DoctorCard = forwardRef<HTMLDivElement, DoctorCardProps>(function DoctorCa
           <div className="mt-auto pt-5">
             {/* Next-available + fee */}
             <div className="flex items-center justify-between gap-3 mb-3">
-              {doctor.nextAvailable ? (
-                <span className="inline-flex items-center gap-1.5 text-[11px] font-bold text-emerald-700">
+              {doctor.isAvailableToday === false ? (
+                <span className="inline-flex items-center gap-1.5 text-[11px] font-bold text-red-600 bg-red-50 px-2 py-1 rounded-full">
+                  <span className="relative flex h-2 w-2 shrink-0">
+                    <span className="relative inline-flex rounded-full h-2 w-2 bg-red-500" />
+                  </span>
+                  <CalendarX className="w-3.5 h-3.5" />
+                  Not available today
+                </span>
+              ) : doctor.isAvailableToday === true ? (
+                <span className="inline-flex items-center gap-1.5 text-[11px] font-bold text-emerald-700 bg-emerald-50 px-2 py-1 rounded-full">
+                  {/* Pulsing live dot — static when the visitor prefers reduced motion */}
+                  <span className="relative flex h-2 w-2">
+                    {!reducedMotion && (
+                      <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75" />
+                    )}
+                    <span className="relative inline-flex rounded-full h-2 w-2 bg-emerald-500" />
+                  </span>
+                  Available today
+                </span>
+              ) : doctor.nextAvailable ? (
+                <span className="inline-flex items-center gap-1.5 text-[11px] font-bold text-emerald-700 bg-emerald-50 px-2 py-1 rounded-full">
                   {/* Pulsing live dot — static when the visitor prefers reduced motion */}
                   <span className="relative flex h-2 w-2">
                     {!reducedMotion && (
@@ -313,7 +342,7 @@ const DoctorCard = forwardRef<HTMLDivElement, DoctorCardProps>(function DoctorCa
                   {doctor.nextAvailable}
                 </span>
               ) : (
-                <span className="inline-flex items-center gap-1 text-[11px] font-semibold text-emerald-600">
+                <span className="inline-flex items-center gap-1 text-[11px] font-semibold text-emerald-600 bg-emerald-50 px-2 py-1 rounded-full">
                   <CalendarCheck className="w-3.5 h-3.5" />
                   Accepting patients
                 </span>

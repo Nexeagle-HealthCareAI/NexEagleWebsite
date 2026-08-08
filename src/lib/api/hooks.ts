@@ -78,12 +78,16 @@ interface DoctorsPage {
 // Backs DoctorDirectory.tsx's results grid via React Query's useInfiniteQuery — pages
 // are fetched 24 at a time as the user scrolls (fetchNextPage), instead of the old
 // useDoctors() pulling the entire platform-wide directory into the DOM at once. `seed`
-// (server-fetched initialDoctors, same prop as useDoctors above) only pre-populates page
-// 1 when no filter is active — a filtered/deep-linked view (e.g. a specialty+city page)
-// wasn't what `seed` was fetched for, so it starts from a normal loading state instead.
+// (server-fetched initialDoctors, same prop as useDoctors above) is ALWAYS the seed for
+// page 1, filtered or not — every specialty/condition/hospital page passes a seed that's
+// already been filtered server-side to match that exact page (see src/lib/filters/
+// doctorLocation.ts), so discarding it whenever a filter is active would mean every one
+// of those ~400 SSR'd pages falls back to a genuine loading state on first paint —
+// exactly the empty-shell-for-crawlers problem this project exists to fix. `seed !==
+// undefined` (not a truthiness/length check) so a legitimately-empty filtered result
+// (0 real doctors for this specialty+city) is still treated as real seed data, not "no
+// data yet" — same class of bug as DoctorDirectory's own hasSeedData fix, one layer down.
 export function usePaginatedDoctors(filters: DoctorsFilterParams, seed?: Doctor[]) {
-  const hasNoFilters = !filters.city && !filters.state && !filters.specialtyCategory && !filters.search;
-
   const query = useInfiniteQuery<DoctorsPage>({
     queryKey: ["public", "doctors", "paginated", filters],
     initialPageParam: 1,
@@ -104,7 +108,7 @@ export function usePaginatedDoctors(filters: DoctorsFilterParams, seed?: Doctor[
       return loaded < lastPage.totalCount ? allPages.length + 1 : undefined;
     },
     initialData:
-      hasNoFilters && seed && seed.length > 0
+      seed !== undefined
         ? {
             pages: [{ doctors: seed.slice(0, DOCTORS_PAGE_SIZE), notConfigured: false, totalCount: seed.length }],
             pageParams: [1],

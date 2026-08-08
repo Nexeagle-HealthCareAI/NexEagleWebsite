@@ -57,6 +57,7 @@ export const hinglish: Record<keyof typeof en, string> = {
   "doctorCard.mapNotSet": "Map set nahi hai",
   "doctorCard.kmAway": "{km} door",
   "doctorCard.featured": "Featured",
+  "doctorCard.onlineNow": "Abhi online",
 
   "doctorDetail.allDoctors": "Sabhi Doctors",
   "doctorDetail.yearsExperience": "saal ka experience",

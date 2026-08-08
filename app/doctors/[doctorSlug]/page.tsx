@@ -23,7 +23,10 @@ async function resolveDoctor(slug: string): Promise<Doctor | null> {
 
 async function getSimilarDoctors(doctor: Doctor): Promise<Doctor[]> {
   try {
-    const result = await easyhmsFetch<DoctorsResponseDto>("/public/doctors");
+    // pageSize=2000 — /public/doctors now defaults to 24 (paginated browsing UI); this needs
+    // the whole directory to genuinely find same-specialty/same-city matches, not just
+    // whichever 24 the API's default order happens to return. See server.ts's getAllDoctors.
+    const result = await easyhmsFetch<DoctorsResponseDto>("/public/doctors?pageSize=2000");
     let allDoctors = mockDoctors;
     if (!result.notConfigured && result.data) {
       allDoctors = mapDoctors(result.data.doctors);
@@ -40,7 +43,10 @@ async function getSimilarDoctors(doctor: Doctor): Promise<Doctor[]> {
 export async function generateStaticParams() {
   let slugs: string[] = [];
   try {
-    const result = await easyhmsFetch<DoctorsResponseDto>("/public/doctors");
+    // pageSize=2000 — without this, the new default (24) would silently truncate which
+    // doctor profile pages get statically generated as the real directory grows past one
+    // page of results. See server.ts's getAllDoctors / getDoctorById for the same fix.
+    const result = await easyhmsFetch<DoctorsResponseDto>("/public/doctors?pageSize=2000");
     if (result.notConfigured || !result.data) {
       slugs = mockDoctors.map((d) => doctorSlug(d, d.city));
     } else {

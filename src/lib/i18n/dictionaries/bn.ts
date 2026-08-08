@@ -55,6 +55,7 @@ export const bn: Record<keyof typeof en, string> = {
   "doctorCard.mapNotSet": "মানচিত্র নেই",
   "doctorCard.kmAway": "{km} দূরে",
   "doctorCard.featured": "বিশেষ",
+  "doctorCard.onlineNow": "এখন অনলাইন",
 
   "doctorDetail.allDoctors": "সব ডাক্তার",
   "doctorDetail.yearsExperience": "বছরের অভিজ্ঞতা",

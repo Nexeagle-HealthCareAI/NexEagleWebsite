@@ -162,6 +162,8 @@ export function mapDoctor(dto: DoctorDto): Doctor {
     latitude: dto.latitude ?? undefined,
     longitude: dto.longitude ?? undefined,
     nextAvailable: "",
+    isAvailableToday: dto.isAvailableToday,
+    isOnlineNow: dto.isOnlineNow,
   };
 }
 

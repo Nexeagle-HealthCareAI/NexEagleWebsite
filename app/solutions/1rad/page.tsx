@@ -18,6 +18,7 @@ import Link from "next/link";
 import AnalyticsTracker from "@/components/AnalyticsTracker";
 
 const WorkflowAnimation = dynamic(() => import("@/components/home/WorkflowAnimation"), { ssr: false });
+const DeferredLiveChat = dynamic(() => import("@/components/DeferredLiveChat"), { ssr: false });
 
 export const metadata: Metadata = {
   title: "1Rad - Modern PACS & Cloud Radiology Information System",
@@ -277,6 +278,8 @@ export default function OneRadPage() {
           </div>
         </div>
       </section>
+
+      <DeferredLiveChat />
     </main>
   );
 }

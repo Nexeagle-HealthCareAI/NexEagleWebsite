@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import AnalyticsTracker from "@/components/AnalyticsTracker";
+import DeferredLiveChat from "@/components/DeferredLiveChat";
 
 export const metadata: Metadata = {
   title: "1Lab - Cloud LIS & Pathology Laboratory Management System",
@@ -73,6 +74,8 @@ export default function OneLabPage() {
         </h1>
         <p className="text-xl text-muted-foreground">Laboratory Management System page coming soon...</p>
       </div>
+
+      <DeferredLiveChat />
     </main>
   );
 }
