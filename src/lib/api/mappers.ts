@@ -152,6 +152,7 @@ export function mapDoctor(dto: DoctorDto): Doctor {
     discountPercent: dto.discountPercent ?? undefined,
     discountedFee: dto.discountedFee ?? undefined,
     hospitalName: dto.hospitalName ?? undefined,
+    hospitalId: dto.hospitalId || undefined,
     address: dto.address ?? undefined,
     city: dto.city ?? "",
     state: dto.state ?? "",

@@ -65,3 +65,44 @@ export function trackEvent(eventType: AnalyticsEventType, payload: TrackEventPay
     // Best-effort — never fail because building the payload threw.
   }
 }
+
+export type LeadType = "DoctorNameSearch" | "HospitalNameSearch" | "DoctorProfileView" | "HospitalPageView";
+
+interface RecordLeadPayload {
+  hospitalId: string;
+  doctorId?: string;
+  leadType: LeadType;
+  searchQuery?: string;
+  mobile?: string;
+  patientName?: string;
+}
+
+// Fire-and-forget hospital-scoped marketing-lead beacon for the Lead Generation page
+// (easyHMSWeb). Same contract as trackEvent() above — never throws, never awaited, never
+// blocks rendering. Deliberately a SEPARATE call from trackEvent(): see /public/leads'
+// backend comment for why this isn't folded into the AnalyticsEvents pipeline.
+export function recordLead(payload: RecordLeadPayload): void {
+  if (!payload.hospitalId) return;
+  try {
+    const body = {
+      hospitalId: payload.hospitalId,
+      doctorId: payload.doctorId,
+      source: "DoctorDekho",
+      leadType: payload.leadType,
+      searchQuery: payload.searchQuery,
+      mobile: payload.mobile,
+      patientName: payload.patientName,
+      sessionId: getOrCreateSessionId(),
+    };
+    fetch("/api/leads", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(body),
+      keepalive: true,
+    }).catch(() => {
+      // Best-effort — never fail because the beacon request threw.
+    });
+  } catch {
+    // Best-effort — never fail because building the payload threw.
+  }
+}

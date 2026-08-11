@@ -26,7 +26,7 @@ import ShareButton from "@/components/patient/ShareButton";
 import { RatingBadge } from "@/components/patient/StarRating";
 import { getDirectionsUrl, formatCount, type Doctor } from "@/data/patient";
 import { useTranslation } from "@/lib/i18n/I18nContext";
-import { trackEvent } from "@/lib/analytics";
+import { trackEvent, recordLead } from "@/lib/analytics";
 
 interface DoctorDetailClientProps {
   doctor: Doctor;
@@ -47,6 +47,12 @@ export default function DoctorDetailClient({ doctor, similarDoctors, canonicalSl
   // page-view row only has the URL path, not the specialty).
   useEffect(() => {
     trackEvent("doctor_profile_viewed", { doctorId: doctor.id, specialtyId: doctor.specialtyId });
+    // Lead Generation (easyHMSWeb) -- a profile view is a "broader signal" lead per this
+    // requirement's scope, attributed to the doctor's hospital. Guarded on hospitalId being
+    // present (real API only, see the Doctor type's own comment).
+    if (doctor.hospitalId) {
+      recordLead({ hospitalId: doctor.hospitalId, doctorId: doctor.id, leadType: "DoctorProfileView" });
+    }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [doctor.id]);
 

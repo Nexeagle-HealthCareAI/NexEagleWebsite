@@ -11,7 +11,7 @@ import type { CityOption, Doctor } from "@/data/patient";
 import { usePaginatedDoctors, useSmartSearch, type SmartSearchIntent } from "@/lib/api/hooks";
 import { haversineDistance, getDrivingDistances, type GeoStatus } from "@/lib/geo";
 import { cn } from "@/lib/utils";
-import { trackEvent } from "@/lib/analytics";
+import { trackEvent, recordLead } from "@/lib/analytics";
 import { useTranslation } from "@/lib/i18n/I18nContext";
 import { translateSpecialty } from "@/lib/i18n/specialties";
 import type { TranslationKey } from "@/lib/i18n/dictionaries/en";
@@ -316,6 +316,22 @@ export default function DoctorDirectory({
               : undefined,
         },
       });
+
+      // Lead Generation (easyHMSWeb) -- only a real typed query counts as a name-search lead,
+      // not specialty-chip-only browsing (q is checked, not just specialtyId). Not trying to
+      // verify the query specifically matched a doctor/hospital NAME vs. some other field --
+      // "broader signal" is the deliberate scope for this requirement. Capped to the first 5
+      // distinct hospitals represented in the results so a broad query can't flood one search
+      // into dozens of lead rows.
+      if (q) {
+        const seenHospitalIds = new Set<string>();
+        for (const d of filtered) {
+          if (!d.hospitalId || seenHospitalIds.has(d.hospitalId)) continue;
+          if (seenHospitalIds.size >= 5) break;
+          seenHospitalIds.add(d.hospitalId);
+          recordLead({ hospitalId: d.hospitalId, leadType: "DoctorNameSearch", searchQuery: q });
+        }
+      }
     }, 800);
 
     return () => clearTimeout(handle);

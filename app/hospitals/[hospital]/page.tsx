@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 import HomeClient from "@/app/home-client";
+import HospitalPageViewTracker from "@/components/patient/HospitalPageViewTracker";
 import { getAllDoctors } from "@/lib/api/server";
 import { filterDoctorsByHospital } from "@/lib/filters/doctorLocation";
 
@@ -121,6 +122,7 @@ export default async function HospitalPage({ params }: PageProps) {
       {/* Not initialQuery={hospitalName}: the free-text search filter matches doctor
           name/specialty/focusAreas, never hospitalName, so seeding it here would
           silently filter the correctly hospital-scoped initialDoctors back to zero. */}
+      <HospitalPageViewTracker hospitalId={locationSource?.hospitalId} />
       <HomeClient initialDoctors={initialDoctors} />
     </>
   );

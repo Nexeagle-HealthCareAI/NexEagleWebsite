@@ -42,6 +42,10 @@ export interface Doctor {
   // hospitalName now that the directory spans every publicly-listed hospital.
   // Mock data leaves this undefined and uses `clinic` instead — see DoctorCard.tsx.
   hospitalName?: string;
+  // The stable join key for hospitalName above (PublicDoctorInfo.HospitalId) -- used for lead
+  // attribution (recordLead calls) rather than the display-string name, which is lossy (see
+  // app/hospitals/[hospital]/page.tsx's slugify/unslugify round-trip). Real API only.
+  hospitalId?: string;
   // Full street-level address as entered on the hospital's own profile — real API only,
   // undefined for mock data (same optional/hide-when-absent convention as the KPI fields).
   address?: string;
