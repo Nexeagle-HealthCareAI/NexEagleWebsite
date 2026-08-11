@@ -106,6 +106,39 @@ export async function getDoctorById(doctorId: string): Promise<GetDoctorByIdResu
   return { doctor: dto ? mapDoctor(dto) : null, notConfigured: false };
 }
 
+// Both QR endpoints return a raw PNG, not JSON -- easyhmsFetch always calls res.json(), so
+// these fetch directly instead and hand back a data: URL ready for an <img src>. Cached via
+// Next's own fetch-level Data Cache (not unstable_cache -- that's only needed to wrap calls
+// that must force `no-store`, which these don't) since neither QR's content ever changes for
+// a given doctorId/at all, so re-fetching per page view would be pure waste. Both return null
+// on any failure so callers can just hide the QR block rather than render a broken image.
+async function fetchQrCodeDataUrl(path: string): Promise<string | null> {
+  if (!isConfigured()) return null;
+  try {
+    const res = await fetch(`${BASE_URL}${path}`, {
+      headers: API_KEY ? { [KEY_HEADER]: API_KEY } : {},
+      next: { revalidate: 86400 },
+    });
+    if (!res.ok) return null;
+    const buffer = await res.arrayBuffer();
+    return `data:image/png;base64,${Buffer.from(buffer).toString("base64")}`;
+  } catch {
+    return null;
+  }
+}
+
+/** Doctor's own WhatsApp-booking QR (NexEagle logo centered) -- scanning it lands the patient
+ * straight into booking THIS doctor via the WhatsApp bot's deterministic DRBOOK trigger. */
+export async function getDoctorQrCodeDataUrl(doctorId: string): Promise<string | null> {
+  return fetchQrCodeDataUrl(`/public/doctors/${doctorId}/qr-code`);
+}
+
+/** Generic "chat with us on WhatsApp" QR (NexEagle logo centered) -- e.g. the Doctor Dekho
+ * homepage's WhatsApp CTA. */
+export async function getWhatsAppEntryQrCodeDataUrl(): Promise<string | null> {
+  return fetchQrCodeDataUrl("/public/whatsapp-qr-code");
+}
+
 // ─────────────────────────────────────────────────────────────────────────────
 // getAllDoctors — the shared doctor-directory fetch for SERVER-RENDERED listing
 // pages (homepage, /specialties/**, /conditions/**, /hospitals/**). This is

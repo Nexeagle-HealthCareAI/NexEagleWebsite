@@ -86,6 +86,8 @@ export const en = {
   "doctorDetail.consultationFee": "Consultation Fee",
   "doctorDetail.acceptingPatients": "Accepting patients",
   "doctorDetail.bookAppointment": "Book Appointment",
+  "doctorDetail.whatsappQrTitle": "Prefer WhatsApp?",
+  "doctorDetail.whatsappQrSubtitle": "Scan to book instantly with {doctor} on WhatsApp",
 
   // ── Share button ─────────────────────────────────────────────────────────
   "shareButton.share": "Share",
@@ -222,6 +224,10 @@ export const en = {
   "nav.search": "Search",
   "nav.appointments": "Appointments",
   "nav.profile": "Profile",
+
+  // ── Homepage WhatsApp CTA ────────────────────────────────────────────────
+  "home.whatsappQrTitle": "Chat with us on WhatsApp",
+  "home.whatsappQrSubtitle": "Scan the QR code to start a conversation and book a doctor right from WhatsApp — no app, no login.",
 } as const;
 
 export type TranslationKey = keyof typeof en;
