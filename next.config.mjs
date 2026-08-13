@@ -27,7 +27,11 @@ const securityHeaders = [
   { key: 'X-Frame-Options', value: 'SAMEORIGIN' },
   { key: 'X-Content-Type-Options', value: 'nosniff' },
   { key: 'Referrer-Policy', value: 'origin-when-cross-origin' },
-  { key: 'Content-Security-Policy', value: "default-src 'self'; script-src 'self' 'unsafe-eval' 'unsafe-inline'; style-src 'self' 'unsafe-inline'; img-src 'self' data: https://nexeagle-dev.in-south1-objectstore.e2enetworks.net; connect-src 'self' https://api.bigdatacloud.net https://router.project-osrm.org https://1hms-api.nexeagle.com;" }
+  // connect-src needs both the https: and wss: schemes for cms-api.nexeagle.com --
+  // LiveChat.tsx's SignalR connection (CHAT_HUB_URL) negotiates over https: first, then
+  // upgrades to a WebSocket, and CSP enforces connect-src per-scheme (an https: entry alone
+  // does not also permit the wss: upgrade).
+  { key: 'Content-Security-Policy', value: "default-src 'self'; script-src 'self' 'unsafe-eval' 'unsafe-inline'; style-src 'self' 'unsafe-inline'; img-src 'self' data: https://nexeagle-dev.in-south1-objectstore.e2enetworks.net; connect-src 'self' https://api.bigdatacloud.net https://router.project-osrm.org https://1hms-api.nexeagle.com https://cms-api.nexeagle.com wss://cms-api.nexeagle.com;" }
 ];
 
 /** @type {import('next').NextConfig} */
