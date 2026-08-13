@@ -63,18 +63,29 @@ export async function easyhmsFetch<T = unknown>(
 
   const visitorIp = PROXY_SECRET ? resolveVisitorIp() : null;
 
-  const res = await fetch(`${BASE_URL}${path}`, {
-    ...init,
-    headers: {
-      "Content-Type": "application/json",
-      ...(API_KEY ? { [KEY_HEADER]: API_KEY } : {}),
-      ...(PROXY_SECRET && visitorIp
-        ? { "X-Internal-Proxy-Secret": PROXY_SECRET, "X-Forwarded-Client-Ip": visitorIp }
-        : {}),
-      ...(init?.headers ?? {}),
-    },
-    cache: "no-store",
-  });
+  let res: Response;
+  try {
+    res = await fetch(`${BASE_URL}${path}`, {
+      ...init,
+      headers: {
+        "Content-Type": "application/json",
+        ...(API_KEY ? { [KEY_HEADER]: API_KEY } : {}),
+        ...(PROXY_SECRET && visitorIp
+          ? { "X-Internal-Proxy-Secret": PROXY_SECRET, "X-Forwarded-Client-Ip": visitorIp }
+          : {}),
+        ...(init?.headers ?? {}),
+      },
+      cache: "no-store",
+    });
+  } catch {
+    // Network-level failure (DNS, connection timeout/refused, TLS) -- as opposed to a
+    // non-2xx HTTP response, which is handled below via res.ok. An uncaught throw here
+    // propagates straight through generateStaticParams and fails the ENTIRE production
+    // build (every page, not just ones needing live data) on any transient upstream
+    // blip. Reported the same shape as a failed HTTP response instead, so callers'
+    // existing "fall back to mock data" paths (see getAllDoctors) already handle this.
+    return { ok: false, status: 0, notConfigured: false, data: null };
+  }
 
   let data: T | null = null;
   try {
