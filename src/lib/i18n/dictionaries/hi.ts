@@ -71,6 +71,8 @@ export const hi: Record<keyof typeof en, string> = {
   "doctorDetail.consultationFee": "परामर्श शुल्क",
   "doctorDetail.acceptingPatients": "मरीज़ स्वीकार किए जा रहे हैं",
   "doctorDetail.bookAppointment": "अपॉइंटमेंट बुक करें",
+  "doctorDetail.whatsappQrTitle": "WhatsApp पसंद करते हैं?",
+  "doctorDetail.whatsappQrSubtitle": "{doctor} के साथ WhatsApp पर तुरंत बुक करने के लिए स्कैन करें",
 
   "shareButton.share": "शेयर करें",
   "shareButton.shareOnWhatsapp": "WhatsApp पर शेयर करें",
@@ -201,4 +203,7 @@ export const hi: Record<keyof typeof en, string> = {
   "nav.search": "खोजें",
   "nav.appointments": "अपॉइंटमेंट",
   "nav.profile": "प्रोफ़ाइल",
+
+  "home.whatsappQrTitle": "WhatsApp पर हमसे चैट करें",
+  "home.whatsappQrSubtitle": "बातचीत शुरू करने और सीधे WhatsApp से डॉक्टर बुक करने के लिए QR कोड स्कैन करें — कोई ऐप नहीं, कोई लॉगिन नहीं।",
 };

@@ -1,6 +1,6 @@
 import type { Metadata } from "next";
 import HomeClient from "./home-client";
-import { getAllDoctors } from "@/lib/api/server";
+import { getAllDoctors, getWhatsAppEntryQrCodeDataUrl } from "@/lib/api/server";
 
 export const revalidate = 3600;
 
@@ -55,11 +55,12 @@ export default async function HomePage() {
   // HTML — a non-JS crawler (Googlebot without rendering, Bing, AI bots) would
   // otherwise see an empty client shell. See src/lib/api/server.ts's getAllDoctors.
   const { doctors } = await getAllDoctors();
+  const whatsAppQrCodeDataUrl = await getWhatsAppEntryQrCodeDataUrl();
 
   return (
     <>
       <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(structuredData) }} />
-      <HomeClient initialDoctors={doctors} />
+      <HomeClient initialDoctors={doctors} whatsAppQrCodeDataUrl={whatsAppQrCodeDataUrl} />
     </>
   );
 }

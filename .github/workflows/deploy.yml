@@ -4,13 +4,19 @@
 #
 #   Stage 1 — Build       npm ci + next build  (runs on push + PRs)
 #   Stage 2 — Deploy      build Node image (next start) → push GHCR → run on VM
-#             dev branch  -> Dev VM   (151.185.45.77) :82
-#             main branch -> Prod VM  (151.185.45.67) :8080
+#             dev branch  -> Dev VM   (151.185.45.77) :82  -- public: https://nexeagle-dev.nexeagle.com
+#             main branch -> Prod VM  (151.185.45.67) :8080 -- public: https://nexeagle.com
 #
 # The site is served on host port 8080 on Prod (port 80 is used by 1Rad easyrad
 # UI there). On Dev, 8080 is already held by Watchtower's HTTP API (host-network
 # mode, invisible to `docker ps --filter publish=`) — Dev uses :82 instead,
 # following the existing convention on that VM (81=easyhms-web-dev, 83=cms-web-dev).
+# A Caddy reverse proxy on the Dev VM terminates HTTPS for nexeagle-dev.nexeagle.com
+# and forwards to localhost:82 -- the container itself still just publishes :82 as
+# plain HTTP, unchanged; Caddy is the only thing that changed. The health check and
+# PORT_HOG detection below deliberately keep testing the raw port directly (same
+# reasoning Prod already follows for its own :8080), not the public domain, so a
+# transient DNS/Caddy/cert hiccup can't fail a deploy that otherwise succeeded.
 #
 # ─────────────────────────────────────────────────────────────────────────────
 # SECRETS (Settings → Secrets → Actions):
@@ -36,6 +42,12 @@
 #                         1HMS-NLP-Router repo. Anthropic remains the fallback for anything the
 #                         NLP router can't confidently classify, so nothing here changes if
 #                         that service is ever down.
+#                         Dev's NLP_ROUTER_BASE_URL is still the raw http://151.185.45.77:5003 —
+#                         NOT yet switched to https://nlp-api-dev.nexeagle.com (that subdomain's
+#                         Caddy/DNS isn't resolving yet as of 2026-08-13). Switch it once
+#                         `curl -I https://nlp-api-dev.nexeagle.com` actually succeeds — until
+#                         then this is a deliberate, temporary mismatch with Prod's
+#                         https://nlp-api.nexeagle.com, not an oversight.
 #   INTERNAL_PROXY_SECRET OPTIONAL — lets easyHMSAPI's public rate limiters see each real
 #                         visitor's IP instead of this container's own IP (every call to the
 #                         API is server-to-server — see src/lib/api/server.ts). Same key used
@@ -191,7 +203,7 @@ jobs:
         run: |
           echo "## 🌐 NexEagle Website — Dev" >> $GITHUB_STEP_SUMMARY
           [ "${{ job.status }}" = "success" ] \
-            && echo "**Status:** ✅ Live at http://${{ secrets.SSH_HOST }}:82" >> $GITHUB_STEP_SUMMARY \
+            && echo "**Status:** ✅ Live at https://nexeagle-dev.nexeagle.com (container health-checked directly on :82)" >> $GITHUB_STEP_SUMMARY \
             || echo "**Status:** ❌ Failed" >> $GITHUB_STEP_SUMMARY
           echo "| Commit | \`${{ github.sha }}\` |" >> $GITHUB_STEP_SUMMARY
 

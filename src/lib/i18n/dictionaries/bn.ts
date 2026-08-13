@@ -71,6 +71,8 @@ export const bn: Record<keyof typeof en, string> = {
   "doctorDetail.consultationFee": "পরামর্শ ফি",
   "doctorDetail.acceptingPatients": "রোগী নেওয়া হচ্ছে",
   "doctorDetail.bookAppointment": "অ্যাপয়েন্টমেন্ট বুক করুন",
+  "doctorDetail.whatsappQrTitle": "WhatsApp পছন্দ করেন?",
+  "doctorDetail.whatsappQrSubtitle": "{doctor}-এর সাথে WhatsApp-এ তৎক্ষণাৎ বুক করতে স্ক্যান করুন",
 
   "shareButton.share": "শেয়ার করুন",
   "shareButton.shareOnWhatsapp": "WhatsApp-এ শেয়ার করুন",
@@ -201,4 +203,7 @@ export const bn: Record<keyof typeof en, string> = {
   "nav.search": "খুঁজুন",
   "nav.appointments": "অ্যাপয়েন্টমেন্ট",
   "nav.profile": "প্রোফাইল",
+
+  "home.whatsappQrTitle": "WhatsApp-এ আমাদের সাথে চ্যাট করুন",
+  "home.whatsappQrSubtitle": "কথোপকথন শুরু করতে এবং সরাসরি WhatsApp থেকে ডাক্তার বুক করতে QR কোড স্ক্যান করুন — কোনো অ্যাপ নেই, কোনো লগইন নেই।",
 };

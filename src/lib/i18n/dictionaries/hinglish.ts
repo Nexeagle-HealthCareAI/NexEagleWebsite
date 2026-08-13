@@ -73,6 +73,8 @@ export const hinglish: Record<keyof typeof en, string> = {
   "doctorDetail.consultationFee": "Consultation Fee",
   "doctorDetail.acceptingPatients": "Patients accept kiye ja rahe hain",
   "doctorDetail.bookAppointment": "Appointment Book Karein",
+  "doctorDetail.whatsappQrTitle": "WhatsApp pasand hai?",
+  "doctorDetail.whatsappQrSubtitle": "{doctor} ke saath WhatsApp par turant book karne ke liye scan karein",
 
   "shareButton.share": "Share Karein",
   "shareButton.shareOnWhatsapp": "WhatsApp Par Share Karein",
@@ -203,4 +205,7 @@ export const hinglish: Record<keyof typeof en, string> = {
   "nav.search": "Search",
   "nav.appointments": "Appointments",
   "nav.profile": "Profile",
+
+  "home.whatsappQrTitle": "WhatsApp par humse chat karein",
+  "home.whatsappQrSubtitle": "Conversation start karne aur seedha WhatsApp se doctor book karne ke liye QR code scan karein — koi app nahi, koi login nahi.",
 };

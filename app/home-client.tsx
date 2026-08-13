@@ -1,6 +1,7 @@
 "use client";
 
 import { useCallback, useEffect, useMemo, useState } from "react";
+import { MessageCircle } from "lucide-react";
 import AnalyticsTracker from "@/components/AnalyticsTracker";
 import PatientTopBar from "@/components/patient/PatientTopBar";
 import PatientHero from "@/components/patient/PatientHero";
@@ -9,6 +10,7 @@ import PatientFooter from "@/components/patient/PatientFooter";
 import { CITIES, cityId as makeCityId, type CityOption, type Doctor } from "@/data/patient";
 import { useDoctors } from "@/lib/api/hooks";
 import { useGeolocatedCity } from "@/lib/geo";
+import { useTranslation } from "@/lib/i18n/I18nContext";
 
 interface HomeClientProps {
   initialSpecialtyId?: string;
@@ -21,6 +23,10 @@ interface HomeClientProps {
    * whichever of the two mounts/observes first is the one that actually seeds it,
    * so both need the same seed to avoid depending on render order. */
   initialDoctors?: Doctor[];
+  /** Server-fetched generic "chat with us" QR (see src/lib/api/server.ts's
+   * getWhatsAppEntryQrCodeDataUrl) -- null when the backend endpoint is
+   * unreachable/unconfigured, in which case the CTA section is simply omitted. */
+  whatsAppQrCodeDataUrl?: string | null;
 }
 
 export default function HomeClient({
@@ -29,7 +35,9 @@ export default function HomeClient({
   initialArea = "",
   initialQuery = "",
   initialDoctors,
+  whatsAppQrCodeDataUrl,
 }: HomeClientProps = {}) {
+  const { t } = useTranslation();
   const { data: doctorsData } = useDoctors(
     initialDoctors ? { doctors: initialDoctors, notConfigured: false } : undefined
   );
@@ -129,6 +137,26 @@ export default function HomeClient({
           initialDoctors={initialDoctors}
         />
       </main>
+
+      {whatsAppQrCodeDataUrl && (
+        <section className="border-t border-slate-200 bg-slate-50 py-12">
+          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex flex-col items-center gap-4 text-center">
+            <div className="flex items-center gap-2 text-brand-teal">
+              <MessageCircle className="w-5 h-5" />
+              <p className="text-sm font-bold uppercase tracking-wide">{t("home.whatsappQrTitle")}</p>
+            </div>
+            <p className="max-w-md text-sm text-slate-500">{t("home.whatsappQrSubtitle")}</p>
+            {/* Data URL, not a Next <Image> -- see the same note on DoctorDetailClient's QR. */}
+            <img
+              src={whatsAppQrCodeDataUrl}
+              alt={t("home.whatsappQrTitle")}
+              className="mt-2 h-40 w-40 rounded-xl border border-slate-200 bg-white p-2"
+              width={160}
+              height={160}
+            />
+          </div>
+        </section>
+      )}
 
       <PatientFooter />
     </div>

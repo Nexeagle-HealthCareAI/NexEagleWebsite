@@ -26,16 +26,20 @@ import ShareButton from "@/components/patient/ShareButton";
 import { RatingBadge } from "@/components/patient/StarRating";
 import { getDirectionsUrl, formatCount, type Doctor } from "@/data/patient";
 import { useTranslation } from "@/lib/i18n/I18nContext";
-import { trackEvent } from "@/lib/analytics";
+import { trackEvent, recordLead } from "@/lib/analytics";
 
 interface DoctorDetailClientProps {
   doctor: Doctor;
   similarDoctors: Doctor[];
   canonicalSlug: string;
   locationLine: string;
+  /** NexEagle-logo QR routing straight into a WhatsApp booking flow for THIS doctor (see the
+   * bot's DRBOOK trigger) -- null when the backend QR endpoint is unreachable/unconfigured,
+   * in which case the card below is simply omitted rather than showing a broken image. */
+  whatsAppQrCodeDataUrl?: string | null;
 }
 
-export default function DoctorDetailClient({ doctor, similarDoctors, canonicalSlug, locationLine }: DoctorDetailClientProps) {
+export default function DoctorDetailClient({ doctor, similarDoctors, canonicalSlug, locationLine, whatsAppQrCodeDataUrl }: DoctorDetailClientProps) {
   const { t } = useTranslation();
 
   // "Search-to-View Rate" + "Specialty Demand" for the CMS Insights tab — this is the one place
@@ -43,6 +47,12 @@ export default function DoctorDetailClient({ doctor, similarDoctors, canonicalSl
   // page-view row only has the URL path, not the specialty).
   useEffect(() => {
     trackEvent("doctor_profile_viewed", { doctorId: doctor.id, specialtyId: doctor.specialtyId });
+    // Lead Generation (easyHMSWeb) -- a profile view is a "broader signal" lead per this
+    // requirement's scope, attributed to the doctor's hospital. Guarded on hospitalId being
+    // present (real API only, see the Doctor type's own comment).
+    if (doctor.hospitalId) {
+      recordLead({ hospitalId: doctor.hospitalId, doctorId: doctor.id, leadType: "DoctorProfileView" });
+    }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [doctor.id]);
 
@@ -268,6 +278,26 @@ export default function DoctorDetailClient({ doctor, similarDoctors, canonicalSl
               className="order-2 lg:order-none lg:col-start-2 lg:row-start-1 lg:row-span-2 lg:sticky lg:top-24 lg:max-h-[calc(100vh-7rem)] lg:overflow-y-auto lg:overscroll-contain"
             >
               <BookingPanel doctor={doctor} />
+
+              {whatsAppQrCodeDataUrl && (
+                <div className="mt-4 rounded-2xl border border-slate-200 bg-white p-5 text-center shadow-sm">
+                  <p className="text-sm font-bold text-slate-900">{t("doctorDetail.whatsappQrTitle")}</p>
+                  <p className="mt-1 text-xs text-slate-500">
+                    {t("doctorDetail.whatsappQrSubtitle", { doctor: doctor.name })}
+                  </p>
+                  {/* Data URL, not a Next <Image> -- next/image requires a configured remote
+                      loader or local file for anything that isn't already a plain <img>-style
+                      src, and a base64 data URL doesn't benefit from its optimization pipeline
+                      anyway (already a small, final PNG). */}
+                  <img
+                    src={whatsAppQrCodeDataUrl}
+                    alt={t("doctorDetail.whatsappQrSubtitle", { doctor: doctor.name })}
+                    className="mx-auto mt-4 h-40 w-40 rounded-xl border border-slate-100"
+                    width={160}
+                    height={160}
+                  />
+                </div>
+              )}
             </div>
           </div>
         </div>

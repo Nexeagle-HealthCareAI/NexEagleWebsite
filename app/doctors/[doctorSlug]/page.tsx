@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 import DoctorDetailClient from "@/components/patient/DoctorDetailClient";
-import { getDoctorById, easyhmsFetch } from "@/lib/api/server";
+import { getDoctorById, getDoctorQrCodeDataUrl, easyhmsFetch } from "@/lib/api/server";
 import { mapDoctors } from "@/lib/api/mappers";
 import type { DoctorsResponseDto } from "@/lib/api/types";
 import {
@@ -107,6 +107,7 @@ export default async function DoctorDetailPage({ params }: PageProps) {
 
   const similarDoctors = await getSimilarDoctors(doctor);
   const canonicalSlug = doctorSlug(doctor, doctor.city);
+  const whatsAppQrCodeDataUrl = await getDoctorQrCodeDataUrl(doctor.id);
 
   const locationLine =
     [doctor.hospitalName, doctor.city].filter(Boolean).join(", ") || doctor.clinic;
@@ -208,6 +209,7 @@ export default async function DoctorDetailPage({ params }: PageProps) {
         similarDoctors={similarDoctors}
         canonicalSlug={canonicalSlug}
         locationLine={locationLine}
+        whatsAppQrCodeDataUrl={whatsAppQrCodeDataUrl}
       />
     </>
   );
