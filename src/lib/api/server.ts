@@ -192,7 +192,21 @@ const fetchAllDoctorsCached = unstable_cache(
     // listing pages and needs the whole directory, not the paginated browsing default.
     const result = await easyhmsFetch<DoctorsResponseDto>("/public/doctors?pageSize=2000");
     if (result.notConfigured || !result.data) {
-      return { doctors: mockDoctors, notConfigured: true };
+      // Deliberately NOT falling back to mock data here (unlike the !isConfigured() branch
+      // above, which is a genuine "no backend configured at all" case). This branch means
+      // EASYHMS_API_BASE_URL WAS set but the live call still failed -- a real, unexpected
+      // failure (network/DNS/API down), and silently serving mock doctors in that case is
+      // exactly what let a container-networking bug (the deployed site unable to reach its
+      // own host's API) go unnoticed on BOTH dev and prod for an extended period: every
+      // visitor saw 9 fake doctors with no error anywhere. Throwing here surfaces the
+      // failure immediately and loudly instead. unstable_cache's revalidate:3600 means a
+      // transient blip after a good value is already cached still serves the last good
+      // value (stale-while-revalidate) rather than breaking live traffic -- this only bites
+      // on a genuinely persistent failure, which is exactly when you want to know.
+      throw new Error(
+        `getAllDoctors: live call to ${process.env.EASYHMS_API_BASE_URL} failed ` +
+          `(status ${result.status}). Not falling back to mock data.`
+      );
     }
     return { doctors: mapDoctors(result.data.doctors), notConfigured: false };
   },

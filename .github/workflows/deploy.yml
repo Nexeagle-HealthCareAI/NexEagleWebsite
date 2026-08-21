@@ -161,10 +161,25 @@ jobs:
             PORT_HOG=$(docker ps -q --filter "publish=82")
             [ -n "$PORT_HOG" ] && docker rm -f $PORT_HOG || true
 
+            # --add-host + host.docker.internal (not the VM's own public IP) for
+            # EASYHMS_API_BASE_URL: this container runs on Docker's default bridge network
+            # (-p 82:80, no --network host), and a bridge-network container generally can't
+            # reach its own host's public IP/domain (NAT hairpin) -- unlike easyhms-api-dev,
+            # which runs with --network host and so is directly reachable from outside. That
+            # meant every server-side fetch() in this container to 151.185.45.77:5001 (its
+            # own host) silently failed, and src/lib/api/server.ts's now-removed mock-data
+            # fallback masked it completely -- every visitor saw 9 fake doctors with zero
+            # visible error, on dev AND prod, for an extended period. host.docker.internal
+            # (mapped to the real host gateway via host-gateway) reaches the host directly,
+            # sidestepping the hairpin problem entirely. Port 5001 is the API's real bound
+            # port on BOTH dev and prod (ASPNETCORE_URLS=http://+:5001, see easyHMSAPI's
+            # deploy-api.yml) -- prod intentionally skips its public HTTPS domain here too,
+            # since that's unnecessary indirection for a same-VM call.
             for i in 1 2 3 4 5; do
               if docker run -d --name nexeagle-website-dev --restart unless-stopped \
                   -p 82:80 \
-                  -e EASYHMS_API_BASE_URL='http://151.185.45.77:5001' \
+                  --add-host=host.docker.internal:host-gateway \
+                  -e EASYHMS_API_BASE_URL='http://host.docker.internal:5001' \
                   -e EASYHMS_API_KEY="$EASYHMS_API_KEY" \
                   -e EASYHMS_API_KEY_HEADER='X-Api-Key' \
                   -e ANTHROPIC_API_KEY="$ANTHROPIC_API_KEY" \
@@ -292,10 +307,15 @@ jobs:
             PORT_HOG=$(docker ps -q --filter "publish=8080")
             [ -n "$PORT_HOG" ] && docker rm -f $PORT_HOG || true
 
+            # Same host.docker.internal fix as the dev job above -- see that block's comment.
+            # This container previously tried to reach https://1hms-api.nexeagle.com (which
+            # resolves back to THIS SAME Prod VM), hit the identical bridge-network NAT
+            # hairpin failure, and silently served mock doctor data to every real visitor.
             for i in 1 2 3 4 5; do
               if docker run -d --name nexeagle-website --restart unless-stopped \
                   -p 8080:80 \
-                  -e EASYHMS_API_BASE_URL='https://1hms-api.nexeagle.com' \
+                  --add-host=host.docker.internal:host-gateway \
+                  -e EASYHMS_API_BASE_URL='http://host.docker.internal:5001' \
                   -e EASYHMS_API_KEY="$EASYHMS_API_KEY" \
                   -e EASYHMS_API_KEY_HEADER='X-Api-Key' \
                   -e ANTHROPIC_API_KEY="$ANTHROPIC_API_KEY" \
