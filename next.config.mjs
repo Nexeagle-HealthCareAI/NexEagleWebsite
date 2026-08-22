@@ -45,6 +45,20 @@ const nextConfig = {
   },
   experimental: {
     optimizePackageImports: ['lucide-react', 'framer-motion', '@radix-ui/react-icons'],
+    // Serializes static-page generation to ONE worker process instead of Next's default
+    // per-CPU-core pool. Without this, ~400 specialty/city/area pages get spread across
+    // several parallel worker PROCESSES, each with its OWN independent in-memory
+    // unstable_cache -- so on a cold cache, every worker's first page independently fires
+    // its own real fetch to /public/doctors (a "cache stampede") instead of the single
+    // shared call the code comment in src/lib/api/server.ts assumes. Confirmed hitting this
+    // in practice: PublicController's PublicBookingPolicy rate-limits that endpoint to 20
+    // req/min per IP with zero queueing, and CI builds intermittently exceeded it -- same
+    // domain, same moment, sometimes passing and sometimes failing depending on how the
+    // worker burst landed in the window. cpus:1 makes exactly one real fetch happen for the
+    // whole build (the first page populates the cache, everything after reuses it),
+    // trading some build wall-clock time for eliminating the stampede outright rather than
+    // just narrowing the odds of it.
+    cpus: 1,
   },
   images: {
     minimumCacheTTL: 86400, // 24 hours caching for avatars
