@@ -132,9 +132,21 @@ jobs:
           # EASYHMS_API_BASE_URL is ALSO needed at build time here (not just via `docker run -e`
           # below) — see the Dockerfile comment: without it, the statically-generated specialty
           # pages silently bake in .env.production's PROD api url instead of Dev's.
+          #
+          # https://1hms-dev-api.nexeagle.com (NOT the raw 151.185.45.77:5001) -- the GitHub
+          # Actions runner building this image could not reach the raw port directly (curl from
+          # the runner got a bare connection failure, "status 0" -- almost certainly a firewall
+          # on the VM only allowing 80/443 in from the open internet), which silently produced
+          # mock-data static pages on every build until src/lib/api/server.ts stopped falling
+          # back to mock data and started throwing instead, turning the invisible failure into a
+          # hard build break. The HTTPS domain is a native (non-Docker) Caddy reverse proxy on
+          # the Dev VM forwarding to localhost:5001 -- same pattern as
+          # NLP Model/.github/workflows/setup-loc-dev-domain.yml's loc-dev.nexeagle.com, and
+          # matches how prod's build-time EASYHMS_API_BASE_URL already uses
+          # https://1hms-api.nexeagle.com instead of a raw port.
           build-args: |
             NEXT_PUBLIC_API_URL=http://151.185.45.77:5002
-            EASYHMS_API_BASE_URL=http://151.185.45.77:5001
+            EASYHMS_API_BASE_URL=https://1hms-dev-api.nexeagle.com
 
       - name: Deploy to Dev VM
         uses: appleboy/ssh-action@v1.0.3
