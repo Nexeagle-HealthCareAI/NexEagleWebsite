@@ -52,6 +52,13 @@ export interface UpstreamResult<T = unknown> {
   data: T | null;
 }
 
+const NETWORK_RETRY_ATTEMPTS = 3;
+const NETWORK_RETRY_DELAY_MS = 500;
+
+function delay(ms: number) {
+  return new Promise((resolve) => setTimeout(resolve, ms));
+}
+
 /** Fetch a path off the EasyHMS API root with the hospital key attached. */
 export async function easyhmsFetch<T = unknown>(
   path: string,
@@ -63,28 +70,38 @@ export async function easyhmsFetch<T = unknown>(
 
   const visitorIp = PROXY_SECRET ? resolveVisitorIp() : null;
 
-  let res: Response;
-  try {
-    res = await fetch(`${BASE_URL}${path}`, {
-      ...init,
-      headers: {
-        "Content-Type": "application/json",
-        ...(API_KEY ? { [KEY_HEADER]: API_KEY } : {}),
-        ...(PROXY_SECRET && visitorIp
-          ? { "X-Internal-Proxy-Secret": PROXY_SECRET, "X-Forwarded-Client-Ip": visitorIp }
-          : {}),
-        ...(init?.headers ?? {}),
-      },
-      cache: "no-store",
-    });
-  } catch {
-    // Network-level failure (DNS, connection timeout/refused, TLS) -- as opposed to a
-    // non-2xx HTTP response, which is handled below via res.ok. An uncaught throw here
-    // propagates straight through generateStaticParams and fails the ENTIRE production
-    // build (every page, not just ones needing live data) on any transient upstream
-    // blip. Reported the same shape as a failed HTTP response instead, so callers'
-    // existing "fall back to mock data" paths (see getAllDoctors) already handle this.
-    return { ok: false, status: 0, notConfigured: false, data: null };
+  let res: Response | undefined;
+  for (let attempt = 1; attempt <= NETWORK_RETRY_ATTEMPTS; attempt++) {
+    try {
+      res = await fetch(`${BASE_URL}${path}`, {
+        ...init,
+        headers: {
+          "Content-Type": "application/json",
+          ...(API_KEY ? { [KEY_HEADER]: API_KEY } : {}),
+          ...(PROXY_SECRET && visitorIp
+            ? { "X-Internal-Proxy-Secret": PROXY_SECRET, "X-Forwarded-Client-Ip": visitorIp }
+            : {}),
+          ...(init?.headers ?? {}),
+        },
+        cache: "no-store",
+      });
+      break;
+    } catch {
+      // Network-level failure (DNS, connection timeout/refused, TLS) -- as opposed to a
+      // non-2xx HTTP response, which is handled below via res.ok. Retried a couple times
+      // with a short backoff first: this fetch is what backs generateStaticParams (via
+      // getAllDoctors), which always runs with a COLD unstable_cache -- there's no
+      // previously-cached good value for stale-while-revalidate to fall back on the way
+      // there is for a warm running server, so a single transient blip here has nothing
+      // to protect it and fails the ENTIRE production build (every page, not just ones
+      // needing live data). A real, persistent outage still exhausts all attempts and
+      // reports the same shape as a failed HTTP response, so callers' existing "fail
+      // loudly" paths (see getAllDoctors) still fire for that case.
+      if (attempt === NETWORK_RETRY_ATTEMPTS) {
+        return { ok: false, status: 0, notConfigured: false, data: null };
+      }
+      await delay(NETWORK_RETRY_DELAY_MS * attempt);
+    }
   }
 
   let data: T | null = null;
