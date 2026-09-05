@@ -68,9 +68,9 @@ const TeamSection = ({ defaultFilter = "All", showHeader = true }: TeamSectionPr
     },
     {
       name: "Alisha",
-      role: "Frontend Developer",
-      credential: "FDE Developer",
-      focus: "Crafting intuitive, accessible, and high-performance user interfaces for clinical and patient-facing modules.",
+      role: "Forward Deployment Engineer",
+      credential: "Forward Deployment Engineer",
+      focus: "Bridging product and customer needs — deploying, configuring, and customising the platform directly at client sites for seamless go-live.",
       category: "Product & Engineering",
       departments: ["Product & Engineering"],
       image: "/assets/Alisha.png"
