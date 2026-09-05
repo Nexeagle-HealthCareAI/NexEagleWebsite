@@ -7,12 +7,10 @@
 
 import type { Doctor, Specialty } from "@/data/patient";
 import { specialties } from "@/data/patient";
-import type { Lab } from "@/data/labs";
 import type {
   AvailabilityDto,
   DoctorDto,
   CreateAppointmentResponseDto,
-  LabDto,
 } from "./types";
 
 const GRADIENTS = [
@@ -172,29 +170,6 @@ export function mapDoctor(dto: DoctorDto): Doctor {
 
 export function mapDoctors(list: DoctorDto[] | undefined): Doctor[] {
   return (list ?? []).map(mapDoctor);
-}
-
-export function mapLab(dto: LabDto): Lab {
-  return {
-    id: String(dto.labId),
-    hospitalId: String(dto.hospitalId),
-    name: dto.name?.trim() || "Pathology Lab",
-    description: dto.description ?? undefined,
-    address: dto.address ?? undefined,
-    city: dto.city ?? undefined,
-    state: dto.state ?? undefined,
-    pincode: dto.pincode ?? undefined,
-    latitude: dto.latitude ?? undefined,
-    longitude: dto.longitude ?? undefined,
-    registrationNumber: dto.registrationNumber ?? undefined,
-    contactPhone: dto.contactPhone ?? undefined,
-    contactEmail: dto.contactEmail ?? undefined,
-    testCategories: dto.testCategories ?? [],
-  };
-}
-
-export function mapLabs(list: LabDto[] | undefined): Lab[] {
-  return (list ?? []).map(mapLab);
 }
 
 export interface AvailabilityWindow {
