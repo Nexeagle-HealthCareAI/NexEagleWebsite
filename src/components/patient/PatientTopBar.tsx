@@ -3,7 +3,7 @@
 import { useState, useRef, useEffect } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { MapPin, ChevronDown, Locate, ArrowRight, X, ArrowLeft, Calendar, User, LogIn } from "lucide-react";
+import { MapPin, ChevronDown, Locate, ArrowRight, X, ArrowLeft, Calendar, User, LogIn, FlaskConical } from "lucide-react";
 import { Logo } from "@/components/Logo";
 import type { CityOption } from "@/data/patient";
 import { cityLabel } from "@/data/patient";
@@ -194,6 +194,17 @@ export default function PatientTopBar({
                 )}
               </div>
             )}
+
+            {/* Find a Lab -- desktop only, same as the "For Hospitals" CTA next to it; no
+                established mobile nav slot for this (PatientBottomNav's 3 tabs are fixed), so
+                mobile discovery goes through a homepage entry point instead. */}
+            <Link
+              href="/labs"
+              className="hidden sm:inline-flex shrink-0 items-center gap-1.5 px-4 py-2.5 rounded-full text-slate-600 hover:text-brand-teal hover:bg-teal-50 text-sm font-bold transition-colors"
+            >
+              <FlaskConical className="w-4 h-4" />
+              Find a Lab
+            </Link>
 
             {/* Provider CTA */}
             <Link href="/business" className="shrink-0">

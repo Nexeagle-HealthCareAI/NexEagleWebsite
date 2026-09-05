@@ -12,10 +12,12 @@
 
 import { useInfiniteQuery, useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import type { Doctor } from "@/data/patient";
+import type { Lab } from "@/data/labs";
 import {
   mapAvailability,
   mapBookingReference,
   mapDoctors,
+  mapLabs,
   type AvailabilityResult,
 } from "./mappers";
 import type { CreateAppointmentRequest, ReviewDto, SubmitReviewRequest } from "./types";
@@ -120,6 +122,64 @@ export function usePaginatedDoctors(filters: DoctorsFilterParams, seed?: Doctor[
   const pages = query.data?.pages ?? [];
   return {
     doctors: pages.flatMap((p) => p.doctors),
+    notConfigured: pages[0]?.notConfigured ?? false,
+    totalCount: pages[0]?.totalCount ?? 0,
+    isLoading: query.isLoading,
+    isFetchingNextPage: query.isFetchingNextPage,
+    hasNextPage: query.hasNextPage ?? false,
+    fetchNextPage: query.fetchNextPage,
+  };
+}
+
+// ── Labs (pathology-lab directory) ──────────────────────────────────────────
+export interface LabsFilterParams {
+  city?: string;
+  state?: string;
+  search?: string;
+}
+
+const LABS_PAGE_SIZE = 24;
+
+interface LabsPage {
+  labs: Lab[];
+  notConfigured: boolean;
+  totalCount: number;
+}
+
+// Same shape as usePaginatedDoctors above, simplified: no specialty filter, no virtualization/
+// AI-search concerns at the caller side -- LabDirectory.tsx is a plain paginated grid.
+export function usePaginatedLabs(filters: LabsFilterParams, seed?: Lab[]) {
+  const query = useInfiniteQuery<LabsPage>({
+    queryKey: ["public", "labs", "paginated", filters],
+    initialPageParam: 1,
+    queryFn: async ({ pageParam }) => {
+      const params = new URLSearchParams({ page: String(pageParam), pageSize: String(LABS_PAGE_SIZE) });
+      if (filters.city) params.set("city", filters.city);
+      if (filters.state) params.set("state", filters.state);
+      if (filters.search) params.set("search", filters.search);
+
+      const json = await getJson(`/api/public/labs?${params.toString()}`);
+      if (json?.notConfigured) return { labs: [], notConfigured: true, totalCount: 0 };
+      const list = Array.isArray(json) ? json : json?.labs ?? [];
+      return { labs: mapLabs(list), notConfigured: false, totalCount: json?.totalCount ?? list.length };
+    },
+    getNextPageParam: (lastPage, allPages) => {
+      const loaded = allPages.reduce((sum, p) => sum + p.labs.length, 0);
+      return loaded < lastPage.totalCount ? allPages.length + 1 : undefined;
+    },
+    initialData:
+      seed !== undefined
+        ? {
+            pages: [{ labs: seed.slice(0, LABS_PAGE_SIZE), notConfigured: false, totalCount: seed.length }],
+            pageParams: [1],
+          }
+        : undefined,
+    staleTime: 5 * 60 * 1000,
+  });
+
+  const pages = query.data?.pages ?? [];
+  return {
+    labs: pages.flatMap((p) => p.labs),
     notConfigured: pages[0]?.notConfigured ?? false,
     totalCount: pages[0]?.totalCount ?? 0,
     isLoading: query.isLoading,
