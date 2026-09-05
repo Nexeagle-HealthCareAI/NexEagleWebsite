@@ -1,15 +1,13 @@
-"use client";
+﻿"use client";
 
 import { useState } from "react";
 import PatientTopBar from "@/components/patient/PatientTopBar";
-import PhoneVerification from "@/components/patient/PhoneVerification";
 import { User, Shield, HelpCircle, LogOut, ChevronRight, LogIn, FolderHeart } from "lucide-react";
 import Link from "next/link";
 import { usePatientAuth } from "@/hooks/usePatientAuth";
 
 export default function ProfileClient() {
   const { isLoggedIn, mobile, isLoading, logout } = usePatientAuth();
-  const [showVerification, setShowVerification] = useState(false);
 
   if (isLoading) {
     return (
@@ -27,11 +25,7 @@ export default function ProfileClient() {
       <PatientTopBar showBackButton={true} />
 
       <div className="flex-1 w-full max-w-3xl mx-auto px-4 sm:px-6 py-6 md:py-10">
-        {showVerification ? (
-          <div className="py-10">
-            <PhoneVerification onVerified={() => setShowVerification(false)} />
-          </div>
-        ) : !isLoggedIn ? (
+        {!isLoggedIn ? (
           <div className="flex flex-col items-center justify-center text-center py-16 bg-white rounded-[2rem] border border-dashed border-slate-200 shadow-sm px-6">
             <div className="w-16 h-16 rounded-2xl bg-teal-50 text-brand-teal flex items-center justify-center mb-4 border border-teal-100">
               <User className="w-7 h-7" />
@@ -40,12 +34,12 @@ export default function ProfileClient() {
             <p className="text-sm text-slate-500 mb-6 max-w-sm">
               Log in with WhatsApp to see your profile and appointments from any device.
             </p>
-            <button
-              onClick={() => setShowVerification(true)}
+            <Link
+              href="/login"
               className="inline-flex items-center gap-2 px-6 py-3 rounded-xl bg-brand-teal text-white font-bold text-sm shadow-[0_4px_14px_0_rgba(20,184,166,0.3)] hover:bg-teal-600 transition-colors"
             >
               <LogIn className="w-4 h-4" /> Log In With WhatsApp
-            </button>
+            </Link>
           </div>
         ) : (
           <>
@@ -120,3 +114,4 @@ export default function ProfileClient() {
     </main>
   );
 }
+

@@ -65,6 +65,24 @@ const TeamSection = ({ defaultFilter = "All", showHeader = true }: TeamSectionPr
       departments: ["Founding Team", "Medical & Research"],
       image: "/assets/Tabish Noori.webp",
       linkedin: "https://www.linkedin.com/in/md-tabish-noori-16a815a5/"
+    },
+    {
+      name: "Alisha",
+      role: "Frontend Developer",
+      credential: "FDE Developer",
+      focus: "Crafting intuitive, accessible, and high-performance user interfaces for clinical and patient-facing modules.",
+      category: "Product & Engineering",
+      departments: ["Product & Engineering"],
+      image: "/assets/Alisha.png"
+    },
+    {
+      name: "Sana",
+      role: "AI Developer",
+      credential: "AI Developer",
+      focus: "Building intelligent automation, clinical decision support, and AI-powered workflows across the healthcare platform.",
+      category: "Product & Engineering",
+      departments: ["Product & Engineering"],
+      image: "/assets/Sana.png"
     }
   ];
 
