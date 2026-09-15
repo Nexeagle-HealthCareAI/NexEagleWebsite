@@ -147,6 +147,7 @@ jobs:
           build-args: |
             NEXT_PUBLIC_API_URL=http://151.185.45.77:5002
             EASYHMS_API_BASE_URL=https://1hms-dev-api.nexeagle.com
+            NEXT_PUBLIC_MAPBOX_TOKEN=${{ secrets.NEXT_PUBLIC_MAPBOX_TOKEN }}
 
       - name: Deploy to Dev VM
         uses: appleboy/ssh-action@v1.0.3
@@ -280,6 +281,7 @@ jobs:
           build-args: |
             NEXT_PUBLIC_API_URL=https://cms-api.nexeagle.com
             EASYHMS_API_BASE_URL=https://1hms-api.nexeagle.com
+            NEXT_PUBLIC_MAPBOX_TOKEN=${{ secrets.NEXT_PUBLIC_MAPBOX_TOKEN }}
 
       - name: Prepare SSH key
         run: |

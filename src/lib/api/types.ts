@@ -69,6 +69,22 @@ export interface DoctorsResponseDto {
   doctors: DoctorDto[];
 }
 
+// GET /public/hospitals -> GetPublicHospitalsResponseModel (PublicHospitalInfo per hospital).
+// Platform-wide, opt-in (Hospital.IsPubliclyListed) list — same gating as /public/doctors.
+export interface HospitalDto {
+  hospitalId: string;
+  name?: string | null;
+  city?: string | null;
+  state?: string | null;
+  latitude?: number | null;
+  longitude?: number | null;
+}
+
+export interface HospitalsResponseDto {
+  success: boolean;
+  hospitals: HospitalDto[];
+}
+
 // "Is the doctor generally working this day" only — no granular open-slot list,
 // since a public booking is a preferred-date/time request, not a claimed slot.
 export interface ShiftDto {

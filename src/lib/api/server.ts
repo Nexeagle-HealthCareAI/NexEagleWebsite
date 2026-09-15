@@ -11,7 +11,9 @@ import { unstable_cache } from "next/cache";
 import type { Doctor } from "@/data/patient";
 import { doctors as mockDoctors } from "@/data/patient";
 import { mapDoctor, mapDoctors } from "./mappers";
-import type { DoctorsResponseDto } from "./types";
+import type { DoctorsResponseDto, HospitalsResponseDto } from "./types";
+import type { PublicHospital } from "./mappers";
+import { mapHospitals } from "./mappers";
 
 const BASE_URL = process.env.EASYHMS_API_BASE_URL ?? "";
 // Optional — the public API doesn't require a key (see PublicApiKeyFilter). Only set this if
@@ -233,4 +235,34 @@ const fetchAllDoctorsCached = unstable_cache(
 
 export async function getAllDoctors(): Promise<AllDoctorsResult> {
   return fetchAllDoctorsCached();
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// Platform-wide hospital directory (app/hospitals/page.tsx's "near me" map/search view).
+// Unlike getAllDoctors, there's no mock-data fallback: this is a net-new, non-critical
+// view, so when the API isn't configured it just renders an empty list rather than
+// throwing and failing the build (see isConfigured() guard below).
+// ─────────────────────────────────────────────────────────────────────────────
+export interface AllHospitalsResult {
+  hospitals: PublicHospital[];
+  notConfigured: boolean;
+}
+
+const fetchAllHospitalsCached = unstable_cache(
+  async (): Promise<AllHospitalsResult> => {
+    if (!isConfigured()) {
+      return { hospitals: [], notConfigured: true };
+    }
+    const result = await easyhmsFetch<HospitalsResponseDto>("/public/hospitals");
+    if (result.notConfigured || !result.data) {
+      return { hospitals: [], notConfigured: true };
+    }
+    return { hospitals: mapHospitals(result.data.hospitals), notConfigured: false };
+  },
+  ["public-hospitals"],
+  { revalidate: 3600, tags: ["hospitals"] }
+);
+
+export async function getAllHospitals(): Promise<AllHospitalsResult> {
+  return fetchAllHospitalsCached();
 }

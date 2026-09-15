@@ -11,6 +11,7 @@ import type {
   AvailabilityDto,
   DoctorDto,
   CreateAppointmentResponseDto,
+  HospitalDto,
 } from "./types";
 
 const GRADIENTS = [
@@ -207,4 +208,27 @@ export function mapBookingReference(dto: CreateAppointmentResponseDto | undefine
   if (!dto) return null;
   const ref = dto.appointmentId ?? dto.patientId;
   return ref !== undefined && ref !== null ? String(ref) : null;
+}
+
+// UI-facing hospital shape for the "near me" map/search view (app/hospitals/page.tsx).
+export interface PublicHospital {
+  id: string;
+  name: string;
+  city?: string;
+  state?: string;
+  latitude?: number;
+  longitude?: number;
+}
+
+export function mapHospitals(dtos: HospitalDto[]): PublicHospital[] {
+  return dtos
+    .filter((h) => h.hospitalId && h.name)
+    .map((h) => ({
+      id: h.hospitalId,
+      name: h.name as string,
+      city: h.city ?? undefined,
+      state: h.state ?? undefined,
+      latitude: h.latitude ?? undefined,
+      longitude: h.longitude ?? undefined,
+    }));
 }

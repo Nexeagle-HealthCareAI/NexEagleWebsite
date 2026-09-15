@@ -22,6 +22,7 @@ import PatientFooter from "@/components/patient/PatientFooter";
 import BookingPanel from "@/components/patient/BookingPanel";
 import ReviewsSection from "@/components/patient/ReviewsSection";
 import DoctorCard from "@/components/patient/DoctorCard";
+import DoctorLocationMap from "@/components/patient/DoctorLocationMap";
 import ShareButton from "@/components/patient/ShareButton";
 import { RatingBadge } from "@/components/patient/StarRating";
 import { getDirectionsUrl, formatCount, type Doctor } from "@/data/patient";
@@ -189,31 +190,41 @@ export default function DoctorDetailClient({ doctor, similarDoctors, canonicalSl
             <div className="order-3 lg:order-none lg:col-start-1 lg:row-start-2 space-y-6">
 
               {/* Practices at */}
-              {locationLine && (
-                <div className="bg-white rounded-3xl border border-slate-200/80 shadow-sm p-5">
-                  <h2 className="text-[11px] font-bold text-slate-400 uppercase tracking-wide mb-3">
-                    {t("doctorDetail.practicesAt")}
-                  </h2>
-                  <div className="flex items-center gap-3 rounded-2xl border border-slate-100 bg-slate-50 p-4">
-                    <div className="w-10 h-10 rounded-xl bg-teal-50 text-brand-teal flex items-center justify-center shrink-0">
-                      <MapPin className="w-5 h-5" />
-                    </div>
-                    <div className="min-w-0 flex-1">
-                      {doctor.hospitalName && (
-                        <p className="font-bold text-sm text-slate-900 truncate">{doctor.hospitalName}</p>
-                      )}
-                      {doctor.address && (
-                        <p className="text-xs text-slate-600 mt-0.5">{doctor.address}</p>
-                      )}
-                      {doctor.city && (
-                        <p className="text-xs text-slate-500 mt-0.5">
-                          {doctor.city}{doctor.state ? `, ${doctor.state}` : ""}{doctor.pincode ? ` – ${doctor.pincode}` : ""}
-                        </p>
-                      )}
-                    </div>
-                    {(() => {
-                      const directionsUrl = getDirectionsUrl(doctor);
-                      return directionsUrl ? (
+              {locationLine && (() => {
+                const directionsUrl = getDirectionsUrl(doctor);
+                return (
+                  <div className="bg-white rounded-3xl border border-slate-200/80 shadow-sm p-5">
+                    <h2 className="text-[11px] font-bold text-slate-400 uppercase tracking-wide mb-3">
+                      {t("doctorDetail.practicesAt")}
+                    </h2>
+                    {doctor.latitude != null && doctor.longitude != null && directionsUrl && (
+                      <div className="mb-3">
+                        <DoctorLocationMap
+                          latitude={doctor.latitude}
+                          longitude={doctor.longitude}
+                          directionsUrl={directionsUrl}
+                          label={doctor.hospitalName || doctor.name}
+                        />
+                      </div>
+                    )}
+                    <div className="flex items-center gap-3 rounded-2xl border border-slate-100 bg-slate-50 p-4">
+                      <div className="w-10 h-10 rounded-xl bg-teal-50 text-brand-teal flex items-center justify-center shrink-0">
+                        <MapPin className="w-5 h-5" />
+                      </div>
+                      <div className="min-w-0 flex-1">
+                        {doctor.hospitalName && (
+                          <p className="font-bold text-sm text-slate-900 truncate">{doctor.hospitalName}</p>
+                        )}
+                        {doctor.address && (
+                          <p className="text-xs text-slate-600 mt-0.5">{doctor.address}</p>
+                        )}
+                        {doctor.city && (
+                          <p className="text-xs text-slate-500 mt-0.5">
+                            {doctor.city}{doctor.state ? `, ${doctor.state}` : ""}{doctor.pincode ? ` – ${doctor.pincode}` : ""}
+                          </p>
+                        )}
+                      </div>
+                      {directionsUrl && (
                         <a
                           href={directionsUrl}
                           target="_blank"
@@ -223,11 +234,11 @@ export default function DoctorDetailClient({ doctor, similarDoctors, canonicalSl
                           <Navigation className="w-3.5 h-3.5" />
                           {t("doctorCard.directions")}
                         </a>
-                      ) : null;
-                    })()}
+                      )}
+                    </div>
                   </div>
-                </div>
-              )}
+                );
+              })()}
 
               {/* About */}
               {doctor.about && (

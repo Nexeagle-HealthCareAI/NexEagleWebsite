@@ -195,6 +195,15 @@ export default function PatientTopBar({
               </div>
             )}
 
+            {/* Hospitals directory — patient-facing "near me" map/search view */}
+            <Link
+              href="/hospitals"
+              className="hidden md:inline-flex items-center gap-1.5 shrink-0 text-sm font-semibold text-slate-600 hover:text-brand-teal transition-colors"
+            >
+              <MapPin className="w-4 h-4" />
+              Hospitals
+            </Link>
+
             {/* Provider CTA */}
             <Link href="/business" className="shrink-0">
               <button className="hidden sm:inline-flex items-center gap-2 px-5 py-2.5 rounded-full bg-brand-teal hover:bg-teal-500 text-white text-sm font-bold transition-all duration-300 shadow-[0_4px_14px_0_rgba(20,184,166,0.3)] hover:shadow-[0_6px_20px_rgba(20,184,166,0.4)] hover:-translate-y-0.5">

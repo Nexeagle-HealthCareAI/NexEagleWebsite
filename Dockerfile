@@ -27,6 +27,12 @@ ENV NEXT_PUBLIC_API_URL=$NEXT_PUBLIC_API_URL
 ARG EASYHMS_API_BASE_URL
 ENV EASYHMS_API_BASE_URL=$EASYHMS_API_BASE_URL
 
+# Mapbox public token -- powers the static location-preview map on each doctor's detail page
+# (DoctorLocationMap.tsx). Same build-time-inlining reasoning as NEXT_PUBLIC_API_URL above.
+# Unset means the map is simply omitted; the "Get Directions" link still works either way.
+ARG NEXT_PUBLIC_MAPBOX_TOKEN
+ENV NEXT_PUBLIC_MAPBOX_TOKEN=$NEXT_PUBLIC_MAPBOX_TOKEN
+
 RUN npm run build
 
 # ── Stage 2: Serve ────────────────────────────────────────────────────────────
