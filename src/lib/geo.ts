@@ -17,10 +17,20 @@ export type GeoStatus = "idle" | "detecting" | "found" | "denied" | "unsupported
  * (with a city) or "denied"/"unsupported" (city stays null).
  * Also returns the raw lat/lon coordinates for advanced spatial filtering.
  */
-export function useGeolocatedCity(candidates: CityOption[]): { status: GeoStatus; city: CityOption | null; coords: { lat: number; lon: number } | null } {
+export function useGeolocatedCity(candidates: CityOption[]): {
+  status: GeoStatus;
+  city: CityOption | null;
+  coords: { lat: number; lon: number } | null;
+  retry: () => void;
+} {
   const [status, setStatus] = useState<GeoStatus>("idle");
   const [city, setCity] = useState<CityOption | null>(null);
   const [coords, setCoords] = useState<{ lat: number; lon: number } | null>(null);
+  // Bumped by retry() to re-run the effect below -- getCurrentPosition only ever fires on
+  // mount/candidates-change otherwise, so clicking "Allow Location" again after a "denied"
+  // status (e.g. the user had dismissed the browser's own permission prompt, not permanently
+  // blocked it) would silently do nothing without this.
+  const [retryNonce, setRetryNonce] = useState(0);
 
   useEffect(() => {
     if (typeof navigator === "undefined" || !navigator.geolocation) {
@@ -73,12 +83,14 @@ export function useGeolocatedCity(candidates: CityOption[]): { status: GeoStatus
       () => setStatus("denied"),
       { enableHighAccuracy: true, timeout: 10000, maximumAge: 0 }
     );
-    // Only re-run when the candidate set meaningfully changes (its length),
-    // not on every render — candidates is a fresh array each render.
+    // Only re-run when the candidate set meaningfully changes (its length) or retry() is
+    // called — not on every render, since candidates is a fresh array each render.
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [candidates.length]);
+  }, [candidates.length, retryNonce]);
 
-  return { status, city, coords };
+  const retry = () => setRetryNonce((n) => n + 1);
+
+  return { status, city, coords, retry };
 }
 
 /**

@@ -80,7 +80,8 @@ export default function HomeClient({
   const handleRequestLocation = useCallback(() => {
     // Reset picked flag so geo result can apply
     setUserPicked(false);
-  }, []);
+    geo.retry();
+  }, [geo]);
 
   // Search + specialty state (shared between Hero and Directory)
   const [query, setQuery] = useState(initialQuery);
