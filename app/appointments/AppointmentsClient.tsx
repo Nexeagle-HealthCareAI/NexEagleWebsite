@@ -1,4 +1,4 @@
-"use client";
+﻿"use client";
 
 import { useMemo, useState } from "react";
 import { useQueries, useQuery } from "@tanstack/react-query";
@@ -7,7 +7,6 @@ import { Calendar, Clock, MapPin, ChevronRight, ChevronDown, LogIn, Smartphone, 
 import Link from "next/link";
 import { useGuestAppointments } from "@/hooks/useGuestAppointments";
 import { usePatientAuth, type PatientAppointment } from "@/hooks/usePatientAuth";
-import PhoneVerification from "@/components/patient/PhoneVerification";
 import { cn } from "@/lib/utils";
 
 async function fetchGuestAppointment(id: string): Promise<PatientAppointment | null> {
@@ -32,7 +31,7 @@ async function fetchAppointmentDocuments(id: string): Promise<AppointmentDocumen
 }
 
 // Documents are only reachable for a logged-in session (the backend checks the OTP-verified
-// mobile against PatientRegistration.Mobile) — guest-tracked cards never show this section since
+// mobile against PatientRegistration.Mobile) â€” guest-tracked cards never show this section since
 // there's no session cookie to authenticate the request.
 function DocumentsSection({ appointmentId }: { appointmentId: string }) {
   const [expanded, setExpanded] = useState(false);
@@ -131,10 +130,9 @@ function AppointmentCard({ appt, canViewDocuments }: { appt: PatientAppointment;
 export default function AppointmentsClient() {
   const { entries: guestEntries, isLoaded } = useGuestAppointments();
   const { isLoggedIn, mobile, appointments: myAppointments, isLoading: authLoading, logout } = usePatientAuth();
-  const [showVerification, setShowVerification] = useState(false);
 
   // Once logged in, guest entries booked under the SAME verified number are already covered by
-  // the authenticated list — only fetch/show ones booked under a DIFFERENT number (e.g. this
+  // the authenticated list â€” only fetch/show ones booked under a DIFFERENT number (e.g. this
   // device was used to book for a family member with a different contact number), kept in their
   // own clearly-labeled section rather than silently merged into "your appointments". This is
   // also what keeps a shared/borrowed device safe: a stranger's guest booking sitting in this
@@ -155,8 +153,6 @@ export default function AppointmentsClient() {
   const guestAppointments = guestQueries.map((q) => q.data).filter((a): a is PatientAppointment => !!a);
   const guestLoading = guestQueries.some((q) => q.isLoading);
 
-  const handleVerified = () => setShowVerification(false);
-
   if (!isLoaded || authLoading) {
     return (
       <main className="min-h-screen bg-slate-50 flex flex-col pb-24 md:pb-0">
@@ -175,7 +171,6 @@ export default function AppointmentsClient() {
       <PatientTopBar showBackButton={true} />
 
       <div className="flex-1 w-full max-w-3xl mx-auto px-4 sm:px-6 py-6 md:py-10">
-        {!showVerification && (
           <div className="flex items-center justify-between gap-3 mb-6">
             <h1 className="text-2xl font-display font-extrabold text-slate-900 tracking-tight">
               My Appointments
@@ -188,21 +183,16 @@ export default function AppointmentsClient() {
                 Sign out
               </button>
             ) : (
-              <button
-                onClick={() => setShowVerification(true)}
+              <Link
+                href="/login"
                 className="inline-flex items-center gap-1.5 text-xs font-bold text-brand-teal hover:text-teal-700 transition-colors"
               >
                 <LogIn className="w-3.5 h-3.5" /> Log in
-              </button>
+              </Link>
             )}
           </div>
-        )}
 
-        {showVerification ? (
-          <div className="py-10">
-            <PhoneVerification onVerified={handleVerified} />
-          </div>
-        ) : hasAnyAppointments ? (
+        {hasAnyAppointments ? (
           <div className="space-y-6">
             {isLoggedIn && myAppointments.length > 0 && (
               <div className="space-y-4">
@@ -238,12 +228,12 @@ export default function AppointmentsClient() {
                 <p className="text-xs text-slate-600">
                   Log in with WhatsApp to see these appointments from any device.
                 </p>
-                <button
-                  onClick={() => setShowVerification(true)}
-                  className="mt-2 text-xs font-bold text-brand-teal hover:text-teal-700"
+                <Link
+                  href="/login"
+                  className="mt-2 inline-block text-xs font-bold text-brand-teal hover:text-teal-700"
                 >
-                  Log In With WhatsApp →
-                </button>
+                  Log In With WhatsApp â†’
+                </Link>
               </div>
             )}
           </div>
@@ -267,12 +257,12 @@ export default function AppointmentsClient() {
                 Find a Doctor
               </Link>
               {!isLoggedIn && (
-                <button
-                  onClick={() => setShowVerification(true)}
-                  className="px-6 py-3 rounded-xl bg-white text-slate-700 font-bold text-sm border border-slate-200 shadow-sm hover:bg-slate-50 transition-colors w-full sm:w-auto"
+                <Link
+                  href="/login"
+                  className="px-6 py-3 rounded-xl bg-white text-slate-700 font-bold text-sm border border-slate-200 shadow-sm hover:bg-slate-50 transition-colors w-full sm:w-auto text-center flex items-center justify-center"
                 >
                   Log In With WhatsApp
-                </button>
+                </Link>
               )}
             </div>
 
@@ -287,3 +277,4 @@ export default function AppointmentsClient() {
     </main>
   );
 }
+
