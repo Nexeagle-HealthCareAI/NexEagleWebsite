@@ -9,6 +9,8 @@
 import { useEffect, useState } from "react";
 import { cityId, type CityOption } from "@/data/patient";
 
+const MAPBOX_TOKEN = process.env.NEXT_PUBLIC_MAPBOX_TOKEN;
+
 export type GeoStatus = "idle" | "detecting" | "found" | "denied" | "unsupported";
 
 /**
@@ -113,50 +115,60 @@ export function haversineDistance(lat1: number, lon1: number, lat2: number, lon2
   return R * c;
 }
 
+// Mapbox Directions Matrix API (driving profile) caps a single request at 25 total
+// coordinates -- 1 source (the visitor) + up to 24 destinations -- so batches larger than
+// that are split into parallel chunked requests and merged below.
+const MATRIX_CHUNK_SIZE = 24;
+
 /**
- * Fetches real driving distances and ETAs using the free OSRM public API.
- * Safely handles batching (up to 50 destinations at once).
+ * Fetches real driving distances and ETAs via Mapbox's Directions Matrix API (same paid
+ * account already used for the map itself -- swapped in for the free/public OSRM demo
+ * server, which has no SLA and whose own usage policy disallows production traffic).
+ * Safely handles batching of any number of destinations via chunked parallel requests.
+ * Resolves to {} (never throws) if the token is missing or every chunk fails -- callers
+ * already treat this as a best-effort enrichment on top of the haversine estimate.
  */
 export async function getDrivingDistances(
-  userLat: number, userLon: number, 
+  userLat: number, userLon: number,
   destinations: {id: string, lat: number, lon: number}[]
 ): Promise<Record<string, { distanceKm: number, durationMin: number }>> {
-  if (destinations.length === 0) return {};
-  
-  // OSRM expects lon,lat format
-  const coords = [`${userLon},${userLat}`];
-  const destIndices: number[] = [];
-  
-  destinations.forEach((d, i) => {
-    coords.push(`${d.lon},${d.lat}`);
-    destIndices.push(i + 1); // +1 because user is index 0
-  });
+  if (destinations.length === 0 || !MAPBOX_TOKEN) return {};
 
-  const coordString = coords.join(";");
-  const destString = destIndices.join(";");
-  
-  const url = `https://router.project-osrm.org/table/v1/driving/${coordString}?sources=0&destinations=${destString}&annotations=distance,duration`;
-  
-  try {
-    const res = await fetch(url);
-    const data = await res.json();
-    
-    if (data.code !== "Ok") return {};
-    
-    const results: Record<string, { distanceKm: number, durationMin: number }> = {};
-    destinations.forEach((d, i) => {
-      const distMeters = data.distances[0][i];
-      const durationSeconds = data.durations[0][i];
-      if (distMeters !== null && distMeters !== undefined) {
-        results[d.id] = {
-          distanceKm: distMeters / 1000,
-          durationMin: Math.round(durationSeconds / 60)
-        };
-      }
-    });
-    return results;
-  } catch (err) {
-    console.error("OSRM failed", err);
-    return {};
+  const chunks: (typeof destinations)[] = [];
+  for (let i = 0; i < destinations.length; i += MATRIX_CHUNK_SIZE) {
+    chunks.push(destinations.slice(i, i + MATRIX_CHUNK_SIZE));
   }
+
+  const results: Record<string, { distanceKm: number, durationMin: number }> = {};
+
+  await Promise.all(
+    chunks.map(async (chunk) => {
+      // Mapbox expects lon,lat per coordinate (semicolon-separated path); sources/destinations
+      // index lists are comma-separated (unlike OSRM's semicolon-separated index lists).
+      const coordString = [`${userLon},${userLat}`, ...chunk.map((d) => `${d.lon},${d.lat}`)].join(";");
+      const destIndices = chunk.map((_, i) => i + 1).join(",");
+      const url = `https://api.mapbox.com/directions-matrix/v1/mapbox/driving/${coordString}?sources=0&destinations=${destIndices}&annotations=distance,duration&access_token=${MAPBOX_TOKEN}`;
+
+      try {
+        const res = await fetch(url);
+        const data = await res.json();
+        if (data.code !== "Ok") return;
+
+        chunk.forEach((d, i) => {
+          const distMeters = data.distances?.[0]?.[i];
+          const durationSeconds = data.durations?.[0]?.[i];
+          if (distMeters !== null && distMeters !== undefined && durationSeconds !== null && durationSeconds !== undefined) {
+            results[d.id] = {
+              distanceKm: distMeters / 1000,
+              durationMin: Math.round(durationSeconds / 60)
+            };
+          }
+        });
+      } catch (err) {
+        console.error("Mapbox Matrix API failed", err);
+      }
+    })
+  );
+
+  return results;
 }
