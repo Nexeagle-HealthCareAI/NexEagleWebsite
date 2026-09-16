@@ -69,11 +69,40 @@ export default async function ConditionCityPage({ params }: PageProps) {
     state: city.state,
   });
 
+  const faqSchema = {
+    "@context": "https://schema.org",
+    "@type": "FAQPage",
+    "mainEntity": [
+      {
+        "@type": "Question",
+        "name": `Which are the best doctors for ${conditionName} in ${city.name}?`,
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": `NexEagle lists the top-rated specialists for ${conditionName} in ${city.name}, ${city.state}. You can filter by patient reviews and experience to find the right doctor for you.`
+        }
+      },
+      {
+        "@type": "Question",
+        "name": `How quickly can I consult a doctor for ${conditionName} in ${city.name}?`,
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": `Many doctors in ${city.name} offer same-day appointments. You can view real-time availability and book your slot instantly on NexEagle.`
+        }
+      }
+    ]
+  };
+
   return (
-    <HomeClient
-      initialQuery={conditionName}
-      initialCityId={city.id}
-      initialDoctors={initialDoctors}
-    />
+    <>
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(faqSchema) }}
+      />
+      <HomeClient
+        initialQuery={conditionName}
+        initialCityId={city.id}
+        initialDoctors={initialDoctors}
+      />
+    </>
   );
 }

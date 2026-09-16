@@ -69,6 +69,40 @@ export interface DoctorsResponseDto {
   doctors: DoctorDto[];
 }
 
+// ─────────────────────────────────────────────────────────────────────────────
+// GET /public/labs -> GetPublicLabsResponseModel (PathologyLab directory).
+// An INDEPENDENT listing, unlike doctors: a lab's visibility does not require
+// Hospital.IsPubliclyListed. Name/address/registrationNumber already reflect
+// LabConfiguration's own override-or-fall-back-to-hospital resolution server-side
+// (see GetPublicLabsHandler.cs) — this DTO never distinguishes which source a
+// value came from.
+// ─────────────────────────────────────────────────────────────────────────────
+export interface LabDto {
+  labId: string;
+  hospitalId: string;
+  name?: string | null;
+  description?: string | null;
+  address?: string | null;
+  city?: string | null;
+  state?: string | null;
+  pincode?: string | null;
+  latitude?: number | null;
+  longitude?: number | null;
+  registrationNumber?: string | null;
+  contactPhone?: string | null;
+  contactEmail?: string | null;
+  testCategories?: string[] | null;
+}
+
+export interface LabsResponseDto {
+  success: boolean;
+  message?: string | null;
+  labs: LabDto[];
+  page: number;
+  pageSize: number;
+  totalCount: number;
+}
+
 // GET /public/hospitals -> GetPublicHospitalsResponseModel (PublicHospitalInfo per hospital).
 // Platform-wide, opt-in (Hospital.IsPubliclyListed) list — same gating as /public/doctors.
 export interface HospitalDto {

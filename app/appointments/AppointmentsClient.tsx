@@ -228,12 +228,12 @@ export default function AppointmentsClient() {
                 <p className="text-xs text-slate-600">
                   Log in with WhatsApp to see these appointments from any device.
                 </p>
-                <button
-                  onClick={() => setShowVerification(true)}
-                  className="mt-2 text-xs font-bold text-brand-teal hover:text-teal-700"
+                <Link
+                  href="/login"
+                  className="mt-2 inline-block text-xs font-bold text-brand-teal hover:text-teal-700"
                 >
                   Log In With WhatsApp â†’
-                </button>
+                </Link>
               </div>
             )}
           </div>

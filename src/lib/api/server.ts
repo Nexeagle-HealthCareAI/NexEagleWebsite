@@ -10,10 +10,11 @@ import { headers } from "next/headers";
 import { unstable_cache } from "next/cache";
 import type { Doctor } from "@/data/patient";
 import { doctors as mockDoctors } from "@/data/patient";
-import { mapDoctor, mapDoctors } from "./mappers";
-import type { DoctorsResponseDto, HospitalsResponseDto } from "./types";
+import type { Lab } from "@/data/labs";
+import { mockLabs } from "@/data/labs";
+import { mapDoctor, mapDoctors, mapLab, mapLabs, mapHospitals } from "./mappers";
+import type { DoctorsResponseDto, LabsResponseDto, HospitalsResponseDto } from "./types";
 import type { PublicHospital } from "./mappers";
-import { mapHospitals } from "./mappers";
 
 const BASE_URL = process.env.EASYHMS_API_BASE_URL ?? "";
 // Optional — the public API doesn't require a key (see PublicApiKeyFilter). Only set this if
@@ -235,6 +236,65 @@ const fetchAllDoctorsCached = unstable_cache(
 
 export async function getAllDoctors(): Promise<AllDoctorsResult> {
   return fetchAllDoctorsCached();
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// getAllLabs / getLabById — same SSR-cacheable pattern as getAllDoctors/
+// getDoctorById above, for the pathology-lab directory. Labs are an
+// INDEPENDENT listing (no Hospital.IsPubliclyListed dependency) -- see
+// GetPublicLabsHandler.cs.
+// ─────────────────────────────────────────────────────────────────────────────
+export interface AllLabsResult {
+  labs: Lab[];
+  notConfigured: boolean;
+}
+
+const fetchAllLabsCached = unstable_cache(
+  async (): Promise<AllLabsResult> => {
+    if (!isConfigured()) {
+      if (process.env.NODE_ENV === "production") {
+        throw new Error(
+          "getAllLabs: EASYHMS_API_BASE_URL is not set. Refusing to silently " +
+            "build/serve real listing pages with mock lab data in production " +
+            "— set EASYHMS_API_BASE_URL and retry."
+        );
+      }
+      return { labs: mockLabs, notConfigured: true };
+    }
+
+    const result = await easyhmsFetch<LabsResponseDto>("/public/labs?pageSize=2000");
+    if (result.notConfigured || !result.data) {
+      // Same "fail loudly rather than silently serve mock data" discipline as getAllDoctors --
+      // a real, persistent failure should be visible immediately, not masked by a fallback.
+      throw new Error(
+        `getAllLabs: live call to ${process.env.EASYHMS_API_BASE_URL} failed ` +
+          `(status ${result.status}). Not falling back to mock data.`
+      );
+    }
+    return { labs: mapLabs(result.data.labs), notConfigured: false };
+  },
+  ["public-labs"],
+  { revalidate: 3600, tags: ["labs"] }
+);
+
+export async function getAllLabs(): Promise<AllLabsResult> {
+  return fetchAllLabsCached();
+}
+
+export interface GetLabByIdResult {
+  lab: Lab | null;
+  notConfigured: boolean;
+}
+
+// Unlike getDoctorById, the backend supports an exact labId filter directly (GetPublicLabsHandler
+// reuses its own paginated query for this) -- the labs dataset is expected to start small, so this
+// keeps the per-request payload minimal rather than fetching the whole directory to scan by id.
+export async function getLabById(labId: string): Promise<GetLabByIdResult> {
+  const result = await easyhmsFetch<LabsResponseDto>(`/public/labs?labId=${encodeURIComponent(labId)}&pageSize=1`);
+  if (result.notConfigured) return { lab: null, notConfigured: true };
+
+  const dto = result.data?.labs?.[0];
+  return { lab: dto ? mapLab(dto) : null, notConfigured: false };
 }
 
 // ─────────────────────────────────────────────────────────────────────────────
