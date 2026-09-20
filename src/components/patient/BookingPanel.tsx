@@ -24,6 +24,8 @@ import { getSavedRating, markRated } from "@/lib/ratingGuard";
 import { reportEngagement } from "@/lib/pwaInstall";
 import { useGuestAppointments } from "@/hooks/useGuestAppointments";
 import { trackEvent } from "@/lib/analytics";
+import { useNavigation } from "@/components/navigation/NavigationProvider";
+import { joinAddress } from "@/lib/navigation";
 import { cn } from "@/lib/utils";
 import { useTranslation } from "@/lib/i18n/I18nContext";
 import type { TranslationKey } from "@/lib/i18n/dictionaries/en";
@@ -75,6 +77,7 @@ const TIME_RANGES: { id: string; labelKey: TranslationKey; time: string; icon: R
 
 export default function BookingPanel({ doctor }: BookingPanelProps) {
   const { t, locale } = useTranslation();
+  const { openNavigation } = useNavigation();
   const [step, setStep] = useState<Step>("visit");
 
   // Booking Funnel Drop-off for the CMS Insights tab — fires once per step, including the initial
@@ -568,15 +571,21 @@ export default function BookingPanel({ doctor }: BookingPanelProps) {
           {/* Directions + WhatsApp + Email buttons */}
           <div className={cn("grid gap-2", directionsUrl ? "grid-cols-3" : "grid-cols-2")}>
             {directionsUrl && (
-              <a
-                href={directionsUrl}
-                target="_blank"
-                rel="noopener noreferrer"
+              <button
+                type="button"
+                onClick={() =>
+                  openNavigation({
+                    name: doctor.hospitalName || doctor.name,
+                    latitude: doctor.latitude,
+                    longitude: doctor.longitude,
+                    address: joinAddress(doctor.address, doctor.city, doctor.state, doctor.pincode),
+                  })
+                }
                 className="flex flex-col items-center justify-center gap-1 py-3 rounded-2xl bg-brand-teal hover:bg-brand-teal/90 text-white font-bold text-xs transition shadow-md"
               >
                 <Navigation className="w-4 h-4" />
                 {t("booking.directions")}
-              </a>
+              </button>
             )}
             <a
               href={whatsappUrl}

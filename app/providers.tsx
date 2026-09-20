@@ -6,6 +6,7 @@ import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { PersistQueryClientProvider } from "@tanstack/react-query-persist-client";
 import { createSyncStoragePersister } from "@tanstack/query-sync-storage-persister";
 import { I18nProvider } from "@/lib/i18n/I18nContext";
+import { NavigationProvider } from "@/components/navigation/NavigationProvider";
 
 const ONE_DAY_MS = 24 * 60 * 60 * 1000;
 
@@ -45,7 +46,9 @@ export function Providers({ children }: { children: React.ReactNode }) {
     return (
       <QueryClientProvider client={queryClient}>
         <I18nProvider>
-          <TooltipProvider>{children}</TooltipProvider>
+          <TooltipProvider>
+            <NavigationProvider>{children}</NavigationProvider>
+          </TooltipProvider>
         </I18nProvider>
       </QueryClientProvider>
     );
@@ -54,7 +57,9 @@ export function Providers({ children }: { children: React.ReactNode }) {
   return (
     <PersistQueryClientProvider client={queryClient} persistOptions={{ persister, maxAge: ONE_DAY_MS }}>
       <I18nProvider>
-        <TooltipProvider>{children}</TooltipProvider>
+        <TooltipProvider>
+          <NavigationProvider>{children}</NavigationProvider>
+        </TooltipProvider>
       </I18nProvider>
     </PersistQueryClientProvider>
   );

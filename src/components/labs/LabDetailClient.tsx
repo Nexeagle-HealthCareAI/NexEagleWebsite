@@ -8,6 +8,8 @@ import PatientFooter from "@/components/patient/PatientFooter";
 import ShareButton from "@/components/patient/ShareButton";
 import type { Lab } from "@/data/labs";
 import { getLabDirectionsUrl } from "@/data/labs";
+import { useNavigation } from "@/components/navigation/NavigationProvider";
+import { joinAddress } from "@/lib/navigation";
 
 interface LabDetailClientProps {
   lab: Lab;
@@ -18,7 +20,8 @@ interface LabDetailClientProps {
 // test categories, contact) but single-column -- no BookingPanel/ReviewsSection, since a lab
 // listing is discoverability only (see the plan's Out of Scope).
 export default function LabDetailClient({ lab, canonicalSlug }: LabDetailClientProps) {
-  const directionsUrl = getLabDirectionsUrl(lab);
+  const canNavigate = getLabDirectionsUrl(lab) !== null;
+  const { openNavigation } = useNavigation();
   const locationLine = [lab.city, lab.state].filter(Boolean).join(", ");
 
   return (
@@ -70,15 +73,21 @@ export default function LabDetailClient({ lab, canonicalSlug }: LabDetailClientP
                 </h2>
                 {lab.address && <p className="text-sm text-slate-600">{lab.address}</p>}
                 <p className="text-sm text-slate-500 mt-1">{[lab.city, lab.state, lab.pincode].filter(Boolean).join(", ")}</p>
-                {directionsUrl && (
-                  <a
-                    href={directionsUrl}
-                    target="_blank"
-                    rel="noopener noreferrer"
+                {canNavigate && (
+                  <button
+                    type="button"
+                    onClick={() =>
+                      openNavigation({
+                        name: lab.name,
+                        latitude: lab.latitude,
+                        longitude: lab.longitude,
+                        address: joinAddress(lab.address, lab.city, lab.state, lab.pincode),
+                      })
+                    }
                     className="inline-flex items-center gap-1.5 mt-4 text-sm font-bold text-brand-teal hover:text-teal-700"
                   >
                     <Navigation className="w-4 h-4" /> Get Directions
-                  </a>
+                  </button>
                 )}
               </div>
             )}

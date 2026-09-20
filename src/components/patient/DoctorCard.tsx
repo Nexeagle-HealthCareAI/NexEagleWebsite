@@ -13,6 +13,8 @@ import { doctorSlug, formatCount } from "@/data/patient";
 import { useTranslation } from "@/lib/i18n/I18nContext";
 import { translateSpecialty } from "@/lib/i18n/specialties";
 import { useNetworkStatus } from "@/lib/hooks/useNetworkStatus";
+import { useNavigation } from "@/components/navigation/NavigationProvider";
+import { joinAddress } from "@/lib/navigation";
 import { cn } from "@/lib/utils";
 
 interface DoctorCardProps {
@@ -35,6 +37,7 @@ const DoctorCard = forwardRef<HTMLDivElement, DoctorCardProps>(function DoctorCa
 ) {
   const { t, locale } = useTranslation();
   const network = useNetworkStatus();
+  const { openNavigation } = useNavigation();
   const clinicLabel = doctor.hospitalName ?? doctor.clinic;
 
   return (
@@ -205,16 +208,17 @@ const DoctorCard = forwardRef<HTMLDivElement, DoctorCardProps>(function DoctorCa
                   onClick={(e) => {
                     e.stopPropagation();
                     e.preventDefault();
-                    window.open(
-                      `https://www.google.com/maps/dir/?api=1&destination=${doctor.latitude},${doctor.longitude}`,
-                      "_blank",
-                      "noopener,noreferrer"
-                    );
+                    openNavigation({
+                      name: clinicLabel || doctor.name,
+                      latitude: doctor.latitude,
+                      longitude: doctor.longitude,
+                      address: joinAddress(doctor.address, doctor.area, doctor.city, doctor.state, doctor.pincode),
+                    });
                   }}
                   className="shrink-0 text-[10px] font-bold text-brand-teal hover:text-teal-700 underline underline-offset-2 mt-0.5 whitespace-nowrap cursor-pointer"
-                  title="Get Directions"
+                  title={t("doctorCard.directions")}
                 >
-                  Directions ↗
+                  {t("doctorCard.directions")}
                 </button>
               ) : (
                 <span

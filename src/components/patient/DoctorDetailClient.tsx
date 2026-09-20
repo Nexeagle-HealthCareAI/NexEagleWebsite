@@ -27,6 +27,8 @@ import ShareButton from "@/components/patient/ShareButton";
 import { RatingBadge } from "@/components/patient/StarRating";
 import { getDirectionsUrl, formatCount, type Doctor } from "@/data/patient";
 import { useTranslation } from "@/lib/i18n/I18nContext";
+import { useNavigation } from "@/components/navigation/NavigationProvider";
+import { joinAddress } from "@/lib/navigation";
 import { trackEvent, recordLead } from "@/lib/analytics";
 
 interface DoctorDetailClientProps {
@@ -42,6 +44,7 @@ interface DoctorDetailClientProps {
 
 export default function DoctorDetailClient({ doctor, similarDoctors, canonicalSlug, locationLine, whatsAppQrCodeDataUrl }: DoctorDetailClientProps) {
   const { t } = useTranslation();
+  const { openNavigation } = useNavigation();
 
   // "Search-to-View Rate" + "Specialty Demand" for the CMS Insights tab — this is the one place
   // that knows both doctorId and specialtyId together for a profile view (a plain WebsiteVisit
@@ -191,19 +194,23 @@ export default function DoctorDetailClient({ doctor, similarDoctors, canonicalSl
 
               {/* Practices at */}
               {locationLine && (() => {
-                const directionsUrl = getDirectionsUrl(doctor);
+                // A GPS pin, or failing that an address text search, is enough to get directions
+                // (the navigation overlay geocodes the address) -- same condition as before.
+                const canNavigate = getDirectionsUrl(doctor) !== null;
+                const navAddress = joinAddress(doctor.address, doctor.city, doctor.state, doctor.pincode);
+                const navName = doctor.hospitalName || doctor.name;
                 return (
                   <div className="bg-white rounded-3xl border border-slate-200/80 shadow-sm p-5">
                     <h2 className="text-[11px] font-bold text-slate-400 uppercase tracking-wide mb-3">
                       {t("doctorDetail.practicesAt")}
                     </h2>
-                    {doctor.latitude != null && doctor.longitude != null && directionsUrl && (
+                    {doctor.latitude != null && doctor.longitude != null && (
                       <div className="mb-3">
                         <DoctorLocationMap
                           latitude={doctor.latitude}
                           longitude={doctor.longitude}
-                          directionsUrl={directionsUrl}
-                          label={doctor.hospitalName || doctor.name}
+                          label={navName}
+                          address={navAddress}
                         />
                       </div>
                     )}
@@ -224,16 +231,17 @@ export default function DoctorDetailClient({ doctor, similarDoctors, canonicalSl
                           </p>
                         )}
                       </div>
-                      {directionsUrl && (
-                        <a
-                          href={directionsUrl}
-                          target="_blank"
-                          rel="noopener noreferrer"
+                      {canNavigate && (
+                        <button
+                          type="button"
+                          onClick={() =>
+                            openNavigation({ name: navName, latitude: doctor.latitude, longitude: doctor.longitude, address: navAddress })
+                          }
                           className="inline-flex items-center gap-1.5 shrink-0 px-3.5 py-2 rounded-xl bg-brand-teal text-white text-xs font-bold shadow-sm hover:bg-brand-teal/90 active:scale-[0.98] transition"
                         >
                           <Navigation className="w-3.5 h-3.5" />
                           {t("doctorCard.directions")}
-                        </a>
+                        </button>
                       )}
                     </div>
                   </div>
