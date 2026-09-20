@@ -197,6 +197,7 @@ export default function DoctorDetailClient({ doctor, similarDoctors, canonicalSl
                 // A GPS pin, or failing that an address text search, is enough to get directions
                 // (the navigation overlay geocodes the address) -- same condition as before.
                 const canNavigate = getDirectionsUrl(doctor) !== null;
+                const hasMapPin = doctor.latitude != null && doctor.longitude != null;
                 const navAddress = joinAddress(doctor.address, doctor.city, doctor.state, doctor.pincode);
                 const navName = doctor.hospitalName || doctor.name;
                 return (
@@ -231,7 +232,10 @@ export default function DoctorDetailClient({ doctor, similarDoctors, canonicalSl
                           </p>
                         )}
                       </div>
-                      {canNavigate && (
+                      {/* The map preview above already has its own Directions button, so this one only
+                          shows when there's no map pin (address-only doctors) -- otherwise two identical
+                          buttons sit right on top of each other. */}
+                      {canNavigate && !hasMapPin && (
                         <button
                           type="button"
                           onClick={() =>
