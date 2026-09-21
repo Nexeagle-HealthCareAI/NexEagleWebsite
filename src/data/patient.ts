@@ -55,6 +55,9 @@ export interface Doctor {
   city: string;
   state: string;
   pincode?: string;
+  // The hospital's own contact number as entered on its profile (never the doctor's personal
+  // number) — real API only, undefined for mock data (same hide-when-absent convention as above).
+  hospitalPhone?: string;
   area: string;
   clinic: string;
   languages: string[];

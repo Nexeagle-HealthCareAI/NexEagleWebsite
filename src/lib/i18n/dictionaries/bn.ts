@@ -52,6 +52,7 @@ export const bn: Record<keyof typeof en, string> = {
   "doctorCard.yrsExp": "{n}+ বছরের অভিজ্ঞতা",
   "doctorCard.minWait": "~{n} মিনিট অপেক্ষা",
   "doctorCard.directions": "রাস্তা দেখুন",
+  "doctorCard.callHospital": "{hospital}-কে {number} নম্বরে কল করুন",
   "doctorCard.mapNotSet": "মানচিত্র নেই",
   "doctorCard.kmAway": "{km} দূরে",
   "doctorCard.featured": "বিশেষ",

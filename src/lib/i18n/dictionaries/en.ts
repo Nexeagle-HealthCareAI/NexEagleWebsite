@@ -66,6 +66,7 @@ export const en = {
   "doctorCard.yrsExp": "{n}+ yrs exp",
   "doctorCard.minWait": "~{n} min wait",
   "doctorCard.directions": "Directions",
+  "doctorCard.callHospital": "Call {hospital} at {number}",
   "doctorCard.mapNotSet": "Map not set",
   "doctorCard.kmAway": "{km} away",
   "doctorCard.featured": "Featured",

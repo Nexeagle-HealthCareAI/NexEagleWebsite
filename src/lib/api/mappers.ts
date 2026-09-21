@@ -160,6 +160,7 @@ export function mapDoctor(dto: DoctorDto): Doctor {
     city: dto.city ?? "",
     state: dto.state ?? "",
     pincode: dto.pincode ?? undefined,
+    hospitalPhone: dto.hospitalContact?.trim() || undefined,
     area: "",
     clinic: "",
     languages: dto.languages ?? [],

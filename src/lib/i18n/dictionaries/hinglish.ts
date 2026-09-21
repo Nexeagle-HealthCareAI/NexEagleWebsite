@@ -54,6 +54,7 @@ export const hinglish: Record<keyof typeof en, string> = {
   "doctorCard.yrsExp": "{n}+ saal ka experience",
   "doctorCard.minWait": "~{n} min wait",
   "doctorCard.directions": "Directions",
+  "doctorCard.callHospital": "{hospital} ko {number} par call karein",
   "doctorCard.mapNotSet": "Map set nahi hai",
   "doctorCard.kmAway": "{km} door",
   "doctorCard.featured": "Featured",
