@@ -7,6 +7,7 @@ import "mapbox-gl/dist/mapbox-gl.css";
 import { Search, LocateFixed, Navigation, MapPin, Building2 } from "lucide-react";
 import type { PublicHospital } from "@/lib/api/mappers";
 import { haversineDistance } from "@/lib/geo";
+import { useNavigation } from "@/components/navigation/NavigationProvider";
 import { cn } from "@/lib/utils";
 
 const MAPBOX_TOKEN = process.env.NEXT_PUBLIC_MAPBOX_TOKEN;
@@ -35,6 +36,11 @@ export default function HospitalsMapView({ hospitals }: HospitalsMapViewProps) {
   const mapRef = useRef<mapboxgl.Map | null>(null);
   const markersRef = useRef<Map<string, mapboxgl.Marker>>(new Map());
   const popupRef = useRef<mapboxgl.Popup | null>(null);
+  // The popup is built once per selection and outlives that render, so it calls through a ref
+  // to whatever openNavigation is current instead of capturing a stale closure.
+  const { openNavigation } = useNavigation();
+  const openNavigationRef = useRef(openNavigation);
+  openNavigationRef.current = openNavigation;
 
   const [query, setQuery] = useState("");
   const [userCoords, setUserCoords] = useState<{ lat: number; lon: number } | null>(null);
@@ -115,16 +121,40 @@ export default function HospitalsMapView({ hospitals }: HospitalsMapViewProps) {
     map.flyTo({ center: [hospital.longitude, hospital.latitude], zoom: 14, duration: 800 });
 
     popupRef.current?.remove();
-    const directionsUrl = `https://www.google.com/maps/dir/?api=1&destination=${hospital.latitude},${hospital.longitude}`;
+
+    // Built as DOM nodes (not an HTML string) so the hospital name is inserted as text -- and so
+    // the Directions button can open the in-page navigation overlay instead of a Google Maps tab.
+    const content = document.createElement("div");
+    content.style.cssText = "font-family:inherit;min-width:160px";
+    const title = document.createElement("p");
+    title.style.cssText = "font-weight:700;font-size:13px;margin:0 0 4px";
+    title.textContent = hospital.name;
+    content.appendChild(title);
+    const place = [hospital.city, hospital.state].filter(Boolean).join(", ");
+    if (place) {
+      const sub = document.createElement("p");
+      sub.style.cssText = "font-size:11px;color:#64748b;margin:0 0 8px";
+      sub.textContent = place;
+      content.appendChild(sub);
+    }
+    const directions = document.createElement("button");
+    directions.type = "button";
+    directions.textContent = "Get Directions →";
+    directions.style.cssText =
+      "font-size:11px;font-weight:700;color:#0d9488;text-decoration:underline;background:none;border:0;padding:0;cursor:pointer";
+    directions.addEventListener("click", () =>
+      openNavigationRef.current({
+        name: hospital.name,
+        latitude: hospital.latitude,
+        longitude: hospital.longitude,
+        address: place,
+      })
+    );
+    content.appendChild(directions);
+
     popupRef.current = new mapboxgl.Popup({ offset: 20, closeButton: true })
       .setLngLat([hospital.longitude, hospital.latitude])
-      .setHTML(
-        `<div style="font-family:inherit;min-width:160px">
-          <p style="font-weight:700;font-size:13px;margin:0 0 4px">${hospital.name}</p>
-          ${hospital.city ? `<p style="font-size:11px;color:#64748b;margin:0 0 8px">${[hospital.city, hospital.state].filter(Boolean).join(", ")}</p>` : ""}
-          <a href="${directionsUrl}" target="_blank" rel="noopener noreferrer" style="font-size:11px;font-weight:700;color:#0d9488;text-decoration:underline">Get Directions →</a>
-        </div>`
-      )
+      .setDOMContent(content)
       .addTo(map);
   }, [selectedId, hospitals]);
 
@@ -221,16 +251,35 @@ export default function HospitalsMapView({ hospitals }: HospitalsMapViewProps) {
                     View doctors
                   </Link>
                   {hasPin && (
-                    <a
-                      href={`https://www.google.com/maps/dir/?api=1&destination=${h.latitude},${h.longitude}`}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      onClick={(e) => e.stopPropagation()}
-                      className="inline-flex items-center gap-1 text-[11px] font-bold text-brand-teal hover:text-teal-700 underline underline-offset-2"
+                    <span
+                      role="button"
+                      tabIndex={0}
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        openNavigation({
+                          name: h.name,
+                          latitude: h.latitude,
+                          longitude: h.longitude,
+                          address: [h.city, h.state].filter(Boolean).join(", "),
+                        });
+                      }}
+                      onKeyDown={(e) => {
+                        if (e.key === "Enter" || e.key === " ") {
+                          e.preventDefault();
+                          e.stopPropagation();
+                          openNavigation({
+                            name: h.name,
+                            latitude: h.latitude,
+                            longitude: h.longitude,
+                            address: [h.city, h.state].filter(Boolean).join(", "),
+                          });
+                        }
+                      }}
+                      className="inline-flex items-center gap-1 text-[11px] font-bold text-brand-teal hover:text-teal-700 underline underline-offset-2 cursor-pointer"
                     >
                       <Navigation className="w-3 h-3" />
                       Directions
-                    </a>
+                    </span>
                   )}
                 </div>
               </button>

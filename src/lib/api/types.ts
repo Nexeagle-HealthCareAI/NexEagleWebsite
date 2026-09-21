@@ -35,6 +35,9 @@ export interface DoctorDto {
   city?: string | null;
   state?: string | null;
   pincode?: string | null;
+  // The hospital's published contact number (never the doctor's own) — null when the hospital
+  // has none on file.
+  hospitalContact?: string | null;
   // GPS pin for a "get directions" link — inherited from the hospital, since a doctor
   // doesn't have their own address.
   latitude?: number | null;

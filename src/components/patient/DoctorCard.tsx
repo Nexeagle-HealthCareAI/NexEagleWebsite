@@ -6,13 +6,16 @@ import Image from "next/image";
 import { motion } from "framer-motion";
 import {
   BadgeCheck, MapPin, Award, CalendarCheck, CalendarX, Star,
-  Clock, Users, ThumbsUp, Languages, ArrowRight, Percent,
+  Clock, Users, ThumbsUp, Languages, ArrowRight, Percent, Phone,
 } from "lucide-react";
 import type { Doctor } from "@/data/patient";
 import { doctorSlug, formatCount } from "@/data/patient";
 import { useTranslation } from "@/lib/i18n/I18nContext";
 import { translateSpecialty } from "@/lib/i18n/specialties";
 import { useNetworkStatus } from "@/lib/hooks/useNetworkStatus";
+import { useNavigation } from "@/components/navigation/NavigationProvider";
+import { joinAddress } from "@/lib/navigation";
+import { toDialablePhone } from "@/lib/phone";
 import { cn } from "@/lib/utils";
 
 interface DoctorCardProps {
@@ -35,7 +38,9 @@ const DoctorCard = forwardRef<HTMLDivElement, DoctorCardProps>(function DoctorCa
 ) {
   const { t, locale } = useTranslation();
   const network = useNetworkStatus();
+  const { openNavigation } = useNavigation();
   const clinicLabel = doctor.hospitalName ?? doctor.clinic;
+  const hospitalPhone = toDialablePhone(doctor.hospitalPhone);
 
   return (
     <motion.div
@@ -168,7 +173,7 @@ const DoctorCard = forwardRef<HTMLDivElement, DoctorCardProps>(function DoctorCa
               § 2b  FULL ADDRESS BLOCK
               Clinic · Street address · Area/City, State Pincode · Directions
           ───────────────────────────────────── */}
-          {(clinicLabel || doctor.address || doctor.area || doctor.city) && (
+          {(clinicLabel || doctor.address || doctor.area || doctor.city || hospitalPhone) && (
             <div className="mt-3 mb-1 flex items-start gap-2 rounded-xl bg-slate-50 border border-slate-100 px-3 py-2.5">
               <MapPin className="w-3.5 h-3.5 text-brand-teal shrink-0 mt-0.5" />
               <div className="min-w-0 flex-1">
@@ -195,6 +200,24 @@ const DoctorCard = forwardRef<HTMLDivElement, DoctorCardProps>(function DoctorCa
                     )}
                   </p>
                 )}
+                {/* Line 4 — the hospital's own contact number (never the doctor's). A <button>, not
+                    a nested <a>, for the same reason as Directions below: the whole card is a Link. */}
+                {hospitalPhone && (
+                  <button
+                    type="button"
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      e.preventDefault();
+                      window.location.href = hospitalPhone.href;
+                    }}
+                    className="mt-1.5 -ml-1 inline-flex items-center gap-1.5 rounded-md px-1 py-0.5 text-[11.5px] font-bold text-slate-700 hover:text-brand-teal hover:bg-teal-50 transition-colors cursor-pointer"
+                    aria-label={t("doctorCard.callHospital", { hospital: clinicLabel || doctor.name, number: hospitalPhone.display })}
+                    title={t("doctorCard.callHospital", { hospital: clinicLabel || doctor.name, number: hospitalPhone.display })}
+                  >
+                    <Phone className="w-3 h-3 text-brand-teal shrink-0" aria-hidden="true" />
+                    <span className="tabular-nums">{hospitalPhone.display}</span>
+                  </button>
+                )}
               </div>
               {/* Directions micro-link — a <button>, not a nested <a>: the whole
                   card is already a Link, and an <a> inside an <a> is invalid
@@ -205,16 +228,17 @@ const DoctorCard = forwardRef<HTMLDivElement, DoctorCardProps>(function DoctorCa
                   onClick={(e) => {
                     e.stopPropagation();
                     e.preventDefault();
-                    window.open(
-                      `https://www.google.com/maps/dir/?api=1&destination=${doctor.latitude},${doctor.longitude}`,
-                      "_blank",
-                      "noopener,noreferrer"
-                    );
+                    openNavigation({
+                      name: clinicLabel || doctor.name,
+                      latitude: doctor.latitude,
+                      longitude: doctor.longitude,
+                      address: joinAddress(doctor.address, doctor.area, doctor.city, doctor.state, doctor.pincode),
+                    });
                   }}
                   className="shrink-0 text-[10px] font-bold text-brand-teal hover:text-teal-700 underline underline-offset-2 mt-0.5 whitespace-nowrap cursor-pointer"
-                  title="Get Directions"
+                  title={t("doctorCard.directions")}
                 >
-                  Directions ↗
+                  {t("doctorCard.directions")}
                 </button>
               ) : (
                 <span

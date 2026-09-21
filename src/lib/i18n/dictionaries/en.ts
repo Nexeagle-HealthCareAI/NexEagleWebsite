@@ -66,6 +66,7 @@ export const en = {
   "doctorCard.yrsExp": "{n}+ yrs exp",
   "doctorCard.minWait": "~{n} min wait",
   "doctorCard.directions": "Directions",
+  "doctorCard.callHospital": "Call {hospital} at {number}",
   "doctorCard.mapNotSet": "Map not set",
   "doctorCard.kmAway": "{km} away",
   "doctorCard.featured": "Featured",
@@ -228,6 +229,32 @@ export const en = {
   // ── Homepage WhatsApp CTA ────────────────────────────────────────────────
   "home.whatsappQrTitle": "Chat with us on WhatsApp",
   "home.whatsappQrSubtitle": "Scan the QR code to start a conversation and book a doctor right from WhatsApp — no app, no login.",
+
+  // ── In-page navigation ───────────────────────────────────────────────────
+  "nav.title": "Directions to {name}",
+  "nav.locating": "Finding your location…",
+  "nav.geocoding": "Locating the address…",
+  "nav.routing": "Finding the best route…",
+  "nav.rerouting": "Re-routing…",
+  "nav.start": "Start navigation",
+  "nav.stop": "Stop",
+  "nav.recenter": "Re-center",
+  "nav.close": "Close",
+  "nav.retry": "Try again",
+  "nav.openGoogle": "Open in Google Maps",
+  "nav.voiceOn": "Voice guidance on",
+  "nav.voiceOff": "Voice guidance off",
+  "nav.steps": "Route steps",
+  "nav.arriveBy": "Arrive by {time}",
+  "nav.remaining": "{distance} left",
+  "nav.arrived": "You have arrived",
+  "nav.driving": "Drive",
+  "nav.walking": "Walk",
+  "nav.cycling": "Cycle",
+  "nav.errorLocation": "We couldn't get your location. Allow location access for this site in your browser, then try again.",
+  "nav.errorRoute": "We couldn't find a route to this place.",
+  "nav.errorAddress": "We couldn't find this address on the map.",
+  "nav.errorNoDestination": "This place has no map location yet.",
 } as const;
 
 export type TranslationKey = keyof typeof en;

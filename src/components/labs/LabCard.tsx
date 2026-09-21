@@ -6,6 +6,8 @@ import { motion } from "framer-motion";
 import { FlaskConical, MapPin, Phone, ArrowRight } from "lucide-react";
 import type { Lab } from "@/data/labs";
 import { labSlug, getLabDirectionsUrl } from "@/data/labs";
+import { useNavigation } from "@/components/navigation/NavigationProvider";
+import { joinAddress } from "@/lib/navigation";
 
 interface LabCardProps {
   lab: Lab;
@@ -22,7 +24,8 @@ const LabCard = forwardRef<HTMLDivElement, LabCardProps>(function LabCard(
   { lab, index = 0, reducedMotion = false },
   ref
 ) {
-  const directionsUrl = getLabDirectionsUrl(lab);
+  const canNavigate = getLabDirectionsUrl(lab) !== null;
+  const { openNavigation } = useNavigation();
 
   return (
     <motion.div
@@ -65,18 +68,23 @@ const LabCard = forwardRef<HTMLDivElement, LabCardProps>(function LabCard(
                   </p>
                 )}
               </div>
-              {directionsUrl && (
+              {canNavigate && (
                 <button
                   type="button"
                   onClick={(e) => {
                     e.stopPropagation();
                     e.preventDefault();
-                    window.open(directionsUrl, "_blank", "noopener,noreferrer");
+                    openNavigation({
+                      name: lab.name,
+                      latitude: lab.latitude,
+                      longitude: lab.longitude,
+                      address: joinAddress(lab.address, lab.city, lab.state, lab.pincode),
+                    });
                   }}
                   className="shrink-0 text-[10px] font-bold text-brand-teal hover:text-teal-700 underline underline-offset-2 mt-0.5 whitespace-nowrap cursor-pointer"
                   title="Get Directions"
                 >
-                  Directions ↗
+                  Directions
                 </button>
               )}
             </div>
