@@ -2,6 +2,10 @@
 # NEXEAGLE WEBSITE — CI/CD Pipeline  (Next.js → Node container on GHCR)
 # ═══════════════════════════════════════════════════════════════════════════════
 #
+# NOTE: this repo is the corporate/B2B site ONLY. The patient portal (Doctor Dekho) was split out
+# into its own repo/app (doctordekho.nexeagle.com). The old patient-portal paths on this domain
+# permanently redirect there -- see next.config.mjs's redirects(); keep those indefinitely.
+#
 #   Stage 1 — Build       npm ci + next build  (runs on push + PRs)
 #   Stage 2 — Deploy      build Node image (next start) → push GHCR → run on VM
 #             dev branch  -> Dev VM   (151.185.45.77) :82  -- public: https://nexeagle-dev.nexeagle.com
@@ -34,20 +38,8 @@
 #   SSH_USER              root
 #   SSH_PASSWORD          SSH password for the Dev App VM
 #   EASYHMS_DEV_API_KEY   OPTIONAL, same as EASYHMS_PROD_API_KEY, for the dev environment.
-#   ANTHROPIC_API_KEY     OPTIONAL — powers the AI search fallback (app/api/search/parse).
-#                         Same key used for both dev and prod. Leave unset to disable —
-#                         search stays literal-keyword-only, no error, nothing breaks.
-#                         NLP_ROUTER_BASE_URL (not a secret, hardcoded in the docker run below,
-#                         same pattern as EASYHMS_API_BASE_URL) is tried BEFORE this — see the
-#                         1HMS-NLP-Router repo. Anthropic remains the fallback for anything the
-#                         NLP router can't confidently classify, so nothing here changes if
-#                         that service is ever down.
-#                         Dev's NLP_ROUTER_BASE_URL is still the raw http://151.185.45.77:5003 —
-#                         NOT yet switched to https://nlp-api-dev.nexeagle.com (that subdomain's
-#                         Caddy/DNS isn't resolving yet as of 2026-08-13). Switch it once
-#                         `curl -I https://nlp-api-dev.nexeagle.com` actually succeeds — until
-#                         then this is a deliberate, temporary mismatch with Prod's
-#                         https://nlp-api.nexeagle.com, not an oversight.
+#   (ANTHROPIC_API_KEY / NLP router: no longer used here -- AI doctor search moved to the
+#    separate Doctor Dekho repo along with the patient portal.)
 #   INTERNAL_PROXY_SECRET OPTIONAL — lets easyHMSAPI's public rate limiters see each real
 #                         visitor's IP instead of this container's own IP (every call to the
 #                         API is server-to-server — see src/lib/api/server.ts). Same key used
@@ -127,27 +119,16 @@ jobs:
             ${{ steps.vars.outputs.image }}:dev-latest
           cache-from: type=gha
           cache-to: type=gha,mode=max
-          # NEXT_PUBLIC_* vars are inlined at build time — LiveChat.tsx reads this to reach
-          # CMSAPI's /chathub on the Dev VM (CMS API — CI/CD deploys CMSAPI to port 5002 there).
-          # EASYHMS_API_BASE_URL is ALSO needed at build time here (not just via `docker run -e`
-          # below) — see the Dockerfile comment: without it, the statically-generated specialty
-          # pages silently bake in .env.production's PROD api url instead of Dev's.
-          #
-          # https://1hms-dev-api.nexeagle.com (NOT the raw 151.185.45.77:5001) -- the GitHub
-          # Actions runner building this image could not reach the raw port directly (curl from
-          # the runner got a bare connection failure, "status 0" -- almost certainly a firewall
-          # on the VM only allowing 80/443 in from the open internet), which silently produced
-          # mock-data static pages on every build until src/lib/api/server.ts stopped falling
-          # back to mock data and started throwing instead, turning the invisible failure into a
-          # hard build break. The HTTPS domain is a native (non-Docker) Caddy reverse proxy on
-          # the Dev VM forwarding to localhost:5001 -- same pattern as
-          # NLP Model/.github/workflows/setup-loc-dev-domain.yml's loc-dev.nexeagle.com, and
-          # matches how prod's build-time EASYHMS_API_BASE_URL already uses
-          # https://1hms-api.nexeagle.com instead of a raw port.
+          # NEXT_PUBLIC_* vars are inlined at BUILD time (see the Dockerfile): LiveChat.tsx reads
+          # NEXT_PUBLIC_API_URL to reach CMSAPI's /chathub, and the two origins below drive the
+          # canonical URLs / sitemap and where the old patient-portal paths redirect to. The Docker
+          # build-arg beats .env.production, which always carries PROD values -- without them the dev
+          # image would redirect to (and advertise) prod. No EASYHMS_API_BASE_URL / Mapbox build-args
+          # any more: nothing here is statically generated from the API or renders maps.
           build-args: |
             NEXT_PUBLIC_API_URL=http://151.185.45.77:5002
-            EASYHMS_API_BASE_URL=https://1hms-dev-api.nexeagle.com
-            NEXT_PUBLIC_MAPBOX_TOKEN=${{ secrets.MAPBOX_TOKEN }}
+            NEXT_PUBLIC_SITE_URL=https://nexeagle-dev.nexeagle.com
+            NEXT_PUBLIC_DOCTORDEKHO_URL=https://doctordekho-dev.nexeagle.com
 
       - name: Deploy to Dev VM
         uses: appleboy/ssh-action@v1.0.3
@@ -156,7 +137,6 @@ jobs:
           PULL_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           ACTOR: ${{ github.actor }}
           EASYHMS_API_KEY: ${{ secrets.EASYHMS_DEV_API_KEY }}
-          ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
           PROXY_SECRET: ${{ secrets.INTERNAL_PROXY_SECRET }}
         with:
           host: ${{ secrets.SSH_HOST }}
@@ -164,7 +144,7 @@ jobs:
           password: ${{ secrets.SSH_PASSWORD }}
           port: 22
           command_timeout: 10m
-          envs: IMAGE,PULL_TOKEN,ACTOR,EASYHMS_API_KEY,ANTHROPIC_API_KEY,PROXY_SECRET
+          envs: IMAGE,PULL_TOKEN,ACTOR,EASYHMS_API_KEY,PROXY_SECRET
           script: |
             set -e
             IMAGE_LC=$(printf '%s' "$IMAGE" | tr '[:upper:]' '[:lower:]')
@@ -195,9 +175,7 @@ jobs:
                   -e EASYHMS_API_BASE_URL='http://host.docker.internal:5001' \
                   -e EASYHMS_API_KEY="$EASYHMS_API_KEY" \
                   -e EASYHMS_API_KEY_HEADER='X-Api-Key' \
-                  -e ANTHROPIC_API_KEY="$ANTHROPIC_API_KEY" \
                   -e EASYHMS_TRUSTED_PROXY_SECRET="$PROXY_SECRET" \
-                  -e NLP_ROUTER_BASE_URL='http://151.185.45.77:5003' \
                   "$IMAGE_LC"; then
                 break
               fi
@@ -270,18 +248,16 @@ jobs:
             ${{ steps.vars.outputs.image }}:latest
           cache-from: type=gha
           cache-to: type=gha,mode=max
-          # NEXT_PUBLIC_* vars are inlined at build time — LiveChat.tsx reads this to reach
-          # CMSAPI's /chathub. HTTPS + a real domain, not the raw IP:5002 — this page is served
-          # over HTTPS (https://1hms.nexeagle.com), and browsers block a plain-http WebSocket/XHR
-          # connection from an https page ("mixed content"). Requires cms-api.nexeagle.com to be
-          # reverse-proxied to the Prod VM's :5002 with a valid TLS cert (see CMSAPI repo notes).
-          # EASYHMS_API_BASE_URL is ALSO needed at build time here (not just via the SSH deploy
-          # step below) — see the Dockerfile comment: this happens to already match what
-          # .env.production bakes in by default, which is why this side of the bug was invisible.
+          # NEXT_PUBLIC_* vars are inlined at BUILD time (see the Dockerfile): LiveChat.tsx reads
+          # NEXT_PUBLIC_API_URL to reach CMSAPI's /chathub, and the two origins below drive the
+          # canonical URLs / sitemap and where the old patient-portal paths redirect to. The Docker
+          # build-arg beats .env.production, which always carries PROD values -- without them the dev
+          # image would redirect to (and advertise) prod. No EASYHMS_API_BASE_URL / Mapbox build-args
+          # any more: nothing here is statically generated from the API or renders maps.
           build-args: |
             NEXT_PUBLIC_API_URL=https://cms-api.nexeagle.com
-            EASYHMS_API_BASE_URL=https://1hms-api.nexeagle.com
-            NEXT_PUBLIC_MAPBOX_TOKEN=${{ secrets.MAPBOX_TOKEN }}
+            NEXT_PUBLIC_SITE_URL=https://nexeagle.com
+            NEXT_PUBLIC_DOCTORDEKHO_URL=https://doctordekho.nexeagle.com
 
       - name: Prepare SSH key
         run: |
@@ -300,7 +276,6 @@ jobs:
           PULL_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           ACTOR: ${{ github.actor }}
           EASYHMS_API_KEY: ${{ secrets.EASYHMS_PROD_API_KEY }}
-          ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
           PROXY_SECRET: ${{ secrets.INTERNAL_PROXY_SECRET }}
         with:
           host: ${{ secrets.PROD_SSH_HOST }}
@@ -311,7 +286,7 @@ jobs:
           key_path: deploy_key
           port: 22
           command_timeout: 10m
-          envs: IMAGE,PULL_TOKEN,ACTOR,EASYHMS_API_KEY,ANTHROPIC_API_KEY,PROXY_SECRET
+          envs: IMAGE,PULL_TOKEN,ACTOR,EASYHMS_API_KEY,PROXY_SECRET
           script: |
             set -e
             IMAGE_LC=$(printf '%s' "$IMAGE" | tr '[:upper:]' '[:lower:]')
@@ -332,9 +307,7 @@ jobs:
                   -e EASYHMS_API_BASE_URL='http://host.docker.internal:5001' \
                   -e EASYHMS_API_KEY="$EASYHMS_API_KEY" \
                   -e EASYHMS_API_KEY_HEADER='X-Api-Key' \
-                  -e ANTHROPIC_API_KEY="$ANTHROPIC_API_KEY" \
                   -e EASYHMS_TRUSTED_PROXY_SECRET="$PROXY_SECRET" \
-                  -e NLP_ROUTER_BASE_URL='https://nlp-api.nexeagle.com' \
                   "$IMAGE_LC"; then
                 break
               fi

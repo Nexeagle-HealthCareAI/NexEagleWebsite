@@ -51,7 +51,7 @@ const Footer = () => {
         <div className="py-16 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-12 gap-10 md:gap-12">
           {/* Brand Info */}
           <div className="lg:col-span-4 space-y-6">
-            <Link href="/business" className="inline-flex items-center group">
+            <Link href="/" className="inline-flex items-center group">
               <Logo textSize="text-2xl sm:text-3xl" textColor="text-white" />
             </Link>
             <p className="text-slate-400 text-sm leading-relaxed max-w-sm">
