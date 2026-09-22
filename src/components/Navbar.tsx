@@ -8,6 +8,7 @@ import Link from "next/link";
 import { useRouter, usePathname } from "next/navigation";
 import { cn } from "@/lib/utils";
 import { Logo } from "./Logo";
+import { DOCTORDEKHO_URL } from "@/lib/site";
 
 const Navbar = () => {
   const [isOpen, setIsOpen] = useState(false);
@@ -26,7 +27,7 @@ const Navbar = () => {
   }, []);
 
   const navLinks = [
-    { name: "Find a Doctor", href: "/", highlight: true },
+    { name: "Find a Doctor", href: DOCTORDEKHO_URL, highlight: true },
     { 
       name: "Solutions", 
       href: "#",
