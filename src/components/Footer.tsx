@@ -1,6 +1,7 @@
 import { Mail, Phone, Linkedin, MapPin, ArrowRight, Sparkles } from "lucide-react";
 import Link from "next/link";
 import { Logo } from "./Logo";
+import TrackingChoicesLink from "./TrackingChoicesLink";
 
 const Footer = () => {
   const currentYear = new Date().getFullYear();
@@ -184,6 +185,7 @@ const Footer = () => {
             <Link href="/security" className="hover:text-slate-300 transition-colors">
               Security Standards
             </Link>
+            <TrackingChoicesLink className="hover:text-slate-300 transition-colors" />
           </div>
         </div>
       </div>

@@ -1,404 +1,564 @@
 "use client";
 
-import { useState, useEffect, useRef } from "react";
-import { MessageCircle, X, Send, Minimize2 } from "lucide-react";
-import { Button } from "./ui/button";
-import { Input } from "./ui/input";
+import { useCallback, useEffect, useRef, useState } from "react";
+import { MessageCircle, X, Send, RotateCcw, Loader2, AlertCircle } from "lucide-react";
 import * as signalR from "@microsoft/signalr";
 import { v4 as uuidv4 } from "uuid";
 
-// The SignalR hub lives at <api-origin>/chathub on the CMS API. Derive it from
-// NEXT_PUBLIC_API_URL (set per environment, inlined into the client bundle at
-// build time since this reads it in the browser; the /api/v1 suffix is stripped
-// if present) so it works in dev and prod instead of a hardcoded localhost.
-//   Dev build : NEXT_PUBLIC_API_URL=http://151.185.45.77:5002
-//   Prod build: NEXT_PUBLIC_API_URL=http://151.185.45.67:5002
+// Live support chat with the NexEagle team. Agents answer from the CMS (Live Support page); the
+// server side is CMSAPI's /chathub (Hubs/ChatHub.cs).
+//
+// Behaviour, in plain terms:
+//  * The visitor gives a name (email optional) once; it is remembered in this browser.
+//  * Once a chat has been opened, the connection stays up while the visitor is on the page, so a
+//    reply that arrives with the panel closed shows as an unread badge instead of being missed.
+//  * The header says honestly whether someone is online. Offline messages are kept and answered later.
+//  * After an agent ends a chat, the visitor can start a new one.
+//
+// NEXT_PUBLIC_API_URL is inlined at build time (Dockerfile build-arg). It must be an https:// origin
+// on an https:// page: browsers block plain http/ws from secure pages, and the widget says so.
 const API_ORIGIN =
   process.env.NEXT_PUBLIC_API_URL?.replace(/\/api\/v1\/?$/, "").replace(/\/$/, "") ||
   "http://151.185.45.77:5002";
 const CHAT_HUB_URL = `${API_ORIGIN}/chathub`;
+const SUPPORT_EMAIL = "info@nexeagle.com";
 
-type ChatMessage = {
+const KEY_GUEST_ID = "nex_eagle_guest_id";
+const KEY_NAME = "nex_eagle_guest_name";
+const KEY_EMAIL = "nex_eagle_guest_email";
+
+const MAX_LENGTH = 2000;            // same limit as ChatHub.MaxMessageLength
+const TYPING_SEND_EVERY_MS = 2500;
+const TYPING_SHOW_FOR_MS = 4000;
+
+type ServerMessage = {
   messageId?: string;
   sessionId?: string;
-  senderType: string;
+  senderType: string;           // "Guest" | "Agent"
   messageText: string;
   sentAt: string;
 };
 
-const LiveChat = () => {
+type ChatMessage = ServerMessage & {
+  localId?: string;
+  status?: "sending" | "failed";
+};
+
+type ConnState = "idle" | "connecting" | "connected" | "reconnecting" | "failed" | "blocked";
+
+const QUICK_REPLIES = ["Book a demo", "Pricing for my hospital", "I need technical help"];
+
+function readStorage(key: string): string {
+  try {
+    return window.localStorage.getItem(key) ?? "";
+  } catch {
+    return "";
+  }
+}
+
+function writeStorage(key: string, value: string) {
+  try {
+    window.localStorage.setItem(key, value);
+  } catch {
+    /* private mode: works for this page only */
+  }
+}
+
+function timeLabel(iso: string) {
+  return new Date(iso).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" });
+}
+
+export default function LiveChat() {
   const [isOpen, setIsOpen] = useState(false);
-  const [isMinimized, setIsMinimized] = useState(false);
-  const [message, setMessage] = useState("");
-  const [guestName, setGuestName] = useState(localStorage.getItem("nex_eagle_guest_name") || "");
-  const [guestEmail, setGuestEmail] = useState(localStorage.getItem("nex_eagle_guest_email") || "");
-  const [isRegistered, setIsRegistered] = useState(!!localStorage.getItem("nex_eagle_guest_name"));
-  const [connection, setConnection] = useState<signalR.HubConnection | null>(null);
-  const [sessionId, setSessionId] = useState<string | null>(null);
-  const [chatMessages, setChatMessages] = useState<ChatMessage[]>([]);
-  const [isConnected, setIsConnected] = useState(false);
-  const [connectFailed, setConnectFailed] = useState(false);
+  const [hasOpened, setHasOpened] = useState(false);
+
+  const [name, setName] = useState("");
+  const [email, setEmail] = useState("");
+  const [registered, setRegistered] = useState(false);
+
+  const [conn, setConn] = useState<signalR.HubConnection | null>(null);
+  const [connState, setConnState] = useState<ConnState>("idle");
   const [retryToken, setRetryToken] = useState(0);
-  const [unreadCount, setUnreadCount] = useState(0);
-  const messagesEndRef = useRef<HTMLDivElement>(null);
-  const messageInputRef = useRef<HTMLInputElement>(null);
+  const [sessionId, setSessionId] = useState<string | null>(null);
+  const [messages, setMessages] = useState<ChatMessage[]>([]);
+  const [historyLoaded, setHistoryLoaded] = useState(false);
+  const [agentOnline, setAgentOnline] = useState<boolean | null>(null);
+  const [agentTyping, setAgentTyping] = useState(false);
+  const [sessionEnded, setSessionEnded] = useState(false);
+  const [unread, setUnread] = useState(0);
+  const [draft, setDraft] = useState("");
 
-  const scrollToBottom = () => {
-    messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
-  };
+  const isOpenRef = useRef(isOpen);
+  const lastTypingSentRef = useRef(0);
+  const typingTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const scrollRef = useRef<HTMLDivElement>(null);
+  const inputRef = useRef<HTMLTextAreaElement>(null);
+  const launcherRef = useRef<HTMLButtonElement>(null);
 
   useEffect(() => {
-    scrollToBottom();
-  }, [chatMessages]);
+    isOpenRef.current = isOpen;
+    if (isOpen) setUnread(0);
+  }, [isOpen]);
 
-  // Only messages that arrive while the panel isn't fully visible count as "unread"; clear
-  // the badge the moment the guest can actually see the transcript again.
+  // Restore a returning visitor's details (client only: localStorage does not exist during SSR).
   useEffect(() => {
-    if (isOpen && !isMinimized) setUnreadCount(0);
-  }, [isOpen, isMinimized, chatMessages.length]);
+    const savedName = readStorage(KEY_NAME);
+    setName(savedName);
+    setEmail(readStorage(KEY_EMAIL));
+    setRegistered(!!savedName);
+  }, []);
 
-  // Auto-focus so a returning/reconnecting guest can start typing immediately.
+  // Keep the newest message in view.
   useEffect(() => {
-    if (isOpen && !isMinimized && isRegistered && isConnected) {
-      messageInputRef.current?.focus();
+    const el = scrollRef.current;
+    if (el) el.scrollTop = el.scrollHeight;
+  }, [messages, agentTyping, sessionEnded, isOpen]);
+
+  // ── Connection: built once the visitor has opened the chat and given a name; kept for the page ──
+  useEffect(() => {
+    if (!hasOpened || !registered) return;
+
+    if (window.location.protocol === "https:" && CHAT_HUB_URL.startsWith("http:")) {
+      console.error(`[LiveChat] ${CHAT_HUB_URL} is not https, so the browser blocks it on this https page. Set NEXT_PUBLIC_API_URL to the CMS API's https origin.`);
+      setConnState("blocked");
+      return;
     }
-  }, [isOpen, isMinimized, isRegistered, isConnected]);
 
-  // Build, start and own the SignalR connection while the widget is open and the guest is
-  // registered. Tearing it down on close/unmount (and rebuilding on reopen) fixes the leak
-  // and gives a recovery path after a permanent disconnect.
-  useEffect(() => {
-    if (!isOpen || !isRegistered) return;
+    let guestId = readStorage(KEY_GUEST_ID);
+    if (!guestId) {
+      guestId = uuidv4();
+      writeStorage(KEY_GUEST_ID, guestId);
+    }
 
-    setConnectFailed(false);
-
-    const guestId = localStorage.getItem("nex_eagle_guest_id") || uuidv4();
-    localStorage.setItem("nex_eagle_guest_id", guestId);
-
-    const conn = new signalR.HubConnectionBuilder()
+    const connection = new signalR.HubConnectionBuilder()
       .withUrl(CHAT_HUB_URL)
-      .withAutomaticReconnect()
+      .withAutomaticReconnect([0, 2000, 5000, 10000, 30000])
+      .configureLogging(signalR.LogLevel.Warning)
       .build();
 
-    // Must run on every (re)connect: a reconnect is a brand-new server connection that is in
-    // no session group until JoinSession is invoked again.
-    const joinSession = () =>
-      conn
-        .invoke(
-          "JoinSession",
-          guestId,
-          localStorage.getItem("nex_eagle_guest_name"),
-          localStorage.getItem("nex_eagle_guest_email")
-        )
-        .catch((e) => console.error("JoinSession failed:", e));
+    // Runs on every (re)connect: a reconnect is a new server connection, in no session until it joins.
+    const join = () =>
+      connection
+        .invoke("JoinSession", guestId, readStorage(KEY_NAME) || null, readStorage(KEY_EMAIL) || null)
+        .catch((e) => console.error("[LiveChat] JoinSession failed:", e));
 
-    conn.on("LoadHistory", (history: ChatMessage[]) => {
-      if (history.length > 0) {
-        setSessionId(history[0].sessionId ?? null);
-        setChatMessages(history);
-      } else {
-        setChatMessages([
-          {
-            senderType: "Agent",
-            messageText: "Hi! 👋 I'm here to help. What can I assist you with today?",
-            sentAt: new Date().toISOString(),
-          },
-        ]);
+    connection.on("SessionJoined", (id: string) => {
+      setSessionId(id);
+      setSessionEnded(false);
+    });
+
+    connection.on("LoadHistory", (history: ServerMessage[]) => {
+      // Server history is the truth; keep only this tab's messages that never reached the server.
+      setMessages((prev) => [...history, ...prev.filter((m) => m.status)]);
+      setHistoryLoaded(true);
+    });
+
+    connection.on("ReceiveMessage", (msg: ServerMessage) => {
+      setMessages((prev) => {
+        if (msg.senderType === "Guest") {
+          // Our own message echoed back: replace its "sending" placeholder.
+          const i = prev.findIndex((m) => m.status === "sending" && m.messageText === msg.messageText);
+          if (i >= 0) return [...prev.slice(0, i), msg, ...prev.slice(i + 1)];
+        }
+        if (msg.messageId && prev.some((m) => m.messageId === msg.messageId)) return prev;
+        return [...prev, msg];
+      });
+      if (msg.senderType !== "Guest") {
+        setAgentTyping(false);
+        if (!isOpenRef.current) setUnread((n) => n + 1);
       }
     });
 
-    conn.on("SessionJoined", (id: string) => setSessionId(id));
+    connection.on("AgentStatus", (online: boolean) => setAgentOnline(online));
 
-    conn.on("ReceiveMessage", (msg: ChatMessage) => {
-      if (msg.sessionId) setSessionId(msg.sessionId);
-      setChatMessages((prev) => [...prev, msg]);
-      if (msg.senderType !== "Guest") setUnreadCount((c) => c + 1);
+    connection.on("AgentTyping", () => {
+      setAgentTyping(true);
+      if (typingTimerRef.current) clearTimeout(typingTimerRef.current);
+      typingTimerRef.current = setTimeout(() => setAgentTyping(false), TYPING_SHOW_FOR_MS);
     });
 
-    conn.on("SessionClosed", () => {
-      setChatMessages((prev) => [
-        ...prev,
-        {
-          senderType: "Agent",
-          messageText: "This chat session has been closed. Thank you for reaching out!",
-          sentAt: new Date().toISOString(),
-        },
-      ]);
+    connection.on("SessionClosed", () => {
+      setSessionEnded(true);
       setSessionId(null);
+      setAgentTyping(false);
     });
 
-    conn.onreconnecting(() => setIsConnected(false));
-    conn.onreconnected(() => {
-      setIsConnected(true);
-      joinSession();
+    connection.onreconnecting(() => setConnState("reconnecting"));
+    connection.onreconnected(() => {
+      setConnState("connected");
+      void join();
     });
-    // Fires once automatic-reconnect attempts are exhausted (or the connection never opened) —
-    // at that point SignalR has given up, so surface a manual retry instead of a silent hang.
-    conn.onclose(() => {
-      setIsConnected(false);
-      setConnectFailed(true);
-    });
+    connection.onclose(() => setConnState("failed"));   // automatic reconnect gave up
 
     let cancelled = false;
-    conn
+    setConnState("connecting");
+    connection
       .start()
       .then(() => {
         if (cancelled) return;
-        setIsConnected(true);
-        joinSession();
+        setConnState("connected");
+        void join();
       })
       .catch((e) => {
-        console.error("Connection failed: ", e);
-        if (cancelled) return;
-        setIsConnected(false);
-        setConnectFailed(true);
+        console.error("[LiveChat] Connection failed:", e);
+        if (!cancelled) setConnState("failed");
       });
 
-    setConnection(conn);
-
+    setConn(connection);
     return () => {
       cancelled = true;
-      setConnection(null);
-      setIsConnected(false);
+      setConn(null);
       setSessionId(null);
-      conn.stop().catch(() => {});
+      if (typingTimerRef.current) clearTimeout(typingTimerRef.current);
+      connection.stop().catch(() => {});
     };
-  }, [isOpen, isRegistered, retryToken]);
+  }, [hasOpened, registered, retryToken]);
 
-  // A guest may only post once the server has assigned a session id; never invent one.
-  const sendText = async (text: string): Promise<boolean> => {
-    const trimmed = text.trim();
-    if (!trimmed || !connection || !isConnected || !sessionId) return false;
+  // Focus the message box whenever it becomes usable.
+  const canSend = connState === "connected" && !!sessionId && !sessionEnded;
+  useEffect(() => {
+    if (isOpen && registered && canSend) inputRef.current?.focus();
+  }, [isOpen, registered, canSend]);
+
+  const open = () => {
+    setIsOpen(true);
+    setHasOpened(true);
+  };
+
+  const close = useCallback(() => {
+    setIsOpen(false);
+    launcherRef.current?.focus();
+  }, []);
+
+  useEffect(() => {
+    if (!isOpen) return;
+    const onKey = (e: KeyboardEvent) => {
+      if (e.key === "Escape") close();
+    };
+    window.addEventListener("keydown", onKey);
+    return () => window.removeEventListener("keydown", onKey);
+  }, [isOpen, close]);
+
+  const register = () => {
+    const n = name.trim();
+    if (!n) return;
+    writeStorage(KEY_NAME, n);
+    if (email.trim()) writeStorage(KEY_EMAIL, email.trim());
+    setRegistered(true);
+  };
+
+  const deliver = async (msg: ChatMessage) => {
+    if (!conn || !sessionId) return;
     try {
-      // senderType/senderId are derived server-side from the connection, so we don't send them.
-      await connection.invoke("SendMessage", sessionId, trimmed);
-      return true;
+      // senderType/senderId are decided by the server from the connection.
+      await conn.invoke("SendMessage", sessionId, msg.messageText);
     } catch (e) {
-      console.error("Error sending message: ", e);
-      return false;
+      console.error("[LiveChat] Send failed:", e);
+      if (String(e).includes("ended")) setSessionEnded(true);
+      setMessages((prev) => prev.map((m) => (m.localId === msg.localId ? { ...m, status: "failed" } : m)));
     }
   };
 
-  const handleSendMessage = async () => {
-    if (await sendText(message)) setMessage("");
+  const send = (text: string) => {
+    const trimmed = text.trim().slice(0, MAX_LENGTH);
+    if (!trimmed || !canSend) return;
+    const msg: ChatMessage = {
+      localId: uuidv4(),
+      senderType: "Guest",
+      messageText: trimmed,
+      sentAt: new Date().toISOString(),
+      status: "sending",
+    };
+    setMessages((prev) => [...prev, msg]);
+    setDraft("");
+    void deliver(msg);
   };
 
-  const quickActions = [
-    "Schedule a demo",
-    "Talk to sales",
-    "Technical support"
-  ];
-
-  const handleQuickAction = (action: string) => {
-    void sendText(action);
+  const retry = (msg: ChatMessage) => {
+    setMessages((prev) => prev.map((m) => (m.localId === msg.localId ? { ...m, status: "sending" } : m)));
+    void deliver(msg);
   };
 
-  const canSend = isConnected && !!sessionId;
+  const onDraftChange = (value: string) => {
+    setDraft(value.slice(0, MAX_LENGTH));
+    const now = Date.now();
+    if (conn && sessionId && value.trim() && now - lastTypingSentRef.current > TYPING_SEND_EVERY_MS) {
+      lastTypingSentRef.current = now;
+      conn.invoke("Typing", sessionId).catch(() => {});
+    }
+  };
 
+  const startNewChat = () => {
+    setMessages([]);
+    setSessionEnded(false);
+    const guestId = readStorage(KEY_GUEST_ID);
+    conn
+      ?.invoke("JoinSession", guestId, readStorage(KEY_NAME) || null, readStorage(KEY_EMAIL) || null)
+      .catch((e) => console.error("[LiveChat] New chat failed:", e));
+  };
+
+  // Auto-grow the message box up to ~5 lines.
+  useEffect(() => {
+    const el = inputRef.current;
+    if (!el) return;
+    el.style.height = "auto";
+    el.style.height = `${Math.min(el.scrollHeight, 120)}px`;
+  }, [draft]);
+
+  // ── Launcher ──────────────────────────────────────────────────────────────────────────────────
   if (!isOpen) {
     return (
       <button
-        onClick={() => setIsOpen(true)}
-        className="fixed bottom-4 right-4 sm:bottom-6 sm:right-6 z-50 w-16 h-16 rounded-full bg-gradient-to-br from-blue-600 to-blue-700 text-white shadow-2xl hover:shadow-blue-500/50 hover:scale-110 transition-all duration-300 flex items-center justify-center group"
-        aria-label={unreadCount > 0 ? `Open chat, ${unreadCount} unread message${unreadCount === 1 ? "" : "s"}` : "Open chat"}
+        ref={launcherRef}
+        onClick={open}
+        className="fixed bottom-4 right-4 sm:bottom-6 sm:right-6 z-50 flex h-14 items-center gap-2 rounded-full bg-blue-600 pl-4 pr-5 text-white shadow-xl transition hover:bg-blue-700 hover:shadow-2xl focus:outline-none focus-visible:ring-4 focus-visible:ring-blue-300"
+        aria-label={unread > 0 ? `Chat with us, ${unread} new message${unread === 1 ? "" : "s"}` : "Chat with us"}
       >
-        <MessageCircle className="w-7 h-7 group-hover:scale-110 transition-transform" />
-        {unreadCount > 0 ? (
-          <div className="absolute -top-1 -right-1 min-w-[20px] h-5 px-1 rounded-full bg-red-500 border-2 border-white flex items-center justify-center text-[10px] font-bold leading-none">
-            {unreadCount > 9 ? "9+" : unreadCount}
-          </div>
-        ) : (
-          <div className="absolute -top-1 -right-1 w-4 h-4 bg-green-500 rounded-full border-2 border-white animate-pulse"></div>
+        <MessageCircle className="h-6 w-6" aria-hidden="true" />
+        <span className="hidden text-sm font-semibold sm:inline">Chat with us</span>
+        {unread > 0 && (
+          <span className="absolute -right-1 -top-1 flex h-5 min-w-[20px] items-center justify-center rounded-full border-2 border-white bg-red-500 px-1 text-[10px] font-bold">
+            {unread > 9 ? "9+" : unread}
+          </span>
         )}
       </button>
     );
   }
 
+  // ── Panel ─────────────────────────────────────────────────────────────────────────────────────
+  const statusText =
+    connState === "blocked" || connState === "failed"
+      ? "Chat unavailable"
+      : agentOnline === null
+      ? "Connecting…"
+      : agentOnline
+      ? "Online · usually replies in a few minutes"
+      : "Away · leave a message, we'll reply soon";
+
   return (
     <div
-      className={`fixed z-50 bg-white rounded-2xl shadow-2xl border-2 border-slate-200 flex flex-col transition-all duration-300 ${
-        isMinimized
-          ? "bottom-4 right-4 left-4 sm:left-auto sm:bottom-6 sm:right-6 sm:w-96 h-16"
-          : "left-4 right-4 top-20 bottom-4 sm:left-auto sm:top-auto sm:bottom-6 sm:right-6 sm:w-96 sm:h-[600px]"
-      }`}
+      role="dialog"
+      aria-label="Chat with NexEagle Support"
+      className="fixed inset-0 z-50 flex flex-col bg-white sm:inset-auto sm:bottom-6 sm:right-6 sm:h-[600px] sm:max-h-[calc(100vh-3rem)] sm:w-[380px] sm:rounded-2xl sm:border sm:border-slate-200 sm:shadow-2xl"
     >
       {/* Header */}
-      <div className="flex items-center justify-between p-4 border-b border-slate-200 bg-gradient-to-r from-blue-600 to-blue-700 rounded-t-2xl shrink-0">
-        <div className="flex items-center gap-3">
-          <div className="relative">
-            <div className="w-10 h-10 rounded-full bg-white flex items-center justify-center">
-              <MessageCircle className="w-5 h-5 text-blue-600" />
-            </div>
-            <div className="absolute bottom-0 right-0 w-3 h-3 bg-green-500 rounded-full border-2 border-white"></div>
-            {isMinimized && unreadCount > 0 && (
-              <div className="absolute -top-1 -right-1 min-w-[18px] h-[18px] px-1 rounded-full bg-red-500 border-2 border-white flex items-center justify-center text-[9px] font-bold leading-none text-white">
-                {unreadCount > 9 ? "9+" : unreadCount}
-              </div>
-            )}
-          </div>
-          <div>
-            <h3 className="font-bold text-white">NexEagle Support</h3>
-            <p className="text-xs text-blue-100">We&apos;re online • Reply in ~2 min</p>
-          </div>
+      <div className="flex items-center gap-3 bg-blue-600 px-4 py-3 text-white sm:rounded-t-2xl">
+        <div className="relative">
+          <div className="flex h-10 w-10 items-center justify-center rounded-full bg-white text-base font-bold text-blue-600">N</div>
+          <span
+            className={`absolute bottom-0 right-0 h-3 w-3 rounded-full border-2 border-blue-600 ${agentOnline ? "bg-green-400" : "bg-slate-300"}`}
+            aria-hidden="true"
+          />
         </div>
-
-        <div className="flex items-center gap-2">
-          <button
-            onClick={() => setIsMinimized(!isMinimized)}
-            className="w-8 h-8 rounded-lg hover:bg-white/20 flex items-center justify-center transition-colors"
-          >
-            <Minimize2 className="w-4 h-4 text-white" />
-          </button>
-          <button
-            onClick={() => setIsOpen(false)}
-            className="w-8 h-8 rounded-lg hover:bg-white/20 flex items-center justify-center transition-colors"
-          >
-            <X className="w-4 h-4 text-white" />
-          </button>
+        <div className="min-w-0 flex-1">
+          <p className="font-semibold leading-tight">NexEagle Support</p>
+          <p className="truncate text-xs text-blue-100">{registered ? statusText : "We're here to help"}</p>
         </div>
+        <button
+          onClick={close}
+          className="flex h-9 w-9 items-center justify-center rounded-lg hover:bg-white/20 focus:outline-none focus-visible:ring-2 focus-visible:ring-white"
+          aria-label="Close chat"
+        >
+          <X className="h-5 w-5" />
+        </button>
       </div>
 
-      {!isMinimized && (
-        <>
-          {!isRegistered ? (
-             <div className="flex-1 p-6 space-y-4 bg-slate-50 flex flex-col justify-center overflow-y-auto">
-               <div className="text-center space-y-2 mb-4">
-                 <h4 className="font-bold text-slate-800">Welcome to NexEagle Support</h4>
-                 <p className="text-sm text-slate-500">Please enter your details to start chatting.</p>
-               </div>
-               <div className="space-y-3">
-                 <Input
-                   placeholder="Your Name"
-                   value={guestName}
-                   onChange={e => setGuestName(e.target.value)}
-                   className="h-10"
-                   autoFocus
-                 />
-                 <Input
-                   placeholder="Your Email (Optional)"
-                   type="email"
-                   value={guestEmail}
-                   onChange={e => setGuestEmail(e.target.value)}
-                   className="h-10"
-                 />
-                 <Button
-                   onClick={() => {
-                     if(guestName.trim()) {
-                       localStorage.setItem("nex_eagle_guest_name", guestName.trim());
-                       if (guestEmail.trim()) {
-                           localStorage.setItem("nex_eagle_guest_email", guestEmail.trim());
-                       }
-                       setIsRegistered(true);
-                     }
-                   }}
-                   className="w-full bg-blue-600 hover:bg-blue-700 text-white h-10"
-                   disabled={!guestName.trim()}
-                 >
-                   Start Chat
-                 </Button>
-               </div>
-             </div>
-          ) : (
-            <>
-              {/* Chat Messages */}
-              <div className="flex-1 p-4 space-y-4 overflow-y-auto bg-slate-50">
-            {chatMessages.map((msg, index) => (
-              <div
-                key={msg.messageId ?? `local-${index}`}
-                className={`flex ${msg.senderType === "Guest" ? "justify-end" : "justify-start"}`}
-              >
-                <div
-                  className={`max-w-[80%] px-4 py-2.5 rounded-2xl transform transition-all duration-300 hover:-translate-y-0.5 ${
-                    msg.senderType === "Guest" ? "rounded-br-sm shadow-md" : "shadow-sm border border-slate-600 rounded-bl-sm"
-                  }`}
-                  style={{
-                    backgroundColor: msg.senderType === "Guest" ? "#2563eb" : "#334155",
-                    color: "white"
-                  }}
-                >
-                  <p className="text-sm leading-relaxed" style={{ color: "white" }}>{msg.messageText}</p>
-                  <p className={`text-[10px] mt-1 opacity-80 ${msg.senderType === "Guest" ? "text-right" : "text-left"}`} style={{ color: "white" }}>
-                    {new Date(msg.sentAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
-                  </p>
-                </div>
-              </div>
-            ))}
-            <div ref={messagesEndRef} />
-
-            {/* Quick Actions */}
-            {chatMessages.length <= 1 && (
-              <div className="space-y-2 pt-2">
-                <p className="text-xs font-semibold text-slate-600 px-2">Quick actions:</p>
-                {quickActions.map((action, index) => (
-                  <button
-                    key={index}
-                    onClick={() => handleQuickAction(action)}
-                    disabled={!canSend}
-                    className="w-full text-left px-4 py-2 rounded-xl bg-white border border-slate-200 hover:border-blue-500 hover:bg-blue-50 text-sm font-medium text-slate-700 hover:text-blue-600 transition-all disabled:opacity-50 disabled:cursor-not-allowed"
-                  >
-                    {action}
-                  </button>
-                ))}
-              </div>
-            )}
+      {!registered ? (
+        // ── First visit: who are you? ─────────────────────────────────────────────────────────────
+        <form
+          className="flex flex-1 flex-col justify-center gap-4 overflow-y-auto bg-slate-50 p-6"
+          onSubmit={(e) => {
+            e.preventDefault();
+            register();
+          }}
+        >
+          <div className="space-y-1 text-center">
+            <p className="text-lg font-semibold text-slate-900">Hi there 👋</p>
+            <p className="text-sm text-slate-600">Tell us your name and we&apos;ll connect you with our team.</p>
           </div>
-
-          {/* Connection error */}
-          {connectFailed && (
-            <div className="px-4 pt-3 shrink-0">
-              <div className="flex items-center justify-between gap-3 rounded-xl border border-red-200 bg-red-50 px-3 py-2">
-                <p className="text-xs text-red-600">
-                  Couldn&apos;t connect to support. Check your connection and try again.
-                </p>
-                <button
-                  onClick={() => setRetryToken((t) => t + 1)}
-                  className="shrink-0 text-xs font-semibold text-red-700 hover:text-red-800 underline underline-offset-2"
-                >
+          <label className="space-y-1 text-sm font-medium text-slate-700">
+            <span>Your name</span>
+            <input
+              value={name}
+              onChange={(e) => setName(e.target.value)}
+              maxLength={100}
+              required
+              autoFocus
+              autoComplete="name"
+              className="h-11 w-full rounded-xl border border-slate-300 bg-white px-3 text-base text-slate-900 outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-100"
+            />
+          </label>
+          <label className="space-y-1 text-sm font-medium text-slate-700">
+            <span>
+              Email <span className="font-normal text-slate-500">(optional, so we can reply if you leave)</span>
+            </span>
+            <input
+              type="email"
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
+              maxLength={150}
+              autoComplete="email"
+              className="h-11 w-full rounded-xl border border-slate-300 bg-white px-3 text-base text-slate-900 outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-100"
+            />
+          </label>
+          <button
+            type="submit"
+            disabled={!name.trim()}
+            className="h-11 rounded-xl bg-blue-600 font-semibold text-white transition hover:bg-blue-700 disabled:cursor-not-allowed disabled:opacity-50"
+          >
+            Start chat
+          </button>
+          <p className="text-center text-xs text-slate-500">
+            Your messages are saved so our team can reply. See our{" "}
+            <a href="/privacy" className="underline">privacy policy</a>.
+          </p>
+        </form>
+      ) : (
+        <>
+          {/* Connection banner */}
+          {connState !== "connected" && connState !== "idle" && (
+            <div
+              className={`flex items-center gap-2 px-4 py-2 text-xs ${
+                connState === "failed" || connState === "blocked" ? "bg-red-50 text-red-700" : "bg-amber-50 text-amber-800"
+              }`}
+              role="status"
+            >
+              {connState === "connecting" || connState === "reconnecting" ? (
+                <Loader2 className="h-3.5 w-3.5 animate-spin" aria-hidden="true" />
+              ) : (
+                <AlertCircle className="h-3.5 w-3.5" aria-hidden="true" />
+              )}
+              <span className="flex-1">
+                {connState === "connecting" && "Connecting…"}
+                {connState === "reconnecting" && "Connection lost. Reconnecting…"}
+                {connState === "failed" && "We couldn't connect. Check your internet and try again."}
+                {connState === "blocked" && (
+                  <>Chat isn&apos;t available here right now. Email us at <a className="underline" href={`mailto:${SUPPORT_EMAIL}`}>{SUPPORT_EMAIL}</a>.</>
+                )}
+              </span>
+              {connState === "failed" && (
+                <button onClick={() => setRetryToken((t) => t + 1)} className="font-semibold underline">
                   Retry
                 </button>
-              </div>
+              )}
             </div>
           )}
 
-          {/* Input Area */}
-          <div className="p-4 border-t border-slate-200 bg-white rounded-b-2xl shrink-0">
-            <div className="flex gap-2">
-              <Input
-                ref={messageInputRef}
-                value={message}
-                onChange={(e) => setMessage(e.target.value)}
-                onKeyDown={(e) => e.key === "Enter" && handleSendMessage()}
-                placeholder={
-                  connectFailed
-                    ? "Connection failed — tap retry above"
-                    : !isConnected
-                    ? "Connecting to support..."
-                    : !sessionId
-                    ? "Starting session..."
-                    : "Type your message..."
-                }
-                className="flex-1 h-10 border-2 border-slate-200 focus:border-blue-500"
-                disabled={!isConnected}
-              />
-              <Button
-                onClick={handleSendMessage}
-                size="sm"
-                className="h-10 px-4 bg-blue-600 hover:bg-blue-700 text-white"
-                disabled={!canSend || !message.trim()}
-              >
-                <Send className="w-4 h-4" />
-              </Button>
-            </div>
-            <p className="text-[10px] text-slate-400 mt-2 text-center">
-              Our team typically responds in under 2 minutes.
-            </p>
+          {/* Messages */}
+          <div ref={scrollRef} className="flex-1 space-y-2 overflow-y-auto bg-slate-50 px-4 py-4" aria-live="polite">
+            {historyLoaded && messages.length === 0 && !sessionEnded && (
+              <div className="rounded-2xl border border-slate-200 bg-white p-4 text-sm text-slate-700">
+                <p className="font-semibold text-slate-900">Hi {name.trim().split(" ")[0] || "there"} 👋</p>
+                <p className="mt-1">
+                  {agentOnline
+                    ? "How can we help? Ask anything about NexEagle and our team will reply here."
+                    : "Our team is away right now. Leave a message and we'll reply here" + (email ? " and by email." : ".")}
+                </p>
+                <div className="mt-3 flex flex-wrap gap-2">
+                  {QUICK_REPLIES.map((q) => (
+                    <button
+                      key={q}
+                      onClick={() => send(q)}
+                      disabled={!canSend}
+                      className="rounded-full border border-blue-200 bg-blue-50 px-3 py-1.5 text-xs font-medium text-blue-700 transition hover:bg-blue-100 disabled:opacity-50"
+                    >
+                      {q}
+                    </button>
+                  ))}
+                </div>
+              </div>
+            )}
+
+            {messages.map((m, i) => {
+              const mine = m.senderType === "Guest";
+              const firstOfRun = i === 0 || messages[i - 1].senderType !== m.senderType;
+              return (
+                <div key={m.messageId ?? m.localId ?? `m-${i}`} className={`flex flex-col ${mine ? "items-end" : "items-start"}`}>
+                  {!mine && firstOfRun && <span className="mb-0.5 ml-1 text-[11px] font-medium text-slate-500">NexEagle Support</span>}
+                  <div
+                    className={`max-w-[85%] whitespace-pre-wrap break-words rounded-2xl px-3.5 py-2 text-sm leading-relaxed ${
+                      mine ? "rounded-br-md bg-blue-600 text-white" : "rounded-bl-md border border-slate-200 bg-white text-slate-800"
+                    } ${m.status === "failed" ? "opacity-60" : ""}`}
+                  >
+                    {m.messageText}
+                  </div>
+                  <span className="mx-1 mt-0.5 text-[10px] text-slate-400">
+                    {m.status === "sending" ? "Sending…" : m.status === "failed" ? (
+                      <button onClick={() => retry(m)} className="inline-flex items-center gap-1 font-medium text-red-600">
+                        <RotateCcw className="h-3 w-3" aria-hidden="true" /> Not sent · tap to retry
+                      </button>
+                    ) : timeLabel(m.sentAt)}
+                  </span>
+                </div>
+              );
+            })}
+
+            {agentTyping && (
+              <div className="flex items-center gap-2 text-xs text-slate-500" aria-label="Support is typing">
+                <span className="flex gap-1 rounded-2xl border border-slate-200 bg-white px-3 py-2">
+                  <span className="h-1.5 w-1.5 animate-bounce rounded-full bg-slate-400" />
+                  <span className="h-1.5 w-1.5 animate-bounce rounded-full bg-slate-400 [animation-delay:150ms]" />
+                  <span className="h-1.5 w-1.5 animate-bounce rounded-full bg-slate-400 [animation-delay:300ms]" />
+                </span>
+              </div>
+            )}
+
+            {sessionEnded && (
+              <div className="rounded-2xl border border-slate-200 bg-white p-4 text-center text-sm text-slate-700">
+                <p>This chat has ended. Thanks for talking to us!</p>
+                <button
+                  onClick={startNewChat}
+                  disabled={connState !== "connected"}
+                  className="mt-3 rounded-full bg-blue-600 px-4 py-2 text-sm font-semibold text-white hover:bg-blue-700 disabled:opacity-50"
+                >
+                  Start a new chat
+                </button>
+              </div>
+            )}
           </div>
-            </>
+
+          {/* Composer */}
+          {!sessionEnded && (
+            <form
+              className="border-t border-slate-200 bg-white p-3 sm:rounded-b-2xl"
+              onSubmit={(e) => {
+                e.preventDefault();
+                send(draft);
+              }}
+            >
+              <div className="flex items-end gap-2">
+                <textarea
+                  ref={inputRef}
+                  rows={1}
+                  value={draft}
+                  onChange={(e) => onDraftChange(e.target.value)}
+                  onKeyDown={(e) => {
+                    if (e.key === "Enter" && !e.shiftKey && !e.nativeEvent.isComposing) {
+                      e.preventDefault();
+                      send(draft);
+                    }
+                  }}
+                  placeholder={canSend ? "Write a message…" : "Connecting…"}
+                  disabled={!canSend}
+                  aria-label="Message"
+                  className="max-h-[120px] min-h-[44px] flex-1 resize-none rounded-xl border border-slate-300 px-3 py-2.5 text-base text-slate-900 outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-100 disabled:bg-slate-50 sm:text-sm"
+                />
+                <button
+                  type="submit"
+                  disabled={!canSend || !draft.trim()}
+                  className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-blue-600 text-white transition hover:bg-blue-700 disabled:opacity-40"
+                  aria-label="Send message"
+                >
+                  <Send className="h-5 w-5" />
+                </button>
+              </div>
+              <p className="mt-1.5 text-center text-[10px] text-slate-400">
+                {draft.length > MAX_LENGTH - 200 ? `${MAX_LENGTH - draft.length} characters left` : "Enter to send · Shift + Enter for a new line"}
+              </p>
+            </form>
           )}
         </>
       )}
     </div>
   );
-};
-
-export default LiveChat;
+}

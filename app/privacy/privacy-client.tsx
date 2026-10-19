@@ -117,6 +117,40 @@ const sections: Section[] = [
       ]
     },
     {
+      id: "website-analytics",
+      title: "Website Analytics (nexeagle.com and Doctor Dekho)",
+      content: [
+        {
+          subtitle: "What We Record",
+          text: "When you browse nexeagle.com or Doctor Dekho we record the pages you open, the page that referred you and any campaign tags, your browser's user agent, and an approximate location (country, region, city) worked out from your IP address. On Doctor Dekho we also record the searches you run, the doctor profiles you open, the booking steps you reach and the steps of signing in. Your IP address is shortened before it is stored (the last part is removed)."
+        },
+        {
+          subtitle: "Mobile Numbers",
+          text: "When you sign in on Doctor Dekho, the sign-in steps are recorded with a masked copy of your mobile number (for example 98XXXXXX10) and a one-way keyed code that lets us count repeat sign-ins without storing the number itself."
+        },
+        {
+          subtitle: "What Hospitals See",
+          text: "When you search for, or open the page of, a doctor or hospital on Doctor Dekho, that hospital can see that its page was searched for or viewed, together with the search text. No name or phone number is attached to these records."
+        },
+        {
+          subtitle: "Visit Grouping",
+          text: "Activity is grouped by a random visit identifier kept in your browser. It expires after 30 minutes without activity, so separate visits are not linked to each other."
+        },
+        {
+          subtitle: "Location Lookup",
+          text: "Approximate location is looked up on our own servers using MaxMind GeoLite2 data. Until that is in place, the IP address is sent to the ip-api.com service for the lookup."
+        },
+        {
+          subtitle: "How Long We Keep It",
+          text: "Page-view and activity records are deleted 12 months after they are made. Records of interest in a hospital or doctor are deleted after 24 months."
+        },
+        {
+          subtitle: "Your Choice",
+          text: "Website analytics is on by default. Choose \"Decline\" in the notice, or \"Tracking choices\" in the site footer, to switch it off for that website in that browser; this also deletes the visit identifier. nexeagle.com and Doctor Dekho each keep their own choice."
+        }
+      ]
+    },
+    {
       id: "data-retention",
       title: "Data Retention",
       content: [
