@@ -1,5 +1,7 @@
 "use client";
 
+import { isAutomatedBrowser } from "./botUserAgent";
+
 // Website analytics for the CMS "Site Visits" report (page views only on the corporate site; the
 // funnel events and hospital leads live in the Doctor Dekho app's copy of this file).
 //
@@ -137,7 +139,8 @@ function flush(): void {
 }
 
 function enqueue(kind: keyof Batch, item: Record<string, unknown>): void {
-  if (typeof window === "undefined" || !isTrackingAllowed()) return;
+  // Crawlers and automated browsers run this script too; they are not visitors.
+  if (typeof window === "undefined" || !isTrackingAllowed() || isAutomatedBrowser()) return;
   queue[kind].push(item);
   if (!unloadHooked) {
     unloadHooked = true;
