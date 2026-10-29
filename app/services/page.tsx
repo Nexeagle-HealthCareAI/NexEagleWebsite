@@ -6,7 +6,6 @@ import ProcessApproach from "@/components/services/ProcessApproach";
 import TechStack from "@/components/services/TechStack";
 import CaseStudies from "@/components/services/CaseStudies";
 import ServicesCTA from "@/components/services/ServicesCTA";
-import DeferredLiveChat from "@/components/DeferredLiveChat";
 import AnalyticsTracker from "@/components/AnalyticsTracker";
 
 export const metadata: Metadata = {
@@ -109,7 +108,6 @@ export default function ServicesPage() {
       <TechStack />
       <CaseStudies />
       <ServicesCTA />
-      <DeferredLiveChat />
     </main>
   );
 }

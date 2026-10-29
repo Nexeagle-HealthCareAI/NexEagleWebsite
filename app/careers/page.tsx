@@ -1,6 +1,5 @@
 import type { Metadata } from "next";
 import CareersClient from "./careers-client";
-import DeferredLiveChat from "@/components/DeferredLiveChat";
 import AnalyticsTracker from "@/components/AnalyticsTracker";
 
 export const metadata: Metadata = {
@@ -41,7 +40,6 @@ export default function CareersPage() {
       />
       <AnalyticsTracker title="NexEagle Careers - Join the Team" />
       <CareersClient />
-      <DeferredLiveChat />
     </main>
   );
 }

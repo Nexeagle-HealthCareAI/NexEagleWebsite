@@ -6,7 +6,6 @@ import HomeFAQ from "@/components/home-v2/HomeFAQ";
 import { ClientsStrip, ClosingCTA, DataTrust, GoLive } from "@/components/home-v2/Sections";
 import BeforeAfter from "@/components/home-v2/BeforeAfter";
 import TeamStrip from "@/components/home-v2/TeamStrip";
-import DeferredLiveChat from "@/components/DeferredLiveChat";
 import AnalyticsTracker from "@/components/AnalyticsTracker";
 import { SITE_URL, DOCTORDEKHO_URL } from "@/lib/site";
 import { ENTITY_SUMMARY, FAQ } from "@/lib/homeContent";
@@ -134,7 +133,6 @@ export default function HomePage() {
       <DataTrust />
       <HomeFAQ />
       <ClosingCTA />
-      <DeferredLiveChat />
     </main>
   );
 }

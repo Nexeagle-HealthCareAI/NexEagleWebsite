@@ -5,7 +5,6 @@ import ProductDetails from "@/components/products/ProductDetails";
 import IntegrationSection from "@/components/products/IntegrationSection";
 import TechnicalSpecs from "@/components/products/TechnicalSpecs";
 import ProductsCTA from "@/components/products/ProductsCTA";
-import DeferredLiveChat from "@/components/DeferredLiveChat";
 import AnalyticsTracker from "@/components/AnalyticsTracker";
 
 export const metadata: Metadata = {
@@ -107,7 +106,6 @@ export default function ProductsPage() {
       <IntegrationSection />
       <TechnicalSpecs />
       <ProductsCTA />
-      <DeferredLiveChat />
     </main>
   );
 }

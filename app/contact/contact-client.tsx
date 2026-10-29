@@ -1,324 +1,146 @@
 "use client";
 
 import { useState } from "react";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Textarea } from "@/components/ui/textarea";
-import { Mail, Phone, MapPin, Clock, Send, Check, Calendar, MessageSquare, ArrowRight } from "lucide-react";
-import Link from "next/link";
+import { AnimatePresence, motion } from "framer-motion";
+import { Check, Clock, Mail, MapPin, Phone } from "lucide-react";
+import { WHATSAPP } from "@/components/site/PageHero";
+
+const INTERESTS = ["1HMS hospital software", "1Rad PACS & AI reports", "1Lab", "1Pharma", "Vita for patients", "Not sure yet"];
+const ROLES = ["Hospital owner / director", "Doctor", "Administrator / manager", "Radiologist / diagnostic centre", "Other"];
+
+const field = "h-12 w-full rounded-xl border border-slate-300 bg-white px-4 text-[0.98rem] text-[#0e2343] outline-none transition-colors placeholder:text-slate-400 focus:border-[#1ea99b] focus:ring-4 focus:ring-[#1ea99b]/15";
 
 export default function ContactClient() {
-  const [formData, setFormData] = useState({
-    firstName: '',
-    email: '',
-    phone: '',
-    company: '',
-    message: ''
-  });
-  const [isSubmitting, setIsSubmitting] = useState(false);
-  const [isSubmitted, setIsSubmitted] = useState(false);
-  const [submitError, setSubmitError] = useState<string | null>(null);
+  const [form, setForm] = useState({ name: "", phone: "", email: "", hospital: "", city: "", role: ROLES[0], message: "" });
+  const [interests, setInterests] = useState<string[]>([]);
+  const [state, setState] = useState<"idle" | "sending" | "sent" | "error">("idle");
 
-  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
-    const { name, value } = e.target;
-    setFormData(prev => ({
-      ...prev,
-      [name]: value
-    }));
-  };
+  const set = (k: keyof typeof form) => (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) =>
+    setForm((f) => ({ ...f, [k]: e.target.value }));
+  const toggle = (i: string) => setInterests((xs) => (xs.includes(i) ? xs.filter((x) => x !== i) : [...xs, i]));
 
-  const handleSubmit = async (e: React.FormEvent) => {
+  const submit = async (e: React.FormEvent) => {
     e.preventDefault();
-    setIsSubmitting(true);
-    setIsSubmitted(false);
-    setSubmitError(null);
-
+    setState("sending");
     try {
-      const response = await fetch("https://formsubmit.co/ajax/info@nexeagle.com", {
+      const res = await fetch("https://formsubmit.co/ajax/info@nexeagle.com", {
         method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          Accept: "application/json",
-        },
+        headers: { "Content-Type": "application/json", Accept: "application/json" },
         body: JSON.stringify({
-          _subject: "New NexEagle Contact Form Submission",
-          firstName: formData.firstName,
-          email: formData.email,
-          phone: formData.phone,
-          company: formData.company,
-          message: formData.message,
+          _subject: `Demo request: ${form.hospital || form.name}${form.city ? `, ${form.city}` : ""}`,
+          name: form.name,
+          phone: form.phone,
+          email: form.email,
+          hospital: form.hospital,
+          city: form.city,
+          role: form.role,
+          interested_in: interests.join(", ") || "Not specified",
+          message: form.message,
         }),
       });
-
-      if (!response.ok) {
-        throw new Error("Unable to send message");
-      }
-
-      setIsSubmitted(true);
-
-      setTimeout(() => {
-        setIsSubmitted(false);
-        setFormData({
-          firstName: '',
-          email: '',
-          phone: '',
-          company: '',
-          message: ''
-        });
-      }, 5000);
-    } catch (error) {
-      setSubmitError("We couldn't send your message. Please try again or email info@nexeagle.com directly.");
-    } finally {
-      setIsSubmitting(false);
+      if (!res.ok) throw new Error();
+      setState("sent");
+    } catch {
+      setState("error");
     }
   };
 
   return (
-    <>
-      {/* Hero Section */}
-      <section className="relative overflow-hidden pt-32 pb-16 bg-gradient-to-b from-teal-50/20 via-white to-white select-none">
-        <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[600px] h-[600px] bg-brand-teal/5 pointer-events-none rounded-full blur-[140px] z-0"></div>
-        
-        <div className="container relative z-10 px-6 md:px-8 lg:px-12 max-w-5xl mx-auto text-center space-y-6">
-          <h1 className="text-4xl md:text-5xl lg:text-6xl font-black text-slate-900 tracking-tight leading-tight">
-            Get in Touch.
-          </h1>
-          <p className="text-lg md:text-xl text-slate-600 max-w-2xl mx-auto font-light leading-relaxed">
-            Whether you need a unified clinical system or a product engineering partner, we&apos;re here to help you deploy and scale.
-          </p>
-        </div>
-      </section>
-
-      {/* Main Grid Content */}
-      <section className="container px-6 md:px-8 lg:px-12 max-w-5xl mx-auto pb-24">
-        <div className="grid grid-cols-1 lg:grid-cols-12 gap-12 lg:gap-16">
-          
-          {/* Contact Form Container (7 Cols) */}
-          <div className="lg:col-span-7 space-y-8">
-            <div className="space-y-3">
-              <h2 className="text-2xl md:text-3xl font-black text-slate-900 tracking-tight">
-                Send us a message.
-              </h2>
-              <p className="text-slate-500 text-sm md:text-base leading-relaxed">
-                Fill out the form below. Our clinical onboarding advisers or engineering team will get back to you within 24 hours.
-              </p>
-            </div>
-
-            {isSubmitted ? (
-              <div className="text-center py-16 px-6 bg-slate-50 rounded-3xl border border-brand-teal/20 space-y-4 select-none">
-                <div className="w-14 h-14 bg-teal-50 border border-brand-teal/20 rounded-2xl flex items-center justify-center mx-auto">
-                  <Check className="w-7 h-7 text-brand-teal" />
-                </div>
-                <h3 className="text-2xl font-black text-slate-900">Message Sent!</h3>
-                <p className="text-slate-500 text-sm md:text-base">
-                  Thank you for reaching out. We will review your details and contact you shortly.
-                </p>
-              </div>
+    <section className="pb-20 sm:pb-28" aria-label="Contact NexEagle">
+      <div className="mx-auto grid max-w-[1320px] gap-10 px-5 sm:px-8 lg:grid-cols-12 lg:gap-14 lg:px-12">
+        {/* Form */}
+        <div className="rounded-[1.75rem] border border-slate-200 bg-white p-6 shadow-[0_30px_80px_-40px_rgba(14,35,67,0.35)] sm:p-9 lg:col-span-7">
+          <AnimatePresence mode="wait">
+            {state === "sent" ? (
+              <motion.div key="sent" initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} className="py-10 text-center">
+                <motion.span initial={{ scale: 0 }} animate={{ scale: 1 }} transition={{ type: "spring", stiffness: 300, damping: 16 }} className="mx-auto grid h-16 w-16 place-items-center rounded-full bg-[#1ea99b] text-white">
+                  <Check className="h-8 w-8" strokeWidth={3} />
+                </motion.span>
+                <h2 className="mt-6 font-display text-3xl font-semibold tracking-[-0.02em] text-[#0e2343]">Thanks, {form.name.split(" ")[0] || "we've got it"}.</h2>
+                <p className="mx-auto mt-3 max-w-md text-slate-600">We&apos;ll call you within one working day to set up your demo. Need us sooner? Message us on WhatsApp.</p>
+                <a href={WHATSAPP("Hi NexEagle, I just sent a demo request.")} target="_blank" rel="noopener noreferrer" className="mt-7 inline-flex h-12 items-center rounded-full bg-[#25d366] px-6 font-semibold text-[#073b1f]">Message on WhatsApp</a>
+              </motion.div>
             ) : (
-              <form onSubmit={handleSubmit} className="space-y-6">
-                {submitError && (
-                  <div className="rounded-2xl border border-red-200 bg-red-50 text-red-700 px-5 py-4 text-xs md:text-sm font-medium">
-                    {submitError}
-                  </div>
-                )}
-
-                <div className="grid md:grid-cols-2 gap-4">
-                  <div className="space-y-2">
-                    <label htmlFor="firstName" className="block text-xs font-bold text-slate-700 uppercase tracking-wider">
-                      Name *
-                    </label>
-                    <Input 
-                      id="firstName" 
-                      name="firstName"
-                      value={formData.firstName}
-                      onChange={handleInputChange}
-                      placeholder="John Doe" 
-                      required
-                      className="h-12 border border-slate-200 focus:border-brand-teal/40 focus:ring-brand-teal/20 rounded-xl"
-                    />
-                  </div>
-                  <div className="space-y-2">
-                    <label htmlFor="email" className="block text-xs font-bold text-slate-700 uppercase tracking-wider">
-                      Email *
-                    </label>
-                    <Input 
-                      id="email" 
-                      name="email"
-                      type="email" 
-                      value={formData.email}
-                      onChange={handleInputChange}
-                      placeholder="john@company.com" 
-                      required
-                      className="h-12 border border-slate-200 focus:border-brand-teal/40 focus:ring-brand-teal/20 rounded-xl"
-                    />
-                  </div>
+              <motion.form key="form" onSubmit={submit} initial={false} exit={{ opacity: 0 }} className="space-y-5">
+                <div>
+                  <h2 className="font-display text-2xl font-semibold tracking-[-0.02em] text-[#0e2343] sm:text-3xl">Book a demo</h2>
+                  <p className="mt-1.5 text-slate-600">A 30-minute call, around your own hospital&apos;s workflow.</p>
                 </div>
-
-                <div className="grid md:grid-cols-2 gap-4">
-                  <div className="space-y-2">
-                    <label htmlFor="phone" className="block text-xs font-bold text-slate-700 uppercase tracking-wider">
-                      Phone *
-                    </label>
-                    <Input 
-                      id="phone" 
-                      name="phone"
-                      type="tel" 
-                      value={formData.phone}
-                      onChange={handleInputChange}
-                      placeholder="+91 98765 43210" 
-                      required
-                      className="h-12 border border-slate-200 focus:border-brand-teal/40 focus:ring-brand-teal/20 rounded-xl"
-                    />
-                  </div>
-                  <div className="space-y-2">
-                    <label htmlFor="company" className="block text-xs font-bold text-slate-700 uppercase tracking-wider">
-                      Company / Hospital
-                    </label>
-                    <Input 
-                      id="company" 
-                      name="company"
-                      value={formData.company}
-                      onChange={handleInputChange}
-                      placeholder="Care Hospital" 
-                      className="h-12 border border-slate-200 focus:border-brand-teal/40 focus:ring-brand-teal/20 rounded-xl"
-                    />
-                  </div>
-                </div>
-                
-                <div className="space-y-2">
-                  <label htmlFor="message" className="block text-xs font-bold text-slate-700 uppercase tracking-wider">
-                    Message *
+                <div className="grid gap-4 sm:grid-cols-2">
+                  <label className="block"><span className="mb-1.5 block text-sm font-medium text-[#0e2343]">Your name</span><input required className={field} value={form.name} onChange={set("name")} autoComplete="name" /></label>
+                  <label className="block"><span className="mb-1.5 block text-sm font-medium text-[#0e2343]">Phone / WhatsApp</span><input required type="tel" className={field} value={form.phone} onChange={set("phone")} autoComplete="tel" placeholder="+91" /></label>
+                  <label className="block"><span className="mb-1.5 block text-sm font-medium text-[#0e2343]">Hospital or centre</span><input className={field} value={form.hospital} onChange={set("hospital")} autoComplete="organization" /></label>
+                  <label className="block"><span className="mb-1.5 block text-sm font-medium text-[#0e2343]">City</span><input className={field} value={form.city} onChange={set("city")} autoComplete="address-level2" /></label>
+                  <label className="block"><span className="mb-1.5 block text-sm font-medium text-[#0e2343]">Email <span className="font-normal text-slate-400">(optional)</span></span><input type="email" className={field} value={form.email} onChange={set("email")} autoComplete="email" /></label>
+                  <label className="block"><span className="mb-1.5 block text-sm font-medium text-[#0e2343]">You are</span>
+                    <select className={field} value={form.role} onChange={set("role")}>{ROLES.map((r) => <option key={r}>{r}</option>)}</select>
                   </label>
-                  <Textarea 
-                    id="message" 
-                    name="message"
-                    value={formData.message}
-                    onChange={handleInputChange}
-                    placeholder="Describe your workflows, scaling issues, or requested products..."
-                    rows={6}
-                    required
-                    className="border border-slate-200 focus:border-brand-teal/40 focus:ring-brand-teal/20 rounded-xl resize-none"
-                  />
                 </div>
-                
-                <Button 
-                  type="submit" 
-                  className="w-full h-12 bg-slate-900 hover:bg-slate-800 text-white font-semibold text-base rounded-full shadow-md transition-all duration-300"
-                  disabled={isSubmitting}
-                >
-                  {isSubmitting ? (
-                    <>
-                      <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white mr-2"></div>
-                      Sending...
-                    </>
-                  ) : (
-                    <>
-                      <span className="text-white">Send Message</span>
-                      <Send className="ml-2 h-4 w-4 text-white" />
-                    </>
-                  )}
-                </Button>
-
-                <p className="text-xs text-slate-400 text-center select-none">
-                  By submitting this form, you agree to our{" "}
-                  <Link href="/privacy" className="text-brand-teal hover:underline font-medium">
-                    Privacy Policy
-                  </Link>
-                </p>
-              </form>
+                <fieldset>
+                  <legend className="mb-2 text-sm font-medium text-[#0e2343]">Interested in</legend>
+                  <div className="flex flex-wrap gap-2">
+                    {INTERESTS.map((i) => {
+                      const on = interests.includes(i);
+                      return (
+                        <button type="button" key={i} onClick={() => toggle(i)} aria-pressed={on} className={`inline-flex items-center gap-1.5 rounded-full border px-4 py-2 text-sm font-medium transition-colors ${on ? "border-[#1ea99b] bg-[#1ea99b] text-white" : "border-slate-300 bg-white text-[#0e2343] hover:border-[#1ea99b]"}`}>
+                          {on && <Check className="h-3.5 w-3.5" strokeWidth={3} />}
+                          <span className={on ? "text-white" : "text-[#0e2343]"}>{i}</span>
+                        </button>
+                      );
+                    })}
+                  </div>
+                </fieldset>
+                <label className="block"><span className="mb-1.5 block text-sm font-medium text-[#0e2343]">Anything we should know? <span className="font-normal text-slate-400">(optional)</span></span>
+                  <textarea rows={3} className={`${field} h-auto py-3`} value={form.message} onChange={set("message")} placeholder="Number of beds, current software, what you'd like to fix first…" />
+                </label>
+                {state === "error" && <p className="rounded-xl bg-rose-50 px-4 py-3 text-sm text-rose-700">That didn&apos;t send. Please try again, or call or WhatsApp us on +91 80749 06808.</p>}
+                <button type="submit" disabled={state === "sending"} className="h-[3.25rem] w-full rounded-full bg-[#0e2343] font-semibold text-white transition-colors hover:bg-[#13305c] disabled:opacity-60">
+                  {state === "sending" ? "Sending…" : "Request my demo"}
+                </button>
+                <p className="text-center text-xs text-slate-500">We use these details only to contact you about NexEagle.</p>
+              </motion.form>
             )}
-          </div>
-          
-          {/* Info Panels Container (5 Cols) */}
-          <div className="lg:col-span-5 space-y-8 select-none">
-            
-            {/* Quick Actions Card */}
-            <div className="p-8 rounded-3xl border border-slate-200/80 bg-slate-50 space-y-6">
-              <h3 className="text-xl font-bold text-slate-900">Quick Actions</h3>
-              <div className="space-y-4">
-                <a
-                  href="mailto:info@nexeagle.com"
-                  className="flex items-center gap-4 p-4 rounded-2xl bg-white border border-slate-200 hover:border-brand-teal/40 hover:shadow-[0_8px_20px_rgba(20,184,166,0.03)] transition-all group"
-                >
-                  <div className="w-10 h-10 rounded-xl bg-teal-50 border border-brand-teal/10 flex items-center justify-center shrink-0">
-                    <Calendar className="w-5 h-5 text-brand-teal" />
-                  </div>
-                  <div className="min-w-0 flex-1">
-                    <p className="font-bold text-slate-900 text-sm group-hover:text-brand-teal transition-colors">Schedule a Demo</p>
-                    <p className="text-xs text-slate-500 truncate">See 1HMS & 1Rad PACS in action</p>
-                  </div>
-                  <ArrowRight className="w-4 h-4 text-slate-400 group-hover:translate-x-1 transition-transform shrink-0" />
-                </a>
-
-                <a
-                  href="mailto:sales@nexeagle.com"
-                  className="flex items-center gap-4 p-4 rounded-2xl bg-white border border-slate-200 hover:border-brand-teal/40 hover:shadow-[0_8px_20px_rgba(20,184,166,0.03)] transition-all group"
-                >
-                  <div className="w-10 h-10 rounded-xl bg-teal-50 border border-brand-teal/10 flex items-center justify-center shrink-0">
-                    <MessageSquare className="w-5 h-5 text-brand-teal" />
-                  </div>
-                  <div className="min-w-0 flex-1">
-                    <p className="font-bold text-slate-900 text-sm group-hover:text-brand-teal transition-colors">Talk to Sales</p>
-                    <p className="text-xs text-slate-500 truncate">Discuss custom pricing & plans</p>
-                  </div>
-                  <ArrowRight className="w-4 h-4 text-slate-400 group-hover:translate-x-1 transition-transform shrink-0" />
-                </a>
-              </div>
-            </div>
-
-            {/* Office Hours Panel */}
-            <div className="p-8 rounded-3xl border border-slate-200/80 bg-white space-y-6">
-              <div className="flex items-center gap-3.5">
-                <div className="w-10 h-10 rounded-xl bg-slate-50 border border-slate-200 flex items-center justify-center">
-                  <Clock className="w-5 h-5 text-slate-700" />
-                </div>
-                <h3 className="text-lg font-bold text-slate-900">Office Hours</h3>
-              </div>
-              <div className="space-y-3 text-sm">
-                <div className="flex justify-between items-center pb-2 border-b border-slate-100">
-                  <span className="text-slate-500 font-medium">Monday - Friday</span>
-                  <span className="font-bold text-slate-900">9:00 AM - 6:00 PM</span>
-                </div>
-                <div className="flex justify-between items-center pb-2 border-b border-slate-100">
-                  <span className="text-slate-500 font-medium">Saturday</span>
-                  <span className="font-bold text-slate-900">10:00 AM - 4:00 PM</span>
-                </div>
-                <div className="flex justify-between items-center">
-                  <span className="text-slate-500 font-medium">Sunday</span>
-                  <span className="font-bold text-slate-900">Closed</span>
-                </div>
-              </div>
-              <div className="pt-4 border-t border-slate-100">
-                <p className="text-xs text-slate-500 leading-relaxed">
-                  <strong>Emergency Support:</strong> Technical support channels are available 24/7 for clinical enterprise tier installations.
-                </p>
-              </div>
-            </div>
-
-            {/* Office Location Panel */}
-            <div className="p-8 rounded-3xl border border-slate-200/80 bg-white space-y-6">
-              <div className="flex items-center gap-3.5">
-                <div className="w-10 h-10 rounded-xl bg-slate-50 border border-slate-200 flex items-center justify-center">
-                  <MapPin className="w-5 h-5 text-slate-700" />
-                </div>
-                <h3 className="text-lg font-bold text-slate-900">Our Office</h3>
-              </div>
-              <div className="space-y-2 text-sm leading-relaxed text-slate-600">
-                <p className="font-bold text-slate-950">NexEagle</p>
-                <p>
-                  Kolkata, West Bengal<br />
-                  India
-                </p>
-                <p className="text-xs text-slate-400 pt-4 border-t border-slate-100">
-                  Note: Client visits by appointment only.
-                </p>
-              </div>
-            </div>
-
-          </div>
-
+          </AnimatePresence>
         </div>
-      </section>
-    </>
+
+        {/* Other ways */}
+        <aside className="space-y-4 lg:col-span-5">
+          <a href={WHATSAPP("Hi NexEagle, I'd like a demo for my hospital.")} target="_blank" rel="noopener noreferrer" className="group flex items-center gap-4 rounded-2xl bg-[#25d366]/10 p-5 transition-colors hover:bg-[#25d366]/20">
+            <span className="grid h-12 w-12 shrink-0 place-items-center rounded-full bg-[#25d366] text-white">
+              <svg viewBox="0 0 24 24" className="h-6 w-6" fill="currentColor" aria-hidden><path d="M12 2a10 10 0 0 0-8.6 15.1L2 22l5-1.3A10 10 0 1 0 12 2Zm4.5 12.1c-.2-.1-1.5-.7-1.7-.8s-.4-.1-.6.1-.7.8-.8 1-.3.2-.5.1a6.7 6.7 0 0 1-3.3-2.9c-.3-.4.3-.4.7-1.3a.5.5 0 0 0 0-.4l-.8-1.8c-.2-.5-.4-.4-.6-.4h-.5a1 1 0 0 0-.7.3 3 3 0 0 0-.9 2.2 5.2 5.2 0 0 0 1.1 2.7 11.8 11.8 0 0 0 4.5 4c1.7.7 2.3.8 3.2.6a2.7 2.7 0 0 0 1.8-1.3 2.2 2.2 0 0 0 .2-1.3c-.1-.1-.3-.2-.5-.3Z"/></svg>
+            </span>
+            <span><span className="block font-display text-lg font-semibold text-[#0e2343]">WhatsApp us</span><span className="block text-sm text-slate-600">Fastest reply, in English or Hindi</span></span>
+          </a>
+          <a href="tel:+918074906808" className="flex items-center gap-4 rounded-2xl border border-slate-200 p-5 transition-colors hover:border-[#1ea99b]">
+            <span className="grid h-12 w-12 shrink-0 place-items-center rounded-full bg-[#1ea99b]/10 text-[#12857a]"><Phone className="h-5 w-5" /></span>
+            <span><span className="block font-display text-lg font-semibold text-[#0e2343]">+91 80749 06808</span><span className="block text-sm text-slate-600">Call us</span></span>
+          </a>
+          <a href="mailto:info@nexeagle.com" className="flex items-center gap-4 rounded-2xl border border-slate-200 p-5 transition-colors hover:border-[#1ea99b]">
+            <span className="grid h-12 w-12 shrink-0 place-items-center rounded-full bg-[#1ea99b]/10 text-[#12857a]"><Mail className="h-5 w-5" /></span>
+            <span><span className="block font-display text-lg font-semibold text-[#0e2343]">info@nexeagle.com</span><span className="block text-sm text-slate-600">Email us</span></span>
+          </a>
+          <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-1 xl:grid-cols-2">
+            <div className="rounded-2xl bg-slate-50 p-5">
+              <MapPin className="h-5 w-5 text-[#12857a]" />
+              <p className="mt-3 font-semibold text-[#0e2343]">Kolkata, West Bengal</p>
+              <p className="mt-1 text-sm text-slate-600">Our team also works on site with hospitals in Bihar. Visits by appointment.</p>
+            </div>
+            <div className="rounded-2xl bg-slate-50 p-5">
+              <Clock className="h-5 w-5 text-[#12857a]" />
+              <p className="mt-3 font-semibold text-[#0e2343]">Mon–Fri 9–6, Sat 10–4</p>
+              <p className="mt-1 text-sm text-slate-600">Closed Sunday. Live hospitals have a named support contact.</p>
+            </div>
+          </div>
+          <div className="rounded-2xl border border-slate-200 p-5">
+            <p className="font-display font-semibold text-[#0e2343]">What happens next</p>
+            <ol className="mt-3 space-y-2.5 text-sm text-slate-600">
+              {["We call you within one working day.", "A 30-minute demo around your workflow.", "If it fits, we visit your hospital and plan go-live."].map((s, i) => (
+                <li key={s} className="flex gap-3"><span className="grid h-6 w-6 shrink-0 place-items-center rounded-full bg-[#0e2343] text-xs font-semibold text-white">{i + 1}</span><span className="pt-0.5 text-slate-600">{s}</span></li>
+              ))}
+            </ol>
+          </div>
+        </aside>
+      </div>
+    </section>
   );
 }

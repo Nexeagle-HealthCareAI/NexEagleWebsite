@@ -68,9 +68,16 @@ function timeLabel(iso: string) {
   return new Date(iso).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" });
 }
 
-export default function LiveChat() {
-  const [isOpen, setIsOpen] = useState(false);
-  const [hasOpened, setHasOpened] = useState(false);
+// `embedded`: opened from the Vita support assistant; Vita owns the launcher and decides when the
+// team chat is visible, and closing returns the visitor to Vita (the connection stays alive).
+export default function LiveChat({ embedded = false, visible = false, onBack }: { embedded?: boolean; visible?: boolean; onBack?: () => void } = {}) {
+  const [isOpen, setIsOpen] = useState(embedded && visible);
+  const [hasOpened, setHasOpened] = useState(embedded && visible);
+  useEffect(() => {
+    if (!embedded) return;
+    setIsOpen(visible);
+    if (visible) setHasOpened(true);
+  }, [embedded, visible]);
 
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
@@ -226,9 +233,10 @@ export default function LiveChat() {
   };
 
   const close = useCallback(() => {
+    if (embedded) { onBack?.(); return; }
     setIsOpen(false);
     launcherRef.current?.focus();
-  }, []);
+  }, [embedded, onBack]);
 
   useEffect(() => {
     if (!isOpen) return;
@@ -306,12 +314,13 @@ export default function LiveChat() {
   }, [draft]);
 
   // ── Launcher ──────────────────────────────────────────────────────────────────────────────────
+  if (!isOpen && embedded) return null;
   if (!isOpen) {
     return (
       <button
         ref={launcherRef}
         onClick={open}
-        className="fixed bottom-4 right-4 sm:bottom-6 sm:right-6 z-50 flex h-14 items-center gap-2 rounded-full bg-blue-600 pl-4 pr-5 text-white shadow-xl transition hover:bg-blue-700 hover:shadow-2xl focus:outline-none focus-visible:ring-4 focus-visible:ring-blue-300"
+        className="fixed bottom-4 right-4 sm:bottom-6 sm:right-6 z-50 flex h-14 items-center gap-2 rounded-full bg-[#0e2343] pl-4 pr-5 text-white shadow-xl transition hover:bg-[#13305c] hover:shadow-2xl focus:outline-none focus-visible:ring-4 focus-visible:ring-[#1ea99b]/40"
         aria-label={unread > 0 ? `Chat with us, ${unread} new message${unread === 1 ? "" : "s"}` : "Chat with us"}
       >
         <MessageCircle className="h-6 w-6" aria-hidden="true" />
@@ -342,22 +351,22 @@ export default function LiveChat() {
       className="fixed inset-0 z-50 flex flex-col bg-white sm:inset-auto sm:bottom-6 sm:right-6 sm:h-[600px] sm:max-h-[calc(100vh-3rem)] sm:w-[380px] sm:rounded-2xl sm:border sm:border-slate-200 sm:shadow-2xl"
     >
       {/* Header */}
-      <div className="flex items-center gap-3 bg-blue-600 px-4 py-3 text-white sm:rounded-t-2xl">
+      <div className="flex items-center gap-3 bg-[#0e2343] px-4 py-3 text-white sm:rounded-t-2xl">
         <div className="relative">
-          <div className="flex h-10 w-10 items-center justify-center rounded-full bg-white text-base font-bold text-blue-600">N</div>
+          <div className="flex h-10 w-10 items-center justify-center rounded-full bg-white text-base font-bold text-[#0e2343]">N</div>
           <span
-            className={`absolute bottom-0 right-0 h-3 w-3 rounded-full border-2 border-blue-600 ${agentOnline ? "bg-green-400" : "bg-slate-300"}`}
+            className={`absolute bottom-0 right-0 h-3 w-3 rounded-full border-2 border-[#0e2343] ${agentOnline ? "bg-green-400" : "bg-slate-300"}`}
             aria-hidden="true"
           />
         </div>
         <div className="min-w-0 flex-1">
-          <p className="font-semibold leading-tight">NexEagle Support</p>
-          <p className="truncate text-xs text-blue-100">{registered ? statusText : "We're here to help"}</p>
+          <p className="font-semibold leading-tight text-white">NexEagle team</p>
+          <p className="truncate text-xs text-white/70">{registered ? statusText : "We're here to help"}</p>
         </div>
         <button
           onClick={close}
           className="flex h-9 w-9 items-center justify-center rounded-lg hover:bg-white/20 focus:outline-none focus-visible:ring-2 focus-visible:ring-white"
-          aria-label="Close chat"
+          aria-label={embedded ? "Back to Vita" : "Close chat"}
         >
           <X className="h-5 w-5" />
         </button>
@@ -385,7 +394,7 @@ export default function LiveChat() {
               required
               autoFocus
               autoComplete="name"
-              className="h-11 w-full rounded-xl border border-slate-300 bg-white px-3 text-base text-slate-900 outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-100"
+              className="h-11 w-full rounded-xl border border-slate-300 bg-white px-3 text-base text-slate-900 outline-none focus:border-[#1ea99b] focus:ring-2 focus:ring-[#1ea99b]/15"
             />
           </label>
           <label className="space-y-1 text-sm font-medium text-slate-700">
@@ -398,13 +407,13 @@ export default function LiveChat() {
               onChange={(e) => setEmail(e.target.value)}
               maxLength={150}
               autoComplete="email"
-              className="h-11 w-full rounded-xl border border-slate-300 bg-white px-3 text-base text-slate-900 outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-100"
+              className="h-11 w-full rounded-xl border border-slate-300 bg-white px-3 text-base text-slate-900 outline-none focus:border-[#1ea99b] focus:ring-2 focus:ring-[#1ea99b]/15"
             />
           </label>
           <button
             type="submit"
             disabled={!name.trim()}
-            className="h-11 rounded-xl bg-blue-600 font-semibold text-white transition hover:bg-blue-700 disabled:cursor-not-allowed disabled:opacity-50"
+            className="h-11 rounded-xl bg-[#0e2343] font-semibold text-white transition hover:bg-[#13305c] disabled:cursor-not-allowed disabled:opacity-50"
           >
             Start chat
           </button>
@@ -460,7 +469,7 @@ export default function LiveChat() {
                       key={q}
                       onClick={() => send(q)}
                       disabled={!canSend}
-                      className="rounded-full border border-blue-200 bg-blue-50 px-3 py-1.5 text-xs font-medium text-blue-700 transition hover:bg-blue-100 disabled:opacity-50"
+                      className="rounded-full border border-[#1ea99b]/30 bg-[#1ea99b]/10 px-3 py-1.5 text-xs font-medium text-[#12857a] transition hover:bg-[#1ea99b]/20 disabled:opacity-50"
                     >
                       {q}
                     </button>
@@ -477,7 +486,7 @@ export default function LiveChat() {
                   {!mine && firstOfRun && <span className="mb-0.5 ml-1 text-[11px] font-medium text-slate-500">NexEagle Support</span>}
                   <div
                     className={`max-w-[85%] whitespace-pre-wrap break-words rounded-2xl px-3.5 py-2 text-sm leading-relaxed ${
-                      mine ? "rounded-br-md bg-blue-600 text-white" : "rounded-bl-md border border-slate-200 bg-white text-slate-800"
+                      mine ? "rounded-br-md bg-[#0e2343] text-white" : "rounded-bl-md border border-slate-200 bg-white text-slate-800"
                     } ${m.status === "failed" ? "opacity-60" : ""}`}
                   >
                     {m.messageText}
@@ -509,7 +518,7 @@ export default function LiveChat() {
                 <button
                   onClick={startNewChat}
                   disabled={connState !== "connected"}
-                  className="mt-3 rounded-full bg-blue-600 px-4 py-2 text-sm font-semibold text-white hover:bg-blue-700 disabled:opacity-50"
+                  className="mt-3 rounded-full bg-[#0e2343] px-4 py-2 text-sm font-semibold text-white hover:bg-[#13305c] disabled:opacity-50"
                 >
                   Start a new chat
                 </button>
@@ -541,12 +550,12 @@ export default function LiveChat() {
                   placeholder={canSend ? "Write a message…" : "Connecting…"}
                   disabled={!canSend}
                   aria-label="Message"
-                  className="max-h-[120px] min-h-[44px] flex-1 resize-none rounded-xl border border-slate-300 px-3 py-2.5 text-base text-slate-900 outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-100 disabled:bg-slate-50 sm:text-sm"
+                  className="max-h-[120px] min-h-[44px] flex-1 resize-none rounded-xl border border-slate-300 px-3 py-2.5 text-base text-slate-900 outline-none focus:border-[#1ea99b] focus:ring-2 focus:ring-[#1ea99b]/15 disabled:bg-slate-50 sm:text-sm"
                 />
                 <button
                   type="submit"
                   disabled={!canSend || !draft.trim()}
-                  className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-blue-600 text-white transition hover:bg-blue-700 disabled:opacity-40"
+                  className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-[#0e2343] text-white transition hover:bg-[#13305c] disabled:opacity-40"
                   aria-label="Send message"
                 >
                   <Send className="h-5 w-5" />
