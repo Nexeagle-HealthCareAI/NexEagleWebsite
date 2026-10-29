@@ -9,11 +9,11 @@ import dynamic from "next/dynamic";
 import Link from "next/link";
 import { AnimatePresence, motion, useInView, useReducedMotion } from "framer-motion";
 import { Check, ChevronRight } from "lucide-react";
-import type { Stage } from "./HospitalScene";
 import Image from "next/image";
-import { STAGES, avatarFor } from "./VitaPanels";
+import { avatarFor } from "./VitaPanels";
+import { SCREENS, type Screen } from "./StoryScene";
 
-const WorldScene = dynamic(() => import("./WorldScene"), {
+const StoryScene = dynamic(() => import("./StoryScene"), {
   ssr: false,
   loading: () => (
     <div className="absolute inset-0 grid place-items-center">
@@ -25,12 +25,10 @@ const WorldScene = dynamic(() => import("./WorldScene"), {
 const ease = [0.22, 1, 0.36, 1] as const;
 const COLOR: Record<string, string> = { "Vita for patients": "#8a6fe0", "1HMS Vita": "#1ea99b", "1Rad Vita": "#1599db" };
 
-const CAPTION: Record<Stage, string> = {
-  find: "“Fever and cough for 3 days.” That needs a general physician today: Dr. A. Kumar, 2.1 km away, free at 11:30.",
-  book: "Booked Dr. Kumar at 11:30, token A-14. Confirmation and the clinic's location sent on WhatsApp.",
-  go: "Leave by 11:05: it's 3.4 km, about 12 minutes. The hospital already knows the patient is coming.",
-  hms: "Checked in from the booking. Vitals recorded, prescription drafted for Dr. Kumar to sign, X-ray sent to 1Rad, bill updated.",
-  rad: "Chest X-ray read: patchy opacity in the right lower zone. Draft report waiting for the radiologist to review and sign.",
+const CAPTION: Record<Screen, string> = {
+  find: "The patient describes the symptoms. Vita picks the right specialty, finds nearby doctors with free slots and books one.",
+  hms: "At the hospital, the doctor's 1HMS Vita checks the patient in, records vitals, drafts the prescription and routes every order.",
+  rad: "In radiology, 1Rad Vita reads the scan and drafts the report in seconds. The radiologist signs, and it lands in 1HMS.",
 };
 
 const PROOF = ["Running in hospitals in Bihar", "Doctors sign everything Vita drafts", "Data hosted in India", "English and Hindi"];
@@ -41,15 +39,15 @@ export default function Hero() {
   const reduce = useReducedMotion();
   const ref = useRef<HTMLElement>(null);
   const inView = useInView(ref, { margin: "-20% 0px" });
-  const stage = STAGES[i];
+  const stage = SCREENS[i];
 
   useEffect(() => {
     if (!auto || !inView) return;
-    const t = setTimeout(() => setI((n) => (n + 1) % STAGES.length), STAGES[i].ms);
+    const t = setTimeout(() => setI((n) => (n + 1) % SCREENS.length), SCREENS[i].ms);
     return () => clearTimeout(t);
   }, [i, auto, inView]);
 
-  const pick = (s: Stage) => { setAuto(false); setI(STAGES.findIndex((x) => x.key === s)); };
+  const pick = (s: Screen) => { setAuto(false); setI(SCREENS.findIndex((x) => x.key === s)); };
 
   const rise = (delay: number) => ({
     initial: reduce ? false : { opacity: 0, y: 24 },
@@ -114,7 +112,7 @@ export default function Hero() {
         >
           <div className="relative">
           <div className="relative -mx-5 h-[360px] sm:-mx-8 sm:h-[500px] lg:mx-0 lg:h-[min(680px,calc(100svh-9rem))]">
-            <WorldScene stage={stage.key} onPick={pick} />
+            <StoryScene screen={stage.key} onPick={pick} />
           </div>
 
             {/* What Vita is doing at this step, as a caption over the scene */}
@@ -143,7 +141,7 @@ export default function Hero() {
 
           {/* Step strip: the same five stages, for touch and for anyone who skips the 3D */}
           <ol aria-label="The patient journey with Vita" className="-mx-5 mt-1 flex gap-2 overflow-x-auto px-5 pb-2 [scrollbar-width:none] sm:-mx-8 sm:px-8 lg:mx-0 lg:px-0">
-            {STAGES.map((s, n) => {
+            {SCREENS.map((s, n) => {
               const on = n === i;
               return (
                 <li key={s.key} className="shrink-0">
