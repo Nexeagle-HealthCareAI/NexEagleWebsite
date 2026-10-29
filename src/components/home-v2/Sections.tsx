@@ -5,6 +5,8 @@ import Link from "next/link";
 import { motion, useReducedMotion } from "framer-motion";
 import { FileLock2, History, KeyRound, MapPin, Phone, ServerCog, UserCheck } from "lucide-react";
 import { Photo } from "./Photo";
+import { FlyingVita } from "./FlyingVita";
+import { useEffect, useState } from "react";
 
 /* ── Live customers (real) ──────────────────────────────────────────────────────── */
 const CLIENTS = [
@@ -139,6 +141,20 @@ export function DataTrust() {
   );
 }
 
+/* Vita hovering over the closing banner: a few powered beats, then a glide, on a loop. */
+function CTAFlight() {
+  const [glide, setGlide] = useState(false);
+  useEffect(() => {
+    const id = setInterval(() => setGlide((g) => !g), 2600);
+    return () => clearInterval(id);
+  }, []);
+  return (
+    <div className="drop-shadow-[0_30px_40px_rgba(0,0,0,0.35)]">
+      <FlyingVita mode={glide ? "glide" : "flap"} beat={0.6} />
+    </div>
+  );
+}
+
 /* ── Closing call to action over a full-bleed photo ─────────────────────────────── */
 export function ClosingCTA() {
   const reduce = useReducedMotion();
@@ -152,9 +168,7 @@ export function ClosingCTA() {
         transition={{ duration: 1.3, ease: [0.22, 1, 0.36, 1] }}
         className="pointer-events-none absolute right-[-6%] top-6 z-0 w-[210px] sm:right-[-2%] sm:w-[320px] lg:right-[3%] lg:top-[12%] lg:w-[min(40vw,540px)]"
       >
-        <motion.div animate={reduce ? undefined : { y: [0, -12, 0] }} transition={{ duration: 3.6, repeat: Infinity, ease: "easeInOut" }}>
-          <Image src="/assets/vita/vita-flying.webp" alt="Vita flying" width={1400} height={992} sizes="(min-width: 1024px) 40vw, 320px" className="h-auto w-full drop-shadow-[0_30px_40px_rgba(0,0,0,0.35)]" />
-        </motion.div>
+        <CTAFlight />
       </motion.div>
       <Photo k="corridor" sizes="100vw" className="absolute inset-0 -z-10 h-full w-full" />
       <div aria-hidden className="absolute inset-0 -z-10 bg-[linear-gradient(100deg,rgba(14,35,67,0.92)_0%,rgba(14,35,67,0.78)_45%,rgba(14,35,67,0.35)_100%)]" />

@@ -8,6 +8,7 @@ import { AnimatePresence, motion, useInView, useReducedMotion } from "framer-mot
 import type { Stage } from "./HospitalScene";
 import { STAGES, StagePanel } from "./VitaPanels";
 import { DOCTORDEKHO_URL } from "@/lib/site";
+import { FlyingVita } from "./FlyingVita";
 
 const HospitalScene = dynamic(() => import("./HospitalScene"), {
   ssr: false,
@@ -23,10 +24,25 @@ const ease = [0.22, 1, 0.36, 1] as const;
 export default function Hero3D() {
   const [i, setI] = useState(0);
   const [auto, setAuto] = useState(true);
+  const [flight, setFlight] = useState(0);
+  const [landed, setLanded] = useState(false);
+  const [glide, setGlide] = useState(false);
   const reduce = useReducedMotion();
   const ref = useRef<HTMLElement>(null);
   const inView = useInView(ref, { margin: "-20% 0px" });
   const stage = STAGES[i].key;
+
+  // Each flight: powered flaps in, a glide over the campus, flaps again to land.
+  useEffect(() => {
+    if (reduce) { setLanded(true); return; }
+    setGlide(false);
+    const a = setTimeout(() => setGlide(true), 1500);
+    const b = setTimeout(() => setGlide(false), 2900);
+    // hand over to the standing pose just before touchdown so the two overlap (no empty frame)
+    const c = setTimeout(() => setLanded(true), 4150);
+    return () => { clearTimeout(a); clearTimeout(b); clearTimeout(c); };
+  }, [flight, reduce]);
+  const fly = () => { if (reduce) return; setLanded(false); setFlight((f) => f + 1); };
 
   // Play the journey on a loop while the hero is on screen, until the visitor picks a step.
   useEffect(() => {
@@ -135,17 +151,52 @@ export default function Hero3D() {
         >
           <div className="relative -mx-5 h-[320px] sm:-mx-8 sm:h-[440px] lg:mx-0 lg:h-[min(760px,calc(100svh-6rem))]">
             <HospitalScene stage={stage} onPick={pick} />
-            {/* Vita hosting the tour */}
-            <motion.div
-              initial={reduce ? false : { opacity: 0, x: -30, y: 20 }}
-              animate={{ opacity: 1, x: 0, y: 0 }}
-              transition={{ duration: 0.9, ease, delay: 0.6 }}
-              className="pointer-events-none absolute bottom-1 left-3 w-[96px] sm:w-[130px] lg:-left-4 lg:bottom-10 lg:w-[175px]"
+            {/* Vita flies in over the campus, glides, then lands to host the tour */}
+            <AnimatePresence>
+              {!landed && (
+                <motion.div
+                  key={flight}
+                  className="pointer-events-none absolute z-30 w-[170px] sm:w-[260px] lg:w-[380px]"
+                  initial={{ left: "108%", top: "-30%", scale: 0.5, rotate: -10, opacity: 1 }}
+                  animate={{ left: ["108%", "62%", "30%", "8%", "-8%"], top: ["-30%", "-6%", "8%", "30%", "58%"], scale: [0.5, 0.62, 0.8, 0.82, 0.68], rotate: [-10, -6, 5, 8, 0] }}
+                  exit={{ opacity: 0, scale: 0.6, transition: { duration: 0.35 } }}
+                  transition={{ duration: 4.4, times: [0, 0.3, 0.55, 0.8, 1], ease: "easeInOut" }}
+                >
+                  {/* image faces right; mirror it so Vita flies head-first to the left */}
+                  <div style={{ transform: "scaleX(-1)" }}>
+                    <FlyingVita mode={glide ? "glide" : "flap"} beat={0.55} priority />
+                  </div>
+                </motion.div>
+              )}
+            </AnimatePresence>
+            {/* soft shadow travelling across the ground under Vita */}
+            <AnimatePresence>
+              {!landed && (
+                <motion.div
+                  key={"s" + flight}
+                  aria-hidden
+                  className="pointer-events-none absolute z-10 h-6 w-28 rounded-[50%] bg-[#0e2343] blur-md lg:w-40"
+                  initial={{ left: "100%", top: "86%", opacity: 0, scale: 0.4 }}
+                  animate={{ left: ["100%", "66%", "38%", "14%", "2%"], top: ["86%", "84%", "84%", "86%", "90%"], opacity: [0, 0.08, 0.12, 0.16, 0.22], scale: [0.4, 0.55, 0.7, 0.8, 1] }}
+                  exit={{ opacity: 0 }}
+                  transition={{ duration: 4.4, times: [0, 0.3, 0.55, 0.8, 1], ease: "easeInOut" }}
+                />
+              )}
+            </AnimatePresence>
+            <motion.button
+              type="button"
+              onClick={fly}
+              aria-label="Make Vita fly over the hospital again"
+              initial={false}
+              animate={landed ? { opacity: 1, y: 0, scale: 1 } : { opacity: 0, y: -18, scale: 0.92 }}
+              transition={landed ? { type: "spring", stiffness: 300, damping: 18 } : { duration: 0.15 }}
+              className="group absolute bottom-1 left-3 z-20 w-[96px] rounded-2xl focus-visible:outline focus-visible:outline-2 focus-visible:outline-[#1ea99b] sm:w-[130px] lg:-left-4 lg:bottom-10 lg:w-[175px]"
             >
-              <motion.div animate={reduce ? undefined : { y: [0, -6, 0] }} transition={{ duration: 3.2, repeat: Infinity, ease: "easeInOut" }}>
-                <Image src="/assets/vita/vita-present.webp" alt="Vita, NexEagle's AI agent, presenting the hospital" width={753} height={760} priority sizes="(min-width: 1024px) 175px, 130px" className="h-auto w-full drop-shadow-[0_18px_22px_rgba(14,35,67,0.25)]" />
+              <motion.div animate={reduce || !landed ? undefined : { y: [0, -6, 0] }} transition={{ duration: 3.2, repeat: Infinity, ease: "easeInOut" }}>
+                <Image src="/assets/vita/vita-present.webp" alt="Vita, NexEagle's AI agent" width={753} height={760} priority sizes="(min-width: 1024px) 175px, 130px" className="h-auto w-full drop-shadow-[0_18px_22px_rgba(14,35,67,0.25)] transition-transform group-hover:-rotate-3" />
               </motion.div>
-            </motion.div>
+              <span className="pointer-events-none absolute -top-2 left-1/2 hidden -translate-x-1/2 whitespace-nowrap rounded-full bg-white px-2.5 py-1 text-[11px] font-semibold text-[#0e2343] opacity-0 shadow transition-opacity group-hover:opacity-100 lg:block">Tap to fly</span>
+            </motion.button>
           </div>
           <div className="mt-2 lg:hidden">
             <Stepper vertical={false} />
