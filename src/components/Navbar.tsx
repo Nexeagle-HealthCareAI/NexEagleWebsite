@@ -16,9 +16,17 @@ const PRODUCTS = [
   { name: "1Pharma", line: "Pharmacy & inventory", href: "/solutions/1pharma", dot: "bg-[#22a559]" },
 ];
 
+const AUDIENCES = [
+  { name: "Doctors and clinics", href: "/for/doctors" },
+  { name: "Hospitals", href: "/for/hospitals" },
+  { name: "Diagnostic centres", href: "/for/diagnostic-centres" },
+  { name: "Labs and pharmacies", href: "/for/labs-pharmacies" },
+];
+
 const LINKS = [
+  { name: "Customers", href: "/customers" },
   { name: "NexEagle AI", href: "/ai" },
-  { name: "Team", href: "/team" },
+  { name: "Guides", href: "/guides" },
   { name: "Contact", href: "/contact" },
 ];
 
@@ -76,11 +84,11 @@ export default function Navbar() {
                 aria-haspopup="true"
                 onClick={() => setProductsOpen((v) => !v)}
                 className={cn(
-                  "flex items-center gap-1 rounded-full px-4 py-2 text-[0.95rem] font-medium transition-colors focus-visible:outline focus-visible:outline-2 focus-visible:outline-[#1ea99b]",
-                  pathname.startsWith("/solutions") ? "text-[#0e2343]" : "text-slate-600 hover:text-[#0e2343]"
+                  "flex items-center gap-1 whitespace-nowrap rounded-full px-3 py-2 text-[0.95rem] font-medium xl:px-4 transition-colors focus-visible:outline focus-visible:outline-2 focus-visible:outline-[#1ea99b]",
+                  pathname.startsWith("/solutions") || pathname.startsWith("/for/") ? "text-[#0e2343]" : "text-slate-600 hover:text-[#0e2343]"
                 )}
               >
-                Products
+                Solutions
                 <ChevronDown className={cn("h-4 w-4 transition-transform duration-200", productsOpen && "rotate-180")} />
               </button>
               <AnimatePresence>
@@ -90,9 +98,12 @@ export default function Navbar() {
                     animate={{ opacity: 1, y: 0 }}
                     exit={{ opacity: 0, y: 6 }}
                     transition={{ duration: 0.18 }}
-                    className="absolute left-1/2 top-full w-[34rem] -translate-x-1/2 pt-3"
+                    className="absolute left-0 top-full w-[46rem] pt-3"
                   >
-                    <div className="grid grid-cols-2 gap-1 rounded-2xl border border-slate-200/80 bg-white p-2 shadow-[0_24px_60px_-20px_rgba(14,35,67,0.35)]">
+                    <div className="grid grid-cols-[1fr_15rem] gap-2 rounded-2xl border border-slate-200/80 bg-white p-2 shadow-[0_24px_60px_-20px_rgba(14,35,67,0.35)]">
+                    <div>
+                    <p className="px-3 pb-1 pt-2 text-xs font-semibold uppercase tracking-[0.12em] text-slate-400">Products</p>
+                    <div className="grid grid-cols-2 gap-1">
                       {PRODUCTS.map((p) => (
                         <Link
                           key={p.href}
@@ -107,6 +118,16 @@ export default function Navbar() {
                         </Link>
                       ))}
                     </div>
+                    </div>
+                    <div className="rounded-xl bg-[#f4f8f8] p-2">
+                      <p className="px-3 pb-1 pt-2 text-xs font-semibold uppercase tracking-[0.12em] text-slate-400">Who it's for</p>
+                      {AUDIENCES.map((a) => (
+                        <Link key={a.href} href={a.href} className="block rounded-lg px-3 py-2 font-medium text-[#0e2343] transition-colors hover:bg-white focus-visible:outline focus-visible:outline-2 focus-visible:outline-[#1ea99b]">
+                          {a.name}
+                        </Link>
+                      ))}
+                    </div>
+                    </div>
                   </motion.div>
                 )}
               </AnimatePresence>
@@ -117,7 +138,7 @@ export default function Navbar() {
                 href={l.href}
                 aria-current={isActive(l.href) ? "page" : undefined}
                 className={cn(
-                  "rounded-full px-4 py-2 text-[0.95rem] font-medium transition-colors focus-visible:outline focus-visible:outline-2 focus-visible:outline-[#1ea99b]",
+                  "whitespace-nowrap rounded-full px-3 py-2 text-[0.95rem] font-medium transition-colors xl:px-4 focus-visible:outline focus-visible:outline-2 focus-visible:outline-[#1ea99b]",
                   isActive(l.href) ? "text-[#0e2343]" : "text-slate-600 hover:text-[#0e2343]"
                 )}
               >
@@ -129,14 +150,16 @@ export default function Navbar() {
           <div className="hidden items-center gap-2 lg:flex">
             <a
               href={DOCTORDEKHO_URL}
-              className="flex items-center gap-2 rounded-full px-4 py-2 text-[0.95rem] font-medium text-[#12857a] transition-colors hover:bg-[#1ea99b]/10 focus-visible:outline focus-visible:outline-2 focus-visible:outline-[#1ea99b]"
+              aria-label="Find a doctor on Doctor Dekho"
+              title="Find a doctor"
+              className="flex items-center gap-2 whitespace-nowrap rounded-full px-3 py-2 text-[0.95rem] font-medium text-[#12857a] transition-colors hover:bg-[#1ea99b]/10 focus-visible:outline focus-visible:outline-2 focus-visible:outline-[#1ea99b]"
             >
               <Stethoscope className="h-4 w-4" />
-              Find a doctor
+              <span className="hidden xl:inline">Find a doctor</span>
             </a>
             <Link
               href="/contact"
-              className="rounded-full bg-[#0e2343] px-5 py-2.5 text-[0.95rem] font-semibold text-white transition-colors hover:bg-[#13305c] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#1ea99b]"
+              className="whitespace-nowrap rounded-full bg-[#0e2343] px-5 py-2.5 text-[0.95rem] font-semibold text-white transition-colors hover:bg-[#13305c] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#1ea99b]"
             >
               Book a demo
             </Link>
@@ -183,6 +206,14 @@ export default function Navbar() {
                         <span className="block text-[0.95rem] text-slate-500">{p.line}</span>
                       </span>
                     </Link>
+                  </motion.div>
+                ))}
+              </div>
+              <motion.p variants={item(reduce)} className="px-1 pb-1 pt-5 text-sm text-slate-500">Who it&apos;s for</motion.p>
+              <div className="grid grid-cols-1 gap-0.5 sm:grid-cols-2">
+                {AUDIENCES.map((a) => (
+                  <motion.div key={a.href} variants={item(reduce)}>
+                    <Link href={a.href} className="block rounded-2xl px-3 py-2.5 text-lg font-medium text-[#0e2343] active:bg-slate-50">{a.name}</Link>
                   </motion.div>
                 ))}
               </div>

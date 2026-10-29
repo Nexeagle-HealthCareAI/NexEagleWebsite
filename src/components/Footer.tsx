@@ -15,18 +15,30 @@ const COLS = [
     ],
   },
   {
+    title: "Who it's for",
+    links: [
+      { name: "Doctors and clinics", href: "/for/doctors" },
+      { name: "Hospitals", href: "/for/hospitals" },
+      { name: "Diagnostic centres", href: "/for/diagnostic-centres" },
+      { name: "Labs and pharmacies", href: "/for/labs-pharmacies" },
+      { name: "Customers", href: "/customers" },
+    ],
+  },
+  {
     title: "Company",
     links: [
       { name: "Why NexEagle", href: "/why" },
       { name: "How it works", href: "/how-it-works" },
       { name: "Team", href: "/team" },
       { name: "Careers", href: "/careers" },
+      { name: "Guides", href: "/guides" },
       { name: "FAQs", href: "/faqs" },
     ],
   },
   {
     title: "Trust",
     links: [
+      { name: "Trust overview", href: "/trust" },
       { name: "Security", href: "/security" },
       { name: "Privacy policy", href: "/privacy" },
       { name: "Terms of service", href: "/terms" },
@@ -54,7 +66,7 @@ export default function Footer() {
               <li><a href="https://linkedin.com/company/nexeagle" target="_blank" rel="noopener noreferrer" className={`inline-flex items-center gap-2.5 ${linkCls}`}><Linkedin className="h-4 w-4" />LinkedIn</a></li>
             </ul>
           </div>
-          <div className="grid grid-cols-2 gap-10 sm:grid-cols-3 lg:col-span-7 lg:col-start-6">
+          <div className="grid grid-cols-2 gap-10 sm:grid-cols-4 lg:col-span-8 lg:col-start-5">
             {COLS.map((c) => (
               <nav key={c.title} aria-label={c.title}>
                 <p className="font-display font-semibold text-white">{c.title}</p>

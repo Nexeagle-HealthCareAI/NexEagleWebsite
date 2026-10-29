@@ -19,7 +19,20 @@ Key facts:
 - [NexEagle AI](https://nexeagle.com/ai): how Vita AI agents work
 - [Doctor Dekho](https://doctordekho.nexeagle.com): find a doctor and book with Vita
 
+## Who it's for
+- [Doctors and clinics](https://nexeagle.com/for/doctors)
+- [Hospitals and nursing homes](https://nexeagle.com/for/hospitals)
+- [Diagnostic and imaging centres](https://nexeagle.com/for/diagnostic-centres)
+- [Labs and pharmacies](https://nexeagle.com/for/labs-pharmacies)
+- [Customers](https://nexeagle.com/customers)
+
+## Guides
+- [ABDM milestones M1, M2 and M3](https://nexeagle.com/guides/abdm-milestones)
+- [NABH Digital Health Standards](https://nexeagle.com/guides/nabh-digital-health)
+- [Digital Health Incentive Scheme (DHIS)](https://nexeagle.com/guides/dhis-incentive)
+
 ## Company
+- [Trust overview](https://nexeagle.com/trust)
 - [Security and data protection](https://nexeagle.com/security)
 - [FAQs](https://nexeagle.com/faqs)
 - [Team](https://nexeagle.com/team)
