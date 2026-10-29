@@ -43,7 +43,7 @@ export default function PrivacyPage() {
         intro="What we collect, why, where it's kept and the rights you have, in line with India's Digital Personal Data Protection Act, 2023."
         pose={{ src: "/assets/vita/vita-relax.webp", w: 725, h: 640, alt: "Vita relaxing" }}
       />
-      <LegalPage sections={PRIVACY} updated={PRIVACY_UPDATED} before={<LegalCards title="Your rights" items={RIGHTS} />} contact={{ title: "Questions about your data?", body: "Write to our privacy team and we will reply within the timelines set by the DPDP Act.", email: "privacy@nexeagle.com" }} />
+      <LegalPage sections={PRIVACY} updated={PRIVACY_UPDATED} before={<LegalCards title="Your rights" items={RIGHTS} />} contact={{ title: "Questions about your data?", body: "Write to our privacy team and we will reply within the timelines set by the DPDP Act.", email: "info@nexeagle.com" }} />
     </main>
   );
 }

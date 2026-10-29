@@ -40,7 +40,7 @@ export default function TermsPage() {
         title="Terms of service"
         intro="The rules for using NexEagle products and services, written to be read."
       />
-      <LegalPage sections={TERMS} updated={TERMS_UPDATED} intro={TERMS_INTRO} contact={{ title: "Questions about these terms?", body: "Our legal team is happy to explain anything here before you sign.", email: "legal@nexeagle.com" }} />
+      <LegalPage sections={TERMS} updated={TERMS_UPDATED} intro={TERMS_INTRO} contact={{ title: "Questions about these terms?", body: "Our legal team is happy to explain anything here before you sign.", email: "info@nexeagle.com" }} />
     </main>
   );
 }

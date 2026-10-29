@@ -45,7 +45,7 @@ export default function SecurityPage() {
         intro="How we keep hospital and patient data safe: who can see what, how it's stored, where it lives and how we respond if something goes wrong."
         pose={{ src: "/assets/vita/vita-think.webp", w: 466, h: 640, alt: "Vita thinking" }}
       />
-      <LegalPage sections={SECURITY} before={<LegalCards title="Compliance at a glance" items={CERTS.map((c) => ({ title: c.name, description: c.description, tag: c.status }))} />} contact={{ title: "Found a security issue?", body: "Tell us privately and our team will look into it straight away.", email: "security@nexeagle.com" }} />
+      <LegalPage sections={SECURITY} before={<LegalCards title="Compliance at a glance" items={CERTS.map((c) => ({ title: c.name, description: c.description, tag: c.status }))} />} contact={{ title: "Found a security issue?", body: "Tell us privately and our team will look into it straight away.", email: "info@nexeagle.com" }} />
     </main>
   );
 }
