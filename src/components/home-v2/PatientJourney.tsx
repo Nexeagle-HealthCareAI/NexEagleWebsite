@@ -1,276 +1,215 @@
 "use client";
 
+// "What it looks like inside your hospital": five cards that stick and stack as you scroll.
+// Each card is a pure animation of one step: what comes in, what Vita does, what your team gets,
+// with the steps lighting up in order and data flowing between the columns.
+
 import { useEffect, useRef, useState } from "react";
 import Image from "next/image";
-import { AnimatePresence, MotionConfig, animate, motion, useInView, useMotionValue, useReducedMotion, useScroll, useSpring, useTransform } from "framer-motion";
-import { Check } from "lucide-react";
-import { Photo, type PhotoKey } from "./Photo";
+import { MotionConfig, motion, useInView, useReducedMotion, useScroll, useTransform, type MotionValue } from "framer-motion";
+import { ArrowRight, Check } from "lucide-react";
 
-const STEPS: { photo: PhotoKey; title: string; body: string; product: string }[] = [
+type Col = { title: string; items: string[] };
+type Step = { agent: string; avatar: string; title: string; body: string; inn: Col; vita: Col; out: Col };
+
+const STEPS: Step[] = [
   {
-    photo: "reception",
+    agent: "1HMS Vita",
+    avatar: "/assets/vita/avatar-coffee.webp",
     title: "Checked in from the booking",
-    body: "The patient booked with Vita, so 1HMS Vita already has their details. Reception confirms in a click and hands over the token. No forms, no second queue.",
-    product: "1HMS Vita",
+    body: "The patient booked with Vita, so their details are already there. Reception confirms in a click and hands over the token. No forms, no second queue.",
+    inn: { title: "Comes in", items: ["Booking from Doctor Dekho", "Patient's phone number", "Doctor and time slot"] },
+    vita: { title: "Vita does", items: ["Finds the patient record", "Fills in registration", "Places them in the queue"] },
+    out: { title: "Your team gets", items: ["OPD token A-14", "Live queue on screen", "Doctor notified"] },
   },
   {
-    photo: "consult",
+    agent: "1HMS Vita",
+    avatar: "/assets/vita/avatar-coffee.webp",
     title: "The doctor talks, the notes write themselves",
-    body: "The AI scribe drafts the prescription and case notes while the doctor speaks. The doctor reviews, edits and signs, then the prescription goes to the patient by SMS or WhatsApp.",
-    product: "1HMS Vita",
+    body: "The AI scribe listens to the consultation and drafts the notes and prescription. The doctor reviews, edits and signs, and the patient gets it on WhatsApp.",
+    inn: { title: "Comes in", items: ["Doctor–patient conversation", "Vitals from the nurse", "Past visits"] },
+    vita: { title: "Vita does", items: ["Transcribes the consultation", "Drafts notes and prescription", "Prepares lab and scan orders"] },
+    out: { title: "Your team gets", items: ["Rx signed by the doctor", "Sent to patient on WhatsApp", "Orders in lab and radiology"] },
   },
   {
-    photo: "radiology",
+    agent: "1Rad Vita",
+    avatar: "/assets/vita/avatar-think.webp",
     title: "1Rad Vita reads the scan first",
-    body: "The X-ray order reaches radiology instantly. 1Rad Vita analyses the images, marks what needs a closer look and drafts the report. The radiologist reviews and signs, from the hospital or from home.",
-    product: "1Rad Vita",
+    body: "The study arrives from the scanner. Vita runs AI vision analysis, marks what needs a closer look and drafts the report. The radiologist reviews and signs, from anywhere.",
+    inn: { title: "Comes in", items: ["X-ray from the scanner", "Doctor's clinical note", "Earlier studies"] },
+    vita: { title: "Vita does", items: ["AI vision analysis", "Marks regions to review", "Drafts a structured report"] },
+    out: { title: "Your team gets", items: ["Radiologist reviews and signs", "Report back to the doctor", "Images in cloud PACS"] },
   },
   {
-    photo: "lab",
+    agent: "1HMS Vita + 1Lab",
+    avatar: "/assets/vita/avatar-coffee.webp",
     title: "Samples tracked from collection to result",
-    body: "Labelled samples move through the lab with their status visible to the doctor. Results land in the patient's record the moment they are approved.",
-    product: "1HMS Vita + 1Lab",
+    body: "Every sample is followed from the collection desk to the approved result. Abnormal values are flagged before the report reaches the doctor.",
+    inn: { title: "Comes in", items: ["CBC and glucose ordered", "Sample LB-2291 collected", "Machine readings"] },
+    vita: { title: "Vita does", items: ["Tracks each sample's status", "Flags abnormal values", "Notifies the doctor"] },
+    out: { title: "Your team gets", items: ["Approved result", "Added to the patient record", "Report the patient can download"] },
   },
   {
-    photo: "pharmacy",
+    agent: "1HMS Vita + 1Pharma",
+    avatar: "/assets/vita/avatar-coffee.webp",
     title: "Medicines and the bill are already waiting",
     body: "The pharmacy sees the prescription before the patient arrives, stock updates itself, and every service used along the way is already on one bill.",
-    product: "1HMS Vita + 1Pharma",
+    inn: { title: "Comes in", items: ["Signed prescription", "Services used today", "Stock levels"] },
+    vita: { title: "Vita does", items: ["Reserves the medicines", "Adds everything to one bill", "Sets a follow-up reminder"] },
+    out: { title: "Your team gets", items: ["Medicines ready at the counter", "One bill: ₹1,140", "Reminder in 7 days"] },
   },
 ];
 
+const TONE = {
+  inn: { panel: "bg-slate-100", head: "text-slate-500", on: "ring-slate-300" },
+  vita: { panel: "bg-[#1ea99b]", head: "text-white/85", on: "ring-white" },
+  out: { panel: "bg-[#0e2343]", head: "text-white/70", on: "ring-[#4fd1c1]" },
+} as const;
 
-const ease = [0.22, 1, 0.36, 1] as const;
-const AVATAR: Record<number, string> = { 0: "/assets/vita/avatar-coffee.webp", 1: "/assets/vita/avatar-coffee.webp", 2: "/assets/vita/avatar-think.webp", 3: "/assets/vita/avatar-coffee.webp", 4: "/assets/vita/avatar-coffee.webp" };
-const AGENT: Record<number, string> = { 0: "1HMS Vita", 1: "1HMS Vita", 2: "1Rad Vita", 3: "1HMS Vita", 4: "1HMS Vita" };
-
-function Tick({ d, children }: { d: number; children: React.ReactNode }) {
+/* Dots travelling along the arrow between two columns */
+function Flow({ vertical = false }: { vertical?: boolean }) {
   return (
-    <motion.li initial={{ opacity: 0, x: -8 }} animate={{ opacity: 1, x: 0 }} transition={{ delay: d, duration: 0.35, ease }} className="flex items-center gap-2 text-[12.5px] text-[#0e2343]">
-      <motion.span initial={{ scale: 0 }} animate={{ scale: 1 }} transition={{ delay: d + 0.25, type: "spring", stiffness: 500, damping: 20 }} className="grid h-4 w-4 shrink-0 place-items-center rounded-full bg-[#1ea99b] text-white">
-        <Check className="h-2.5 w-2.5" strokeWidth={4} />
-      </motion.span>
-      {children}
-    </motion.li>
-  );
-}
-
-/* What Vita is doing in this photo, drawn over it and replayed every time the step comes into view */
-function StepOverlay({ i }: { i: number }) {
-  return (
-    <MotionConfig reducedMotion="user">
-      {/* step-specific effect on the photo itself */}
-      {i === 2 && (
-        <>
-          <motion.div initial={{ top: "-15%" }} animate={{ top: "115%" }} transition={{ duration: 2, ease: "easeInOut", repeat: Infinity, repeatDelay: 1.2 }} className="pointer-events-none absolute inset-x-0 h-16 bg-gradient-to-b from-transparent via-[#4fd1c1]/45 to-transparent" />
-          <motion.div initial={{ opacity: 0, scale: 1.4 }} animate={{ opacity: 1, scale: 1 }} transition={{ delay: 1.1, duration: 0.4 }} className="pointer-events-none absolute left-[46%] top-[28%] h-[22%] w-[20%] rounded-lg border-2 border-amber-400">
-            <span className="absolute -top-6 left-0 whitespace-nowrap rounded bg-amber-400 px-1.5 py-0.5 text-[10px] font-semibold text-[#0b1220]">Look closer 0.91</span>
-          </motion.div>
-        </>
-      )}
-      {i === 0 && (
-        <motion.span initial={{ scale: 0.6, opacity: 0.8 }} animate={{ scale: 2.4, opacity: 0 }} transition={{ duration: 1.8, repeat: Infinity, ease: "easeOut" }} className="pointer-events-none absolute left-[48%] top-[45%] h-16 w-16 rounded-full border-2 border-white" />
-      )}
-
-      <motion.div
-        initial={{ opacity: 0, y: 30, scale: 0.96 }}
-        animate={{ opacity: 1, y: 0, scale: 1 }}
-        transition={{ duration: 0.55, ease, delay: 0.25 }}
-        className="absolute bottom-4 left-4 right-4 rounded-2xl border border-white/70 bg-white/92 p-3.5 shadow-[0_20px_50px_-20px_rgba(14,35,67,0.6)] backdrop-blur-md sm:right-auto sm:w-[19rem]"
-      >
-        <div className="mb-2.5 flex items-center gap-2">
-          <Image src={AVATAR[i]} alt="" width={28} height={28} className="h-7 w-7 rounded-full" />
-          <span className="font-display text-[0.9rem] font-semibold text-[#0e2343]">{AGENT[i]}</span>
-          <span className="ml-auto flex items-center gap-1 text-[11px] text-emerald-600"><span className="h-1.5 w-1.5 animate-pulse rounded-full bg-emerald-500" />Live</span>
-        </div>
-
-        {i === 0 && (
-          <ul className="space-y-1.5">
-            <Tick d={0.6}>Booking found: Ramesh Y., 11:30</Tick>
-            <Tick d={1.2}>Details filled in, no forms</Tick>
-            <motion.li initial={{ opacity: 0, scale: 0.8 }} animate={{ opacity: 1, scale: 1 }} transition={{ delay: 1.9, type: "spring", stiffness: 300, damping: 18 }} className="mt-2 flex items-center justify-between rounded-xl bg-[#0e2343] px-3 py-2 text-white">
-              <span className="text-[11px] !text-white/70">OPD token</span>
-              <span className="font-display text-lg font-semibold !text-white">A-14</span>
-            </motion.li>
-          </ul>
-        )}
-
-        {i === 1 && (
-          <div>
-            <div className="flex h-8 items-center gap-[3px]">
-              {Array.from({ length: 28 }).map((_, k) => (
-                <motion.span key={k} className="w-[3px] rounded-full bg-[#8a6fe0]" animate={{ height: [4, 6 + ((k * 7) % 22), 4] }} transition={{ duration: 0.7 + (k % 5) * 0.12, repeat: Infinity, ease: "easeInOut", delay: (k % 7) * 0.05 }} />
-              ))}
-              <span className="ml-2 text-[11px] text-slate-500">Listening…</span>
-            </div>
-            <ul className="mt-2 space-y-1.5">
-              <Tick d={0.9}>Notes drafted from the consultation</Tick>
-              <Tick d={1.6}>Rx: Amoxicillin 500 mg, 5 days</Tick>
-              <Tick d={2.3}>Sent to patient on WhatsApp</Tick>
-            </ul>
-          </div>
-        )}
-
-        {i === 2 && (
-          <ul className="space-y-1.5">
-            <Tick d={0.5}>Study received from the scanner</Tick>
-            <Tick d={1.5}>AI vision: 1 region to review</Tick>
-            <Tick d={2.2}>Report drafted, waiting for signature</Tick>
-          </ul>
-        )}
-
-        {i === 3 && (
-          <div>
-            <p className="text-[12.5px] font-semibold text-[#0e2343]">Sample LB-2291: CBC</p>
-            <div className="mt-2 flex gap-1.5">
-              {["Collected", "Received", "Processed", "Approved"].map((t, k) => (
-                <div key={t} className="flex-1">
-                  <div className="h-1.5 overflow-hidden rounded-full bg-slate-200">
-                    <motion.div className="h-full origin-left bg-[#8a6fe0]" initial={{ scaleX: 0 }} animate={{ scaleX: 1 }} transition={{ delay: 0.5 + k * 0.6, duration: 0.5 }} />
-                  </div>
-                  <p className="mt-1 text-[10px] text-slate-500">{t}</p>
-                </div>
-              ))}
-            </div>
-            <ul className="mt-2"><Tick d={3}>Result added to the patient record</Tick></ul>
-          </div>
-        )}
-
-        {i === 4 && <BillCard />}
-      </motion.div>
-    </MotionConfig>
-  );
-}
-
-function BillCard() {
-  const items = [
-    { n: "Consultation", v: 300 },
-    { n: "Chest X-ray", v: 450 },
-    { n: "CBC", v: 220 },
-    { n: "Medicines", v: 170 },
-  ];
-  const total = useMotionValue(0);
-  const shown = useTransform(total, (v) => "₹" + Math.round(v).toLocaleString("en-IN"));
-  useEffect(() => {
-    const c = animate(total, 1140, { duration: 2.2, delay: 0.5, ease: "easeOut" });
-    return () => c.stop();
-  }, [total]);
-  return (
-    <div>
-      <ul className="space-y-1">
-        {items.map((it, k) => (
-          <motion.li key={it.n} initial={{ opacity: 0, x: -8 }} animate={{ opacity: 1, x: 0 }} transition={{ delay: 0.5 + k * 0.45 }} className="flex justify-between text-[12.5px] text-slate-600">
-            <span>{it.n}</span><span>₹{it.v}</span>
-          </motion.li>
-        ))}
-      </ul>
-      <div className="mt-2 flex items-center justify-between border-t border-slate-200 pt-2">
-        <span className="text-[12.5px] font-semibold text-[#0e2343]">One bill, ready</span>
-        <motion.span className="font-display text-lg font-semibold text-[#12857a]">{shown}</motion.span>
-      </div>
+    <div className={`relative flex shrink-0 items-center justify-center ${vertical ? "h-8 w-full" : "h-full w-8"}`} aria-hidden>
+      <span className={`absolute ${vertical ? "left-1/2 top-0 h-full w-0 -translate-x-1/2 border-l border-dashed" : "left-0 top-1/2 h-0 w-full -translate-y-1/2 border-t border-dashed"} border-slate-300`} />
+      {[0, 1, 2].map((k) => (
+        <motion.span
+          key={k}
+          className="absolute h-1.5 w-1.5 rounded-full bg-[#1ea99b] shadow-[0_0_8px_#1ea99b]"
+          style={vertical ? { left: "calc(50% - 3px)" } : { top: "calc(50% - 3px)" }}
+          animate={vertical ? { top: ["0%", "100%"], opacity: [0, 1, 0] } : { left: ["0%", "100%"], opacity: [0, 1, 0] }}
+          transition={{ duration: 1.2, repeat: Infinity, delay: k * 0.4, ease: "linear" }}
+        />
+      ))}
+      <ArrowRight className={`relative h-4 w-4 bg-white text-slate-400 ${vertical ? "rotate-90" : ""}`} />
     </div>
   );
 }
 
-function Step({ i, active, onActive }: { i: number; active: boolean; onActive: (i: number) => void }) {
-  const ref = useRef<HTMLLIElement>(null);
-  const inView = useInView(ref, { margin: "-45% 0px -45% 0px" });
-  const mobileSeen = useInView(ref, { once: true, margin: "-25% 0px" });
-  useEffect(() => { if (inView) onActive(i); }, [inView, i, onActive]);
-  const s = STEPS[i];
+function Column({ col, tone, from, lit, avatar }: { col: Col; tone: keyof typeof TONE; from: number; lit: number; avatar?: string }) {
+  const t = TONE[tone];
+  const dark = tone !== "inn";
   return (
-    <motion.li
-      ref={ref}
-      initial={{ opacity: 0, y: 40 }}
-      whileInView={{ opacity: 1, y: 0 }}
-      viewport={{ once: true, margin: "-10% 0px" }}
-      transition={{ duration: 0.6, ease }}
-      className="relative pl-10 lg:flex lg:min-h-[62vh] lg:items-center lg:pl-14"
-    >
-      <motion.span
-        aria-hidden
-        animate={active ? { scale: [1, 1.25, 1] } : { scale: 1 }}
-        transition={{ duration: 0.5 }}
-        className={`absolute left-0 top-1 z-10 grid h-7 w-7 place-items-center rounded-full border text-[0.8rem] font-semibold transition-colors duration-500 lg:top-1/2 lg:-translate-y-1/2 ${
-          active ? "border-[#1ea99b] bg-[#1ea99b] text-white shadow-[0_0_0_6px_rgba(30,169,155,0.15)]" : "border-slate-300 bg-white text-slate-500"
-        }`}
-      >
-        {i + 1}
-      </motion.span>
-      <div className={`relative w-full rounded-3xl transition-all duration-500 lg:p-7 ${active ? "lg:bg-white lg:shadow-[0_24px_60px_-30px_rgba(14,35,67,0.35)] lg:ring-1 lg:ring-slate-200" : "lg:opacity-60"}`}>
-        {/* phones & tablets: photo with its own Vita overlay */}
-        <div className="relative mb-5 aspect-[4/3] overflow-hidden rounded-3xl lg:hidden">
-          <Photo k={s.photo} sizes="(max-width: 1024px) 100vw, 0px" className="absolute inset-0 h-full w-full" />
-          {mobileSeen && <StepOverlay i={i} />}
-        </div>
-        <p className="text-sm font-medium text-[#12857a]">{s.product}</p>
-        <h3 className="mt-1 font-display text-[1.65rem] font-semibold leading-[1.12] tracking-[-0.025em] text-[#0e2343] sm:text-[2rem]">
-          {s.title}
-        </h3>
-        <p className="mt-3 max-w-[32rem] text-[1.03rem] leading-relaxed text-slate-600">{s.body}</p>
+    <div className={`relative flex min-w-0 flex-1 flex-col rounded-2xl p-3 sm:p-4 ${t.panel}`}>
+      <div className="mb-3 flex items-center gap-2">
+        {avatar && (
+          <motion.span animate={{ rotate: [0, -8, 8, 0] }} transition={{ duration: 2.4, repeat: Infinity, repeatDelay: 1 }} className="block">
+            <Image src={avatar} alt="" width={26} height={26} className="h-6 w-6 rounded-full ring-2 ring-white/60" />
+          </motion.span>
+        )}
+        <p className={`text-[12px] font-semibold ${t.head}`}>{col.title}</p>
       </div>
-    </motion.li>
+      <ul className="space-y-2">
+        {col.items.map((it, k) => {
+          const on = lit >= from + k;
+          const now = lit === from + k;
+          return (
+            <motion.li
+              key={it}
+              animate={{ opacity: on ? 1 : 0.5, scale: now ? 1.04 : 1, y: on ? 0 : 4 }}
+              transition={{ duration: 0.35 }}
+              className={`relative flex items-center gap-2 rounded-xl bg-white px-2.5 py-2 text-[12px] leading-snug shadow-sm sm:text-[12.5px] ${now ? `ring-2 ${t.on}` : ""}`}
+            >
+              <span className={`grid h-4 w-4 shrink-0 place-items-center rounded-full transition-colors duration-300 ${on ? (dark ? "bg-[#1ea99b] text-white" : "bg-[#0e2343] text-white") : "bg-slate-200 text-transparent"}`}>
+                <Check className="h-2.5 w-2.5" strokeWidth={4} />
+              </span>
+              <span className="min-w-0 text-[#0e2343]">{it}</span>
+              {now && (
+                <motion.span className="pointer-events-none absolute inset-0 rounded-xl" initial={{ boxShadow: "0 0 0 0 rgba(79,209,193,0.6)" }} animate={{ boxShadow: "0 0 0 12px rgba(79,209,193,0)" }} transition={{ duration: 0.9 }} />
+              )}
+            </motion.li>
+          );
+        })}
+      </ul>
+    </div>
+  );
+}
+
+/* The animated pipeline: chips light up one by one, then the loop restarts */
+function Pipeline({ s, playing }: { s: Step; playing: boolean }) {
+  const reduce = useReducedMotion();
+  const total = s.inn.items.length + s.vita.items.length + s.out.items.length;
+  const [lit, setLit] = useState(-1);
+  useEffect(() => {
+    if (reduce) { setLit(total); return; }
+    if (!playing) return;
+    const id = setInterval(() => setLit((n) => (n >= total + 3 ? -1 : n + 1)), 600);
+    return () => clearInterval(id);
+  }, [playing, reduce, total]);
+  const a = s.inn.items.length;
+  const b = a + s.vita.items.length;
+  return (
+    <div className="flex flex-col items-stretch sm:flex-row">
+      <Column col={s.inn} tone="inn" from={0} lit={lit} />
+      <div className="sm:hidden"><Flow vertical /></div>
+      <div className="hidden sm:flex"><Flow /></div>
+      <Column col={s.vita} tone="vita" from={a} lit={lit} avatar={s.avatar} />
+      <div className="sm:hidden"><Flow vertical /></div>
+      <div className="hidden sm:flex"><Flow /></div>
+      <Column col={s.out} tone="out" from={b} lit={lit} />
+    </div>
+  );
+}
+
+function Card({ s, i, n, progress }: { s: Step; i: number; n: number; progress: MotionValue<number> }) {
+  const ref = useRef<HTMLElement>(null);
+  const inView = useInView(ref, { margin: "-25% 0px -25% 0px" });
+  // once later cards slide over this one, it shrinks back a little, like a stack of cards
+  const scale = useTransform(progress, [i / n, 1], [1, 1 - (n - 1 - i) * 0.035]);
+  return (
+    <div className="lg:sticky" style={{ top: `calc(5.5rem + ${i * 1.1}rem)` }}>
+      <motion.article
+        ref={ref}
+        style={{ scale }}
+        initial={{ opacity: 0, y: 50 }}
+        whileInView={{ opacity: 1, y: 0 }}
+        viewport={{ once: true, margin: "-10% 0px" }}
+        transition={{ duration: 0.6, ease: [0.22, 1, 0.36, 1] }}
+        className="origin-top rounded-[1.75rem] border border-slate-200/70 bg-white p-5 shadow-[0_30px_80px_-40px_rgba(14,35,67,0.45)] sm:p-8 lg:grid lg:min-h-[25rem] lg:grid-cols-12 lg:items-center lg:gap-10 lg:p-10"
+      >
+        <div className="lg:col-span-4">
+          <div className="flex items-center gap-3">
+            <span className="grid h-9 w-9 place-items-center rounded-full bg-[#0e2343] font-display text-sm font-semibold text-white">{i + 1}</span>
+            <span className="rounded-full bg-[#1ea99b]/10 px-3 py-1 text-sm font-medium text-[#12857a]">{s.agent}</span>
+          </div>
+          <h3 className="mt-5 font-display text-[1.6rem] font-semibold leading-[1.12] tracking-[-0.025em] text-[#0e2343] sm:text-[2rem]">{s.title}</h3>
+          <p className="mt-3 leading-relaxed text-slate-600">{s.body}</p>
+        </div>
+        <div className="mt-6 lg:col-span-8 lg:mt-0">
+          <Pipeline s={s} playing={inView} />
+        </div>
+      </motion.article>
+    </div>
   );
 }
 
 export default function PatientJourney() {
-  const [active, setActive] = useState(0);
-  const reduce = useReducedMotion();
-  const listRef = useRef<HTMLOListElement>(null);
-  const { scrollYProgress } = useScroll({ target: listRef, offset: ["start 55%", "end 55%"] });
-  const fill = useSpring(scrollYProgress, { stiffness: 120, damping: 30 });
+  const ref = useRef<HTMLDivElement>(null);
+  const { scrollYProgress } = useScroll({ target: ref, offset: ["start start", "end end"] });
 
   return (
-    <section className="relative bg-white py-20 sm:py-28" aria-labelledby="journey-title">
-      <div className="mx-auto max-w-[1320px] px-5 sm:px-8 lg:px-12">
-        <div className="max-w-2xl">
-          <h2 id="journey-title" className="font-display text-[2.2rem] font-semibold leading-[1.04] tracking-[-0.03em] text-[#0e2343] sm:text-5xl">
-            What it looks like inside your hospital
-          </h2>
-          <p className="mt-4 text-lg leading-relaxed text-slate-600">
-            Vita works in the background, so your staff spend their time on patients instead of paperwork.
-          </p>
-        </div>
+    <section className="relative isolate py-20 sm:py-28" aria-labelledby="journey-title">
+      {/* soft light streaks behind the cards */}
+      <div aria-hidden className="pointer-events-none absolute inset-0 -z-10 bg-[linear-gradient(180deg,#eaf7f5_0%,#f1f5fb_50%,#ffffff_100%)]" />
+      <div aria-hidden className="pointer-events-none absolute inset-x-0 top-0 -z-10 h-[40rem] bg-[repeating-linear-gradient(90deg,rgba(30,169,155,0.07)_0_80px,rgba(21,153,219,0.05)_80px_160px,transparent_160px_250px)] [mask-image:linear-gradient(180deg,black,transparent)]" />
 
-        <div className="mt-14 grid gap-12 lg:mt-6 lg:grid-cols-12 lg:gap-16">
-          {/* desktop: one sticky photo that changes with the step in view */}
-          <div className="hidden lg:col-span-6 lg:block">
-            <div className="sticky top-[calc(50vh-17rem)] h-[34rem] overflow-hidden rounded-[2rem] shadow-[0_40px_80px_-40px_rgba(14,35,67,0.45)]">
-              <AnimatePresence initial={false}>
-                <motion.div
-                  key={active}
-                  initial={reduce ? { opacity: 1 } : { opacity: 0, scale: 1.06 }}
-                  animate={{ opacity: 1, scale: 1 }}
-                  exit={{ opacity: 0 }}
-                  transition={{ duration: 0.8, ease: [0.22, 1, 0.36, 1] }}
-                  className="absolute inset-0"
-                >
-                  <motion.div className="absolute inset-0" initial={{ scale: 1 }} animate={reduce ? undefined : { scale: 1.1 }} transition={{ duration: 9, ease: "linear" }}>
-                    <Photo k={STEPS[active].photo} sizes="(min-width: 1024px) 50vw, 0px" className="h-full w-full" />
-                  </motion.div>
-                  <div aria-hidden className="absolute inset-0 bg-gradient-to-t from-[#0e2343]/45 via-transparent to-transparent" />
-                  <StepOverlay i={active} />
-                </motion.div>
-              </AnimatePresence>
-              <div className="absolute right-5 top-5 rounded-full bg-white/90 px-4 py-2 text-sm font-medium text-[#0e2343] backdrop-blur">
-                Step {active + 1} of {STEPS.length}
-              </div>
-            </div>
+      <MotionConfig reducedMotion="user">
+        <div className="mx-auto max-w-[1180px] px-5 sm:px-8 lg:px-12">
+          <div className="mx-auto max-w-2xl text-center">
+            <h2 id="journey-title" className="font-display text-[2.2rem] font-semibold leading-[1.04] tracking-[-0.03em] text-[#0e2343] sm:text-5xl">
+              What it looks like inside your hospital
+            </h2>
+            <p className="mt-4 text-lg leading-relaxed text-slate-600">
+              At every counter, Vita takes what comes in, does the busywork and hands your team something ready to use.
+            </p>
           </div>
 
-          <div className="relative lg:col-span-6">
-            {/* progress rail */}
-            <div aria-hidden className="absolute bottom-0 left-[13px] top-0 w-px bg-slate-200">
-              <motion.div style={{ scaleY: fill }} className="h-full w-full origin-top bg-[#1ea99b]" />
-            </div>
-            <ol ref={listRef} className="space-y-16 lg:space-y-6">
-              {STEPS.map((_, i) => (
-                <Step key={i} i={i} active={active === i} onActive={setActive} />
-              ))}
-            </ol>
+          <div ref={ref} className="mt-14 space-y-6 lg:space-y-10">
+            {STEPS.map((s, i) => (
+              <Card key={s.title} s={s} i={i} n={STEPS.length} progress={scrollYProgress} />
+            ))}
           </div>
         </div>
-      </div>
+      </MotionConfig>
     </section>
   );
 }
