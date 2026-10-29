@@ -1,6 +1,9 @@
 import type { Metadata } from "next";
-import PrivacyClient from "./privacy-client";
 import AnalyticsTracker from "@/components/AnalyticsTracker";
+import PageHero from "@/components/site/PageHero";
+import LegalPage from "@/components/site/LegalPage";
+import LegalCards from "@/components/site/LegalCards";
+import { PRIVACY, PRIVACY_UPDATED, RIGHTS } from "@/lib/legal/privacy";
 
 export const metadata: Metadata = {
   title: "Privacy Policy - NexEagle",
@@ -31,12 +34,16 @@ const structuredData = {
 export default function PrivacyPage() {
   return (
     <main>
-      <script
-        type="application/ld+json"
-        dangerouslySetInnerHTML={{ __html: JSON.stringify(structuredData) }}
-      />
+      <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(structuredData) }} />
       <AnalyticsTracker title="NexEagle Privacy Policy" />
-      <PrivacyClient />
+      <PageHero
+        crumb="Privacy policy"
+        eyebrow="Legal"
+        title="How we look after your data"
+        intro="What we collect, why, where it's kept and the rights you have, in line with India's Digital Personal Data Protection Act, 2023."
+        pose={{ src: "/assets/vita/vita-relax.webp", w: 725, h: 640, alt: "Vita relaxing" }}
+      />
+      <LegalPage sections={PRIVACY} updated={PRIVACY_UPDATED} before={<LegalCards title="Your rights" items={RIGHTS} />} contact={{ title: "Questions about your data?", body: "Write to our privacy team and we will reply within the timelines set by the DPDP Act.", email: "privacy@nexeagle.com" }} />
     </main>
   );
 }

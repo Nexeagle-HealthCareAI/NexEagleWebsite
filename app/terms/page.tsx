@@ -1,6 +1,8 @@
 import type { Metadata } from "next";
-import TermsClient from "./terms-client";
 import AnalyticsTracker from "@/components/AnalyticsTracker";
+import PageHero from "@/components/site/PageHero";
+import LegalPage from "@/components/site/LegalPage";
+import { TERMS, TERMS_INTRO, TERMS_UPDATED } from "@/lib/legal/terms";
 
 export const metadata: Metadata = {
   title: "Terms of Service - NexEagle",
@@ -30,12 +32,15 @@ const structuredData = {
 export default function TermsPage() {
   return (
     <main>
-      <script
-        type="application/ld+json"
-        dangerouslySetInnerHTML={{ __html: JSON.stringify(structuredData) }}
-      />
+      <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(structuredData) }} />
       <AnalyticsTracker title="NexEagle Terms of Service" />
-      <TermsClient />
+      <PageHero
+        crumb="Terms of service"
+        eyebrow="Legal"
+        title="Terms of service"
+        intro="The rules for using NexEagle products and services, written to be read."
+      />
+      <LegalPage sections={TERMS} updated={TERMS_UPDATED} intro={TERMS_INTRO} contact={{ title: "Questions about these terms?", body: "Our legal team is happy to explain anything here before you sign.", email: "legal@nexeagle.com" }} />
     </main>
   );
 }

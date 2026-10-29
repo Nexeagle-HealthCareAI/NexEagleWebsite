@@ -1,6 +1,9 @@
 import type { Metadata } from "next";
-import SecurityClient from "./security-client";
 import AnalyticsTracker from "@/components/AnalyticsTracker";
+import PageHero from "@/components/site/PageHero";
+import LegalPage from "@/components/site/LegalPage";
+import LegalCards from "@/components/site/LegalCards";
+import { CERTS, SECURITY } from "@/lib/legal/security";
 
 export const metadata: Metadata = {
   title: "Security & Compliance - DPDP, ABDM, NABH",
@@ -33,12 +36,16 @@ const structuredData = {
 export default function SecurityPage() {
   return (
     <main>
-      <script
-        type="application/ld+json"
-        dangerouslySetInnerHTML={{ __html: JSON.stringify(structuredData) }}
-      />
+      <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(structuredData) }} />
       <AnalyticsTracker title="NexEagle Security & Compliance" />
-      <SecurityClient />
+      <PageHero
+        crumb="Security"
+        eyebrow="Security & compliance"
+        title="Patient data, protected at every step"
+        intro="How we keep hospital and patient data safe: who can see what, how it's stored, where it lives and how we respond if something goes wrong."
+        pose={{ src: "/assets/vita/vita-think.webp", w: 466, h: 640, alt: "Vita thinking" }}
+      />
+      <LegalPage sections={SECURITY} before={<LegalCards title="Compliance at a glance" items={CERTS.map((c) => ({ title: c.name, description: c.description, tag: c.status }))} />} contact={{ title: "Found a security issue?", body: "Tell us privately and our team will look into it straight away.", email: "security@nexeagle.com" }} />
     </main>
   );
 }
