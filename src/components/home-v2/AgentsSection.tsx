@@ -194,7 +194,7 @@ export default function AgentsSection() {
             </h2>
           </div>
           <p className="text-lg leading-relaxed text-slate-600 lg:col-span-5">
-            Each agent does real work in its own setting and hands the patient on to the next, so nothing is retyped and nobody chases paper.
+            One agent for patients, one inside the hospital, one in radiology. Each hands the patient on to the next, so nothing is typed twice.
           </p>
         </div>
 

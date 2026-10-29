@@ -199,7 +199,7 @@ export default function PatientJourney() {
               What it looks like inside your hospital
             </h2>
             <p className="mt-4 text-lg leading-relaxed text-slate-600">
-              At every counter, Vita takes what comes in, does the busywork and hands your team something ready to use.
+              At each counter, Vita does the paperwork in the background, so your staff can look after the patient in front of them.
             </p>
           </div>
 

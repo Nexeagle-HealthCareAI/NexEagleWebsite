@@ -121,7 +121,7 @@ export default function Hero3D() {
             AI agents for every step of the patient journey.
           </motion.h1>
           <motion.p {...rise(0.18)} className="mt-5 max-w-[35rem] text-[1.05rem] leading-relaxed text-slate-600 sm:text-lg">
-            From first symptom to signed report. Vita helps patients find the right doctor, book and reach the clinic. Inside the hospital it runs 1HMS, our hospital management software and EMR, and in 1Rad cloud PACS it reads scans and drafts radiology reports for your radiologist to sign.
+            Vita helps patients find the right doctor and reach your hospital. Inside, it handles check-in, notes, orders and billing in 1HMS, our hospital management software. In 1Rad cloud PACS, it reads scans and drafts reports for your radiologist to sign.
           </motion.p>
           <motion.div {...rise(0.3)} className="mt-8 flex flex-col gap-3 sm:flex-row sm:items-center">
             <Link

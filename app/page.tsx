@@ -4,7 +4,8 @@ import PatientJourney from "@/components/home-v2/PatientJourney";
 import AgentsSection from "@/components/home-v2/AgentsSection";
 import HomeFAQ from "@/components/home-v2/HomeFAQ";
 import { ClientsStrip, ClosingCTA, DataTrust, GoLive } from "@/components/home-v2/Sections";
-import Testimonials from "@/components/home/Testimonials";
+import BeforeAfter from "@/components/home-v2/BeforeAfter";
+import TeamStrip from "@/components/home-v2/TeamStrip";
 import DeferredLiveChat from "@/components/DeferredLiveChat";
 import AnalyticsTracker from "@/components/AnalyticsTracker";
 import { SITE_URL, DOCTORDEKHO_URL } from "@/lib/site";
@@ -126,10 +127,11 @@ export default function HomePage() {
       <Hero3D />
       <ClientsStrip />
       <AgentsSection />
+      <BeforeAfter />
       <PatientJourney />
+      <TeamStrip />
       <GoLive />
       <DataTrust />
-      <Testimonials />
       <HomeFAQ />
       <ClosingCTA />
       <DeferredLiveChat />
