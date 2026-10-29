@@ -13,7 +13,7 @@ import * as THREE from "three";
 export type ProductKey = "1hms" | "1rad" | "1lab" | "1pharma";
 export type Stage = "find" | "book" | "go" | "hms" | "rad";
 
-const C = {
+export const C = {
   porcelain: "#ffffff",
   wall: "#e9f0f1",
   plinth: "#dfeaeb",
@@ -35,14 +35,14 @@ type BuildingDef = {
   door: [number, number, number]; // where the path meets the building
 };
 
-const BUILDINGS: BuildingDef[] = [
+export const BUILDINGS: BuildingDef[] = [
   { key: "1hms", label: "1HMS", caption: "OPD, wards & billing", pos: [0, 0, -0.6], size: [2.4, 2.1, 1.6], door: [0, 0.06, 0.3] },
   { key: "1rad", label: "1Rad", caption: "PACS & AI reporting", pos: [-2.55, 0, 0.55], size: [1.6, 1.0, 1.5], door: [-1.7, 0.06, 0.75] },
   { key: "1lab", label: "1Lab", caption: "Samples to results", pos: [2.55, 0, 0.55], size: [1.6, 1.15, 1.5], door: [1.7, 0.06, 0.75] },
   { key: "1pharma", label: "1Pharma", caption: "Stock & dispensing", pos: [0, 0, 2.35], size: [1.7, 0.85, 1.1], door: [0, 0.06, 1.75] },
 ];
 
-const HUB: [number, number, number] = [0, 0.06, 0.95];
+export const HUB: [number, number, number] = [0, 0.06, 0.95];
 
 /* ── Window strips: thin glass panes set into a facade ─────────────────────────────── */
 function Windows({ w, h, d, rows, cols, lit }: { w: number; h: number; d: number; rows: number; cols: number; lit: boolean }) {
@@ -99,7 +99,7 @@ function Building({ def, active, onSelect, children }: { def: BuildingDef; activ
           );
         })}
         {children}
-        <Html position={[0, h + 0.55, 0]} center distanceFactor={10} zIndexRange={[10, 0]} style={{ pointerEvents: "none" }}>
+        <Html position={[0, h + 0.55, 0]} center distanceFactor={5.5} zIndexRange={[10, 0]} style={{ pointerEvents: "none" }}>
           <div className={`ne-scene-label ${active ? "is-active" : ""}`}>
             <strong>{def.label}</strong>
             <span>{def.caption}</span>
@@ -254,8 +254,8 @@ function Trees() {
 }
 
 /* ── Patient's home, the road to the hospital, and the patient travelling along it ──── */
-const HOME: [number, number, number] = [3.55, 0, 3.05];
-const ROAD = new THREE.CatmullRomCurve3([
+export const HOME: [number, number, number] = [3.55, 0, 3.05];
+export const ROAD = new THREE.CatmullRomCurve3([
   new THREE.Vector3(3.15, 0.05, 2.75),
   new THREE.Vector3(2.55, 0.05, 2.35),
   new THREE.Vector3(1.5, 0.05, 2.0),
@@ -288,7 +288,7 @@ function Home({ lit, onPick }: { lit: boolean; onPick: () => void }) {
         <ringGeometry args={[0.5, 0.56, 40]} />
         <meshStandardMaterial color={C.iris} emissive={C.iris} emissiveIntensity={0.8} transparent opacity={0} />
       </mesh>
-      <Html position={[0, 1.05, 0]} center distanceFactor={10} zIndexRange={[10, 0]} style={{ pointerEvents: "none" }}>
+      <Html position={[0, 1.05, 0]} center distanceFactor={5.5} zIndexRange={[10, 0]} style={{ pointerEvents: "none" }}>
         <div className={`ne-scene-label ${lit ? "is-active" : ""}`}>
           <strong>Patient</strong>
           <span>Talking to Vita</span>
@@ -298,7 +298,7 @@ function Home({ lit, onPick }: { lit: boolean; onPick: () => void }) {
   );
 }
 
-function Road({ stage, animate }: { stage: Stage; animate: boolean }) {
+function Road({ stage, animate, marker: showMarker = true }: { stage: Stage; animate: boolean; marker?: boolean }) {
   const marker = useRef<THREE.Group>(null);
   const trail = useRef<THREE.Mesh[]>([]);
   const t = useRef(0);
@@ -310,7 +310,7 @@ function Road({ stage, animate }: { stage: Stage; animate: boolean }) {
     if (marker.current) {
       marker.current.position.copy(ROAD.getPointAt(u));
       marker.current.position.y += 0.05;
-      marker.current.visible = stage !== "rad";
+      marker.current.visible = showMarker && stage !== "rad";
     }
     trail.current.forEach((m, i) => {
       if (!m) return;
@@ -351,19 +351,22 @@ function Road({ stage, animate }: { stage: Stage; animate: boolean }) {
 }
 
 /* ── Whole campus with gentle pointer parallax ─────────────────────────────────────── */
-function Campus({ stage, onPick, animate }: { stage: Stage; onPick: (s: Stage) => void; animate: boolean }) {
+export const CAMPUS_YAW = -0.62;
+export const CAMPUS_Y = -0.9;
+
+export function Campus({ stage, onPick, animate, fixed = false, people = false, children }: { stage: Stage; onPick: (s: Stage) => void; animate: boolean; fixed?: boolean; people?: boolean; children?: React.ReactNode }) {
   const isActive = (k: ProductKey) => (stage === "hms" ? k !== "1rad" : stage === "rad" ? k === "1rad" : false);
   const onSelect = (k: ProductKey) => onPick(k === "1rad" ? "rad" : "hms");
   const ref = useRef<THREE.Group>(null);
   useFrame(({ pointer, clock }, dt) => {
-    if (!ref.current) return;
+    if (!ref.current || fixed) return;
     const idle = animate ? Math.sin(clock.elapsedTime * 0.25) * 0.08 : 0;
     ref.current.rotation.y = THREE.MathUtils.damp(ref.current.rotation.y, -0.62 + idle + (animate ? pointer.x * 0.18 : 0), 3, dt);
     ref.current.rotation.x = THREE.MathUtils.damp(ref.current.rotation.x, animate ? -pointer.y * 0.05 : 0, 3, dt);
   });
   const colorFor: Record<ProductKey, string> = { "1hms": C.glass, "1rad": C.sky, "1lab": C.iris, "1pharma": C.green };
   return (
-    <group ref={ref} position={[0, -0.9, 0]}>
+    <group ref={ref} position={[0, CAMPUS_Y, 0]} rotation={[0, fixed ? CAMPUS_YAW : 0, 0]}>
       <RoundedBox args={[8.8, 0.3, 6.8]} radius={0.22} smoothness={4} position={[0, -0.15, 0.4]} receiveShadow>
         <meshStandardMaterial color={C.plinth} roughness={0.95} />
       </RoundedBox>
@@ -374,7 +377,7 @@ function Campus({ stage, onPick, animate }: { stage: Stage; onPick: (s: Stage) =
       <Trees />
       <Hub />
       <Home lit={stage === "find" || stage === "book"} onPick={() => onPick("find")} />
-      <Road stage={stage} animate={animate} />
+      <Road stage={stage} animate={animate} marker={!people} />
       {BUILDINGS.map((b, i) => (
         <group key={b.key}>
           <DataPath from={b.door} color={colorFor[b.key]} active={isActive(b.key)} offset={i * 0.27} speed={0.18 + i * 0.03} />
@@ -386,6 +389,7 @@ function Campus({ stage, onPick, animate }: { stage: Stage; onPick: (s: Stage) =
           </Building>
         </group>
       ))}
+      {children}
     </group>
   );
 }

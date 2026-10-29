@@ -1,5 +1,5 @@
 import type { Metadata } from "next";
-import Hero3D from "@/components/home-v2/Hero3D";
+import Hero from "@/components/home-v2/Hero";
 import PatientJourney from "@/components/home-v2/PatientJourney";
 import AgentsSection from "@/components/home-v2/AgentsSection";
 import HomeFAQ from "@/components/home-v2/HomeFAQ";
@@ -123,7 +123,7 @@ export default function HomePage() {
     <main>
       <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }} />
       <AnalyticsTracker title="NexEagle - AI-Powered Healthcare Operating System" />
-      <Hero3D />
+      <Hero />
       <ClientsStrip />
       <AgentsSection />
       <BeforeAfter />
