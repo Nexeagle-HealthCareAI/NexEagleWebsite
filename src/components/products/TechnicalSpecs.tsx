@@ -16,7 +16,7 @@ const TechnicalSpecs = () => {
       items: [
         { label: "Data Encryption", value: "AES-256 at rest, TLS 1.3 in transit" },
         { label: "Authentication", value: "Multi-factor, SSO, SAML" },
-        { label: "Compliance", value: "HIPAA, GDPR ready" },
+        { label: "Compliance", value: "DPDP Act 2023 aligned" },
         { label: "Audit Logs", value: "Complete activity tracking" }
       ]
     },
@@ -87,26 +87,26 @@ const TechnicalSpecs = () => {
           {/* Compliance Badges */}
           <div className="mt-16 p-10 rounded-3xl bg-white border border-slate-200">
             <div className="text-center mb-8">
-              <h3 className="text-2xl font-bold text-slate-900 mb-2">Compliance & Certifications</h3>
-              <p className="text-slate-600">Built to meet healthcare industry standards</p>
+              <h3 className="text-2xl font-bold text-slate-900 mb-2">Regulatory Alignment</h3>
+              <p className="text-slate-600">Built for Indian healthcare regulation</p>
             </div>
             
             <div className="flex flex-wrap justify-center gap-6">
               <div className="px-8 py-4 rounded-xl bg-slate-50 border border-slate-200">
-                <p className="text-sm font-semibold text-slate-900">HIPAA</p>
-                <p className="text-xs text-slate-600">Compliant</p>
+                <p className="text-sm font-semibold text-slate-900">DPDP Act</p>
+                <p className="text-xs text-slate-600">Aligned</p>
               </div>
               <div className="px-8 py-4 rounded-xl bg-slate-50 border border-slate-200">
-                <p className="text-sm font-semibold text-slate-900">GDPR</p>
+                <p className="text-sm font-semibold text-slate-900">ABDM</p>
                 <p className="text-xs text-slate-600">Ready</p>
               </div>
               <div className="px-8 py-4 rounded-xl bg-slate-50 border border-slate-200">
-                <p className="text-sm font-semibold text-slate-900">ISO 27001</p>
-                <p className="text-xs text-slate-600">Certified</p>
+                <p className="text-sm font-semibold text-slate-900">NABH</p>
+                <p className="text-xs text-slate-600">Documentation support</p>
               </div>
               <div className="px-8 py-4 rounded-xl bg-slate-50 border border-slate-200">
-                <p className="text-sm font-semibold text-slate-900">SOC 2</p>
-                <p className="text-xs text-slate-600">Type II</p>
+                <p className="text-sm font-semibold text-slate-900">Data residency</p>
+                <p className="text-xs text-slate-600">Hosted in India</p>
               </div>
             </div>
           </div>

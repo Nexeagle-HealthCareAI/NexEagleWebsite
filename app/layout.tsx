@@ -1,20 +1,13 @@
 import type { Metadata, Viewport } from "next";
 import { Providers } from "./providers";
-import CursorGlow from "@/components/ui/CursorGlow";
 import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
-import { Inter, Poppins } from "next/font/google";
+import "@fontsource-variable/bricolage-grotesque";
+import "@fontsource-variable/instrument-sans";
 import LayoutWrapper from "./layout-wrapper";
 import { SITE_URL, DOCTORDEKHO_URL, IS_PRODUCTION_SITE } from "@/lib/site";
 import "./globals.css";
 
-const inter = Inter({ subsets: ["latin"], variable: "--font-inter", display: "swap" });
-const poppins = Poppins({
-  weight: ["400", "500", "600", "700", "800"],
-  subsets: ["latin"],
-  variable: "--font-poppins",
-  display: "swap"
-});
 
 const DESCRIPTION =
   "NexEagle builds modern, AI-powered healthcare software for hospitals & clinics: 1HMS EMR, 1Rad Cloud PACS, 1Lab LIS diagnostics, and 1Pharma inventory systems.";
@@ -110,7 +103,7 @@ export default function RootLayout({
   children: React.ReactNode;
 }) {
   return (
-    <html lang="en-IN" className={`${inter.variable} ${poppins.variable}`}>
+    <html lang="en-IN">
       <head>
         <script
           type="application/ld+json"
@@ -119,7 +112,6 @@ export default function RootLayout({
       </head>
       <body className="min-h-screen bg-white">
         <Providers>
-          <CursorGlow />
           <Toaster />
           <Sonner />
           <LayoutWrapper>{children}</LayoutWrapper>

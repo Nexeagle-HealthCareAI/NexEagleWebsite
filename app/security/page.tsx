@@ -3,19 +3,19 @@ import SecurityClient from "./security-client";
 import AnalyticsTracker from "@/components/AnalyticsTracker";
 
 export const metadata: Metadata = {
-  title: "Security & Compliance - HIPAA, ISO 27001, SOC 2 - NexEagle",
-  description: "Enterprise-grade security for healthcare data. HIPAA compliant, ISO 27001 certified, SOC 2 Type II audited. Learn about our comprehensive security measures, data encryption, compliance standards, and 24/7 monitoring.",
+  title: "Security & Compliance - DPDP, ABDM, NABH",
+  description: "How NexEagle protects healthcare data: encryption, access controls, India-hosted data, and alignment with the DPDP Act 2023, ABDM and NABH documentation needs.",
   keywords: [
-    "HIPAA compliant",
-    "ISO 27001",
-    "SOC 2",
+    "DPDP Act 2023",
+    "ABDM",
+    "NABH",
     "healthcare security",
     "data encryption",
     "compliance certifications",
     "healthcare data protection",
     "enterprise security",
-    "GDPR compliant",
-    "security audit"
+    "India data residency",
+    "hospital data security"
   ],
 };
 
@@ -23,16 +23,10 @@ const structuredData = {
   "@context": "https://schema.org",
   "@type": "WebPage",
   "name": "Security & Compliance",
-  "description": "Enterprise-grade security for healthcare data. HIPAA compliant, ISO 27001 certified, SOC 2 Type II audited",
+  "description": "How NexEagle protects healthcare data, with India-hosted data and alignment with the DPDP Act 2023, ABDM and NABH.",
   "publisher": {
     "@type": "Organization",
-    "name": "NexEagle",
-    "certification": [
-      "HIPAA Compliant",
-      "ISO 27001 Certified",
-      "SOC 2 Type II",
-      "GDPR Compliant"
-    ]
+    "name": "NexEagle"
   }
 };
 

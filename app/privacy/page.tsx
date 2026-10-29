@@ -4,12 +4,12 @@ import AnalyticsTracker from "@/components/AnalyticsTracker";
 
 export const metadata: Metadata = {
   title: "Privacy Policy - NexEagle",
-  description: "NexEagle Privacy Policy. Learn how we collect, use, and protect your information in compliance with HIPAA, GDPR, ISO 27001, and other data protection regulations.",
+  description: "NexEagle Privacy Policy. Learn how we collect, use, and protect your information in line with India's Digital Personal Data Protection Act, 2023.",
   keywords: [
     "privacy policy",
     "data protection",
-    "HIPAA compliance",
-    "GDPR",
+    "DPDP Act 2023",
+    "data protection",
     "data privacy",
     "healthcare data security",
     "personal information protection"
@@ -20,7 +20,7 @@ const structuredData = {
   "@context": "https://schema.org",
   "@type": "WebPage",
   "name": "Privacy Policy",
-  "description": "NexEagle Privacy Policy - Learn how we protect your data in compliance with HIPAA, GDPR, ISO 27001, and other regulations",
+  "description": "NexEagle Privacy Policy - Learn how we protect your data in line with India's Digital Personal Data Protection Act, 2023",
   "publisher": {
     "@type": "Organization",
     "name": "NexEagle"

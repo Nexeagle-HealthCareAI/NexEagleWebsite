@@ -10,14 +10,14 @@ import AnalyticsTracker from "@/components/AnalyticsTracker";
 
 export const metadata: Metadata = {
   title: "Healthcare Products - 1HMS, 1Rad, 1Lab, 1Pharma",
-  description: "Integrated healthcare ecosystem: Hospital Management (1HMS), Radiology Platform (1Rad), Lab Management (1Lab), and Pharmacy System (1Pharma). HIPAA compliant, AI-powered, and built for modern healthcare.",
+  description: "Integrated healthcare ecosystem: Hospital Management (1HMS), Radiology Platform (1Rad), Lab Management (1Lab), and Pharmacy System (1Pharma). AI-powered, India-hosted, and built for modern healthcare.",
   keywords: [
     "hospital management system",
     "radiology software",
     "lab management system",
     "pharmacy software",
     "healthcare ecosystem",
-    "HIPAA compliant",
+    "DPDP compliant healthcare software",
     "medical software",
     "healthcare technology",
     "integrated healthcare platform"

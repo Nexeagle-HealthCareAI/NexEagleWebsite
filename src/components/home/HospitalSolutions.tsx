@@ -226,7 +226,7 @@ const HospitalSolutions = () => {
           </div>
           
           <div className="text-[9px] text-brand-teal font-bold text-center border-t border-slate-200/80 pt-2.5">
-            100% SECURE • HIPAA COMPLIANT DIGITAL EMR
+            SECURE • INDIA-HOSTED DIGITAL EMR
           </div>
         </div>
       )
@@ -619,7 +619,7 @@ const HospitalSolutions = () => {
       accentHex: "#38bdf8",
       benefits: [
         "FDA-approved web DICOM viewer works on any device and browser",
-        "Unlimited cloud archiving with HIPAA-compliant file storage",
+        "Cloud archiving with encrypted, India-hosted file storage",
         "Direct EMR routing allows diagnostic access inside OPD consults"
       ],
       preview: (

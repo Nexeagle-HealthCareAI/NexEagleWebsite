@@ -30,7 +30,7 @@ const sections: Section[] = [
         },
         {
           subtitle: "Healthcare Data & PHI",
-          text: "For our core clinical products (such as 1HMS and 1Rad PACS), we process protected health information (PHI) strictly as a business associate in full alignment with HIPAA regulations, NABH guidelines, and local healthcare privacy legislation. This data is segregated and shielded with enterprise-grade encryption."
+          text: "For our core clinical products (such as 1HMS and 1Rad PACS), we process protected health information (PHI) strictly as a data processor on behalf of the hospital or clinic, in line with the Digital Personal Data Protection Act, 2023 and applicable Indian healthcare record-keeping rules. This data is segregated and shielded with enterprise-grade encryption."
         }
       ]
     },
@@ -66,7 +66,7 @@ const sections: Section[] = [
         },
         {
           subtitle: "Industry Standards",
-          text: "Our software infrastructure is engineered to adhere to HIPAA, GDPR, ISO 27001, and SOC 2 Type II controls. We conduct external vulnerability assessments and code audits on a regular annual schedule."
+          text: "Our infrastructure is designed around the DPDP Act 2023, with security practices modelled on recognised frameworks such as ISO 27001. We regularly review our code and systems for vulnerabilities."
         },
         {
           subtitle: "Incident Management",
@@ -80,7 +80,7 @@ const sections: Section[] = [
       content: [
         {
           subtitle: "Sub-processors & Vendors",
-          text: "We share necessary information only with vetted third-party vendors (such as AWS cloud hosting services). All vendors are subject to rigorous Business Associate Agreements (BAAs) and confidentiality constraints."
+          text: "We share necessary information only with vetted third-party vendors (such as AWS cloud hosting services). All vendors are bound by data processing and confidentiality agreements."
         },
         {
           subtitle: "Corporate Transactions",
@@ -451,7 +451,7 @@ export default function PrivacyClient() {
               <div className="pt-6 border-t border-slate-200 flex gap-3 items-start">
                 <ShieldAlert className="w-5 h-5 text-amber-500 shrink-0 mt-0.5" />
                 <p className="text-xs text-slate-500 leading-relaxed">
-                  <strong>HIPAA & NABH Notice:</strong> For regulatory audits, business associate agreement (BAA) coordination, or reporting privacy concerns under clinical compliance directives, contact our designated Data Protection Officer at <a href="mailto:privacy@nexeagle.com" className="text-brand-teal hover:underline font-medium">privacy@nexeagle.com</a>.
+                  <strong>Data Protection Notice:</strong> For data processing agreements, exercising your rights under the DPDP Act, or reporting privacy concerns under clinical compliance directives, contact our designated Data Protection Officer at <a href="mailto:privacy@nexeagle.com" className="text-brand-teal hover:underline font-medium">privacy@nexeagle.com</a>.
                 </p>
               </div>
             </div>

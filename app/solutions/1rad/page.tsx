@@ -104,7 +104,7 @@ export default function OneRadPage() {
     {
       icon: <ShieldCheck className="w-6 h-6" />,
       title: "Enterprise Security",
-      desc: "HIPAA and NABH compliant data storage, end-to-end encryption, and role-based access controls.",
+      desc: "India-hosted, encrypted data storage with role-based access controls and full audit trails.",
       color: "text-brand-teal",
       bg: "bg-brand-teal/10"
     },

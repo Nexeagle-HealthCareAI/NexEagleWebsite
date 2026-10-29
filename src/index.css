@@ -9,8 +9,8 @@
 @layer base {
   :root {
     /* Typography */
-    --font-sans: var(--font-inter), 'Inter', system-ui, sans-serif;
-    --font-display: var(--font-poppins), 'Poppins', system-ui, sans-serif;
+    --font-sans: 'Instrument Sans Variable', system-ui, -apple-system, 'Segoe UI', sans-serif;
+    --font-display: 'Bricolage Grotesque Variable', 'Instrument Sans Variable', system-ui, sans-serif;
     --font-mono: 'JetBrains Mono', 'IBM Plex Mono', 'SFMono-Regular', Menlo, monospace;
     --heading-weight: 600;
     --body-weight: 400;
@@ -192,11 +192,9 @@
   }
 
   .main-site-wrapper {
-    background-image: radial-gradient(circle at 10% 20%, hsl(var(--brand-sand) / 0.8), transparent 45%),
-      radial-gradient(circle at 80% 0%, hsl(var(--brand-teal) / 0.08), transparent 55%);
-    background-attachment: fixed;
     min-height: 100vh;
-    padding-top: 6.5rem;
+    padding-top: 4.5rem;
+    background-color: #f9fbfb;
   }
 
   @media (min-width: 768px) {
@@ -661,3 +659,42 @@
 }
 
 /* stylelint-enable */
+/* ── Homepage v2: 3D scene labels ─────────────────────────────────────────────── */
+.ne-scene-label {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 1px;
+  padding: 6px 12px 7px;
+  border-radius: 12px;
+  background: rgba(255, 255, 255, 0.9);
+  box-shadow: 0 6px 20px -8px rgba(14, 35, 67, 0.35);
+  border: 1px solid rgba(14, 35, 67, 0.08);
+  white-space: nowrap;
+  font-family: var(--font-sans);
+  transform: translateY(0) scale(0.92);
+  opacity: 0.82;
+  transition: transform 0.35s cubic-bezier(0.22, 1, 0.36, 1), opacity 0.35s, box-shadow 0.35s;
+  user-select: none;
+}
+.ne-scene-label strong {
+  font-family: var(--font-display);
+  font-size: 15px;
+  font-weight: 650;
+  color: #0e2343;
+  letter-spacing: -0.01em;
+  line-height: 1.1;
+}
+.ne-scene-label span {
+  display: none;
+  font-size: 11.5px;
+  color: #51637a;
+  line-height: 1.2;
+}
+.ne-scene-label.is-active {
+  transform: translateY(-6px) scale(1);
+  opacity: 1;
+  box-shadow: 0 12px 30px -10px rgba(30, 169, 155, 0.55);
+  border-color: rgba(30, 169, 155, 0.45);
+}
+.ne-scene-label.is-active span { display: block; }

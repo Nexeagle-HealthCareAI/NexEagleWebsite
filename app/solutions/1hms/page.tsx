@@ -11,7 +11,7 @@ const DeferredLiveChat = dynamic(() => import("@/components/DeferredLiveChat"), 
 
 export const metadata: Metadata = {
   title: "1HMS - Complete Hospital Management System & EMR Software",
-  description: "NexEagle's 1HMS is a comprehensive, NABH-compliant Hospital Management System featuring automated workflows, AI voice scribing, EMR/EHR, and 15+ integrated modules.",
+  description: "NexEagle's 1HMS is a comprehensive Hospital Management System with NABH documentation support, featuring automated workflows, AI voice scribing, EMR/EHR, and 15+ integrated modules.",
   keywords: [
     "hospital management system",
     "HMS software",
@@ -40,14 +40,14 @@ const structuredData = {
       },
       "applicationCategory": "HealthApplication, BusinessApplication",
       "operatingSystem": "Web, Cloud-based",
-      "description": "India's leading AI-powered hospital software with NABH compliance automation, voice scribe, and 15+ integrated modules.",
+      "description": "AI-powered hospital software with NABH documentation support, voice scribe, and 15+ integrated modules.",
       "featureList": [
         "AI Voice Scribe & Auto-EMR Charting",
         "OPD & IPD Management",
         "1Lab Diagnostics Integration",
         "1Rad DICOM PACS Integration",
         "Auto-Billing & Revenue Cycle Management",
-        "NABH Compliance Automation"
+        "NABH Documentation Support"
       ],
       "offers": {
         "@type": "Offer",
@@ -62,7 +62,7 @@ const structuredData = {
       "@id": "https://nexeagle.com/solutions/1hms#webpage",
       "url": "https://nexeagle.com/solutions/1hms",
       "name": "1HMS - Hospital Management System | NexEagle",
-      "description": "Comprehensive, AI-powered Hospital Management System (HMS) with NABH compliance automation, ambient AI voice scribing, and 15+ clinical modules.",
+      "description": "Comprehensive, AI-powered Hospital Management System (HMS) with NABH documentation support, ambient AI voice scribing, and 15+ clinical modules.",
       "isPartOf": {
         "@id": "https://nexeagle.com/#website"
       }
@@ -81,7 +81,7 @@ export default function OneHMSPage() {
       
       {/* Background Image with Faint Watermark Overlay */}
       <div 
-        className="absolute inset-0 bg-[url('/assets/modern_hospital_bg.png')] bg-cover bg-center bg-no-repeat pointer-events-none z-0 opacity-[0.06]"
+        className="absolute inset-0 bg-[url('/assets/modern_hospital_bg.webp')] bg-cover bg-center bg-no-repeat pointer-events-none z-0 opacity-[0.06]"
       />
 
       {/* Hero Section */}
@@ -91,7 +91,7 @@ export default function OneHMSPage() {
             <span className="text-transparent bg-clip-text bg-gradient-to-r from-brand-teal to-brand-sky">1HMS</span> - Complete Hospital Management
           </h1>
           <p className="text-lg md:text-xl text-muted-foreground font-light max-w-2xl mx-auto">
-            India&apos;s leading AI-powered hospital software with NABH compliance automation, voice scribe, and 15+ integrated modules.
+            AI-powered hospital software with NABH documentation support, voice scribe, and 15+ integrated modules.
           </p>
           <div className="flex justify-center gap-4 pt-4">
             <Link href="/contact" id="onehms-hero-demo-link">

@@ -22,24 +22,24 @@ export default function SecurityClient() {
 
   const certifications = [
     {
-      name: "HIPAA Compliant",
-      description: "Adheres to the Health Insurance Portability and Accountability Act standards for safeguarding PHI.",
-      status: "Compliant"
+      name: "DPDP Act 2023",
+      description: "Personal and health data handled in line with India's Digital Personal Data Protection Act, 2023 — consent, purpose limitation and data-principal rights.",
+      status: "Aligned"
     },
     {
-      name: "GDPR Compliant",
-      description: "Meets the General Data Protection Regulation criteria for personal data security and privacy.",
-      status: "Compliant"
+      name: "ABDM Ready",
+      description: "Built to interoperate with the Ayushman Bharat Digital Mission ecosystem (ABHA IDs, health-record linking).",
+      status: "Roadmap"
     },
     {
-      name: "ISO 27001 Certified",
-      description: "International standard for information security management systems (ISMS) implementation.",
-      status: "Certified"
+      name: "NABH Documentation",
+      description: "Workflows, audit trails and records that help hospitals meet NABH accreditation documentation requirements.",
+      status: "Supported"
     },
     {
-      name: "SOC 2 Type II",
-      description: "Audited for security, availability, and processing integrity of client data systems.",
-      status: "Certified"
+      name: "ISO 27001 Controls",
+      description: "Our information-security practices are modelled on ISO 27001 controls. Formal certification is on our roadmap.",
+      status: "Roadmap"
     }
   ];
 
@@ -47,11 +47,11 @@ export default function SecurityClient() {
     {
       id: "certifications",
       title: "Certifications & Compliance",
-      description: "We validate our application boundaries against international audits and clinical compliance mandates.",
+      description: "How our platform lines up with Indian healthcare data regulation and recognised security frameworks.",
       content: [
         {
           subtitle: "Enterprise Auditing Standards",
-          text: "NexEagle underwent rigorous verification audits to validate data handling security across our core EHR and PACS products. We maintain standard business associate agreements (BAAs) with clinical organizations to guarantee technical safety under HIPAA guidelines."
+          text: "NexEagle is designed for Indian healthcare regulation first: the DPDP Act 2023, ABDM interoperability and NABH documentation needs. We sign data processing agreements with every hospital and clinic we serve, setting out exactly how patient data is handled, stored and returned. Detailed security documentation is available to customers on request."
         }
       ]
     },
@@ -75,17 +75,17 @@ export default function SecurityClient() {
       ]
     },
     {
-      id: "hipaa-safeguards",
-      title: "HIPAA Compliance Safeguards",
+      id: "data-safeguards",
+      title: "Patient Data Safeguards",
       description: "Comprehensive administrative, physical, and technical measures guarding patient data registries.",
       content: [
         {
           subtitle: "Administrative Protocol",
-          text: "Includes mandatory staff security training, formal risk assessment cycles, designated data protection officers, and formal security incident handling procedures."
+          text: "Includes staff security training, periodic risk assessments, a designated point of contact for data protection, and documented security incident handling procedures."
         },
         {
           subtitle: "Physical Shielding",
-          text: "Covers hosting in ISO 27001 certified AWS/Azure facilities, hardware disposal pipelines, automated physical facility logging, and biometric access restrictions."
+          text: "Covers hosting in professionally managed data centres with physical access controls, secure hardware disposal and facility access logging."
         },
         {
           subtitle: "Technical Controls",
@@ -100,7 +100,7 @@ export default function SecurityClient() {
       content: [
         {
           subtitle: "Phase 1: Detection & Triage",
-          text: "Our Security Operations Center (SOC) monitors system logs around the clock. Any anomaly triggers immediate alarms and spins up an incident response squad."
+          text: "Automated monitoring watches system logs and service health continuously. Anomalies raise alerts to our engineering team for immediate triage."
         },
         {
           subtitle: "Phase 2: Isolation & Containment",
@@ -108,7 +108,7 @@ export default function SecurityClient() {
         },
         {
           subtitle: "Phase 3: Remediation & Recovery",
-          text: "Vulnerable packages are updated and services restored. If a confirmed data breach of PHI occurs, we notify affected organizations within 72 hours."
+          text: "Vulnerable packages are updated and services restored. If a personal data breach is confirmed, we notify affected organisations promptly and support them in meeting their reporting duties under the DPDP Act."
         }
       ]
     },
@@ -119,7 +119,7 @@ export default function SecurityClient() {
       content: [
         {
           subtitle: "Penetration Testing & Security Audits",
-          text: "We engage external CREST-certified auditors annually to conduct grey-box penetration tests across our applications and Cloud PACS APIs."
+          text: "We regularly test our applications and Cloud PACS APIs for vulnerabilities, and plan independent third-party penetration testing as we scale."
         },
         {
           subtitle: "OWASP Hardening & Vulnerability Management",
@@ -201,7 +201,7 @@ export default function SecurityClient() {
             Security & Compliance.
           </h1>
           <p className="text-lg md:text-xl text-slate-600 max-w-2xl mx-auto font-light leading-relaxed">
-            We deploy multi-layered cryptographic controls, system isolation parameters, and continuous audits to shield clinical data networks.
+            We use layered encryption, access controls and continuous monitoring to protect clinical data — designed around Indian healthcare regulation.
           </p>
           <div className="flex flex-wrap gap-2.5 justify-center pt-2">
             {certifications.map((cert, index) => (

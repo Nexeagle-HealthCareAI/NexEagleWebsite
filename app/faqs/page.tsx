@@ -4,13 +4,13 @@ import AnalyticsTracker from "@/components/AnalyticsTracker";
 
 export const metadata: Metadata = {
   title: "Frequently Asked Questions (FAQs) - Healthcare Software Suite",
-  description: "Find answers to common questions about NexEagle's integrated clinical operating system, including 1HMS EMR, 1Rad PACS, LIS setup, and HIPAA compliance security.",
+  description: "Find answers to common questions about NexEagle's integrated clinical operating system, including 1HMS EMR, 1Rad PACS, LIS setup, and data security.",
   keywords: [
     "healthcare IT FAQs",
     "hospital software support",
     "Cloud PACS questions",
     "LIS integration FAQs",
-    "HIPAA security answers",
+    "healthcare data security answers",
     "NexEagle help"
   ],
 };
@@ -72,15 +72,15 @@ const structuredData = {
       "name": "Is NexEagle AI clinically safe and validated?",
       "acceptedAnswer": {
         "@type": "Answer",
-        "text": "Absolutely. NexEagle AI's clinical models are curated and continuously validated by our clinical advisory board. Our algorithms are trained to prevent medical hallucinations, ensuring high clinical accuracy and alignment with NABH guidelines."
+        "text": "Absolutely. NexEagle AI is built with input from practising doctors on our team, and every AI output (draft reports, notes, suggestions) is presented for review and sign-off by a qualified clinician — it never acts on its own."
       }
     },
     {
       "@type": "Question",
-      "name": "Is our clinical data secure and HIPAA compliant?",
+      "name": "Is our clinical data secure?",
       "acceptedAnswer": {
         "@type": "Answer",
-        "text": "Yes. NexEagle uses enterprise-grade secure hosting. We encrypt all data in transit using HTTPS/TLS 1.3 and at rest using AES-256. The system complies with HIPAA and NABH security standards, offering role-based access control and detailed activity audit logs."
+        "text": "Yes. NexEagle uses enterprise-grade secure hosting. We encrypt all data in transit using HTTPS/TLS 1.3 and at rest using AES-256. Data is hosted in India, handled in line with the DPDP Act 2023, and protected by role-based access control and detailed activity audit logs."
       }
     },
     {

@@ -67,7 +67,7 @@ const steps: Step[] = [
     flowPaths: [3], // Hub -> IPD
     details: {
       action: "Ward bed allocation & inpatient vitals logging",
-      impact: "Real-time floor occupancy maps. Automated checklists ensure NABH compliance.",
+      impact: "Real-time floor occupancy maps. Automated checklists support NABH documentation.",
       modulesUsed: ["IPD Allocation", "OT Management", "Nursing Checklists"]
     }
   },

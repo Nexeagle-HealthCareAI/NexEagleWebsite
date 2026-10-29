@@ -60,7 +60,7 @@ const sections: Section[] = [
         },
         {
           subtitle: "Compliance Protocols",
-          text: "You must operate all clinical software in compliance with HIPAA, local medical laws, and patient consent directives. You must not enter clinical records or PHI into unauthorized sandboxes or testing environments."
+          text: "You must operate all clinical software in compliance with the DPDP Act 2023, applicable medical laws, and patient consent requirements. You must not enter clinical records or PHI into unauthorized sandboxes or testing environments."
         }
       ]
     },
@@ -78,7 +78,7 @@ const sections: Section[] = [
         },
         {
           subtitle: "Institutional Data Ownership",
-          text: "You retain absolute ownership of all patient records, medical scans, files, and billing information compiled within your clinical workspace. NexEagle acts strictly as a secure data processor under standard Business Associate conditions."
+          text: "You retain absolute ownership of all patient records, medical scans, files, and billing information compiled within your clinical workspace. NexEagle acts strictly as a data processor on your behalf under a data processing agreement."
         }
       ]
     },
@@ -131,7 +131,7 @@ export default function TermsClient() {
         "We warrant that clinical platforms will perform substantially in accordance with official user documentation.",
         "We implement industry-standard technical measures (AES-256, TLS 1.3) to protect workspace databases.",
         "We continuously validate voice engines against clinical vocabulary sets to ensure accuracy.",
-        "We maintain regulatory compliance guidelines (HIPAA & NABH) across core product codebases."
+        "We design our core products to support DPDP Act obligations and NABH documentation requirements."
       ]
     },
     {
@@ -552,7 +552,7 @@ export default function TermsClient() {
               <div className="pt-6 border-t border-slate-200 flex gap-3 items-start">
                 <ShieldAlert className="w-5 h-5 text-amber-500 shrink-0 mt-0.5" />
                 <p className="text-xs text-slate-500 leading-relaxed">
-                  <strong>HIPAA & SLA Notice:</strong> For enterprise Business Associate Agreement (BAA) signoffs or custom SLA requirements, contact our contracting department directly at <a href="mailto:legal@nexeagle.com" className="text-brand-teal hover:underline font-medium">legal@nexeagle.com</a>.
+                  <strong>Contracts & SLA Notice:</strong> For data processing agreements or custom SLA requirements, contact our contracting department directly at <a href="mailto:legal@nexeagle.com" className="text-brand-teal hover:underline font-medium">legal@nexeagle.com</a>.
                 </p>
               </div>
             </div>

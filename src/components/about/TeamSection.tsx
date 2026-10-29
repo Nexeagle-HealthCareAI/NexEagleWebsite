@@ -73,7 +73,7 @@ const TeamSection = ({ defaultFilter = "All", showHeader = true }: TeamSectionPr
       focus: "Bridging product and customer needs — deploying, configuring, and customising the platform directly at client sites for seamless go-live.",
       category: "Product & Engineering",
       departments: ["Product & Engineering"],
-      image: "/assets/Alisha.png"
+      image: "/assets/Alisha.webp"
     },
     {
       name: "Sana",
@@ -82,7 +82,7 @@ const TeamSection = ({ defaultFilter = "All", showHeader = true }: TeamSectionPr
       focus: "Building intelligent automation, clinical decision support, and AI-powered workflows across the healthcare platform.",
       category: "Product & Engineering",
       departments: ["Product & Engineering"],
-      image: "/assets/Sana.png"
+      image: "/assets/Sana.webp"
     }
   ];
 
