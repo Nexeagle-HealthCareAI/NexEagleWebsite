@@ -1,213 +1,102 @@
 "use client";
 
 import { useState } from "react";
-import { Button } from "@/components/ui/button";
-import { ArrowRight, MapPin, Clock, Briefcase, Mail, ChevronDown, ChevronUp } from "lucide-react";
-import Link from "next/link";
+import { AnimatePresence, motion } from "framer-motion";
+import { Briefcase, ChevronDown, Clock, MapPin } from "lucide-react";
 
-interface Job {
-  id: string;
-  title: string;
-  department: string;
-  location: string;
-  type: string;
-  experience: string;
-  skills: string[];
-  description: string;
-  requirements: string[];
-}
+const ROLES = [
+  {
+    id: "ai-engineer",
+    title: "AI Engineer",
+    team: "Engineering",
+    location: "Kolkata / Remote",
+    type: "Full-time",
+    experience: "2–4 years",
+    skills: ["Python", "NLP", "LLMs", "RAG", "Vector databases"],
+    about: "Build Vita, our AI agents: the scribe that drafts notes and prescriptions, workflow automation in 1HMS, and the models behind 1Rad's report drafts.",
+    you: [
+      "Strong Python and experience with deep learning frameworks",
+      "Hands-on work with large language models, prompting and retrieval (RAG)",
+      "Experience deploying ML models to secure production cloud environments",
+      "Interest in healthcare IT standards is a big plus",
+    ],
+  },
+  {
+    id: "digital-marketing",
+    title: "Digital Marketing Specialist",
+    team: "Growth",
+    location: "Kolkata / Remote",
+    type: "Full-time",
+    experience: "1–3 years",
+    skills: ["SEO", "B2B growth", "Content", "Performance ads", "Analytics"],
+    about: "Help hospitals, nursing homes and diagnostic centres across India discover NexEagle, through search, content, LinkedIn and campaigns.",
+    you: [
+      "Experience in B2B SaaS growth, lead generation and performance marketing",
+      "Clear writing that doctors and hospital owners want to read",
+      "Comfortable with SEO tools, Google Analytics, LinkedIn and email campaigns",
+      "Understanding of healthtech in India is a strong plus",
+    ],
+  },
+];
 
 export default function CareersClient() {
-  const [expandedJob, setExpandedJob] = useState<string | null>(null);
-
-  const jobs: Job[] = [
-    {
-      id: "ai-engineer",
-      title: "AI Engineer",
-      department: "Engineering",
-      location: "Kolkata / Remote",
-      type: "Full-time",
-      experience: "2-4 years",
-      skills: ["Python", "NLP", "LLMs", "RAG", "Vector Databases"],
-      description: "Help build and scale NexEagle AI, our virtual clinical assistant that automates EMR documentation, ambient voice scribing, and smart triaging.",
-      requirements: [
-        "Strong experience with Python and deep learning frameworks.",
-        "Hands-on expertise with Large Language Models (LLMs), prompt engineering, and Retrieval-Augmented Generation (RAG).",
-        "Experience deploying machine learning models in secure, production cloud environments.",
-        "Interest or experience in healthcare IT standards is a major plus."
-      ]
-    },
-    {
-      id: "digital-marketing",
-      title: "Digital Marketing Specialist",
-      department: "Growth & Marketing",
-      location: "Kolkata / Remote",
-      type: "Full-time",
-      experience: "1-3 years",
-      skills: ["SEO", "B2B Growth", "Content Strategy", "Performance Ads", "Analytics"],
-      description: "Lead growth, brand outreach, and user acquisition across hospitals, clinical networks, and diagnostic laboratories in India.",
-      requirements: [
-        "Proven experience in B2B SaaS growth, lead generation, and performance marketing.",
-        "Strong copywriter capable of crafting educational content for medical professionals.",
-        "Proficiency with SEO tools, Google Analytics, and running targeted LinkedIn/email campaigns.",
-        "Understanding of the clinical IT or healthtech landscape is highly preferred."
-      ]
-    }
-  ];
-
-  const toggleJob = (id: string) => {
-    setExpandedJob(expandedJob === id ? null : id);
-  };
-
+  const [open, setOpen] = useState<string | null>(ROLES[0].id);
   return (
-    <main className="pt-32 pb-24">
-      {/* Hero Section */}
-      <section className="relative overflow-hidden py-20 bg-gradient-to-b from-teal-50/30 via-white to-white select-none">
-        <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[600px] h-[600px] bg-brand-teal/5 pointer-events-none rounded-full blur-[140px] z-0"></div>
-        
-        <div className="container relative z-10 px-6 md:px-8 lg:px-12 max-w-4xl mx-auto text-center space-y-6">
-          <h1 className="text-4xl md:text-5xl lg:text-6xl font-black text-slate-900 tracking-tight leading-[1.1]">
-            Build the future of <br />
-            <span className="text-transparent bg-clip-text bg-gradient-to-r from-brand-teal to-brand-sky">healthcare technology.</span>
-          </h1>
-          <p className="text-lg md:text-xl text-slate-600 max-w-2xl mx-auto font-light leading-relaxed">
-            We are a team of engineers and doctors building clinical operating systems (1HMS, 1Rad, 1Lab, 1Pharma) that eliminate operational friction and respect clinician time.
-          </p>
-        </div>
-      </section>
-
-      {/* Jobs List Section */}
-      <section className="container px-6 md:px-8 lg:px-12 max-w-4xl mx-auto mt-8 relative z-10 select-none">
-        <div className="space-y-4">
-          <div className="border-b border-slate-100 pb-4 mb-8">
-            <h2 className="text-2xl font-extrabold text-slate-900">Open Positions</h2>
-            <p className="text-sm text-slate-500 mt-1">Select a role below to view requirements and apply.</p>
-          </div>
-
-          <div className="space-y-6">
-            {jobs.map((job) => {
-              const isExpanded = expandedJob === job.id;
-              return (
-                <div
-                  key={job.id}
-                  className={`p-6 md:p-8 rounded-3xl border transition-all duration-300 ${
-                    isExpanded 
-                      ? "bg-slate-50/50 border-brand-teal/30 shadow-md" 
-                      : "bg-white border-slate-200/80 hover:border-brand-teal/30 hover:shadow-sm"
-                  }`}
-                >
-                  {/* Header Row */}
-                  <div 
-                    className="flex justify-between items-start gap-4 cursor-pointer"
-                    onClick={() => toggleJob(job.id)}
-                  >
-                    <div className="space-y-3">
-                      <div className="flex flex-wrap gap-2">
-                        <span className="inline-flex px-2.5 py-0.5 rounded-full text-xs font-semibold bg-brand-teal/5 text-brand-teal border border-brand-teal/10">
-                          {job.department}
-                        </span>
-                      </div>
-                      <h3 className="text-xl md:text-2xl font-bold text-slate-900 group-hover:text-brand-teal">
-                        {job.title}
-                      </h3>
-                      
-                      {/* Meta Tags */}
-                      <div className="flex flex-wrap gap-x-4 gap-y-2 text-xs text-slate-500 font-medium">
-                        <span className="flex items-center gap-1.5">
-                          <MapPin className="w-3.5 h-3.5" />
-                          {job.location}
-                        </span>
-                        <span className="flex items-center gap-1.5">
-                          <Clock className="w-3.5 h-3.5" />
-                          {job.type}
-                        </span>
-                        <span className="flex items-center gap-1.5">
-                          <Briefcase className="w-3.5 h-3.5" />
-                          {job.experience}
-                        </span>
-                      </div>
-                    </div>
-
-                    <button className="text-slate-400 hover:text-brand-teal p-1 mt-1">
-                      {isExpanded ? <ChevronUp className="w-6 h-6" /> : <ChevronDown className="w-6 h-6" />}
-                    </button>
-                  </div>
-
-                  {/* Collapsible Details */}
-                  {isExpanded && (
-                    <div className="mt-6 pt-6 border-t border-slate-200/60 space-y-6 animate-[fadeIn_0.2s_ease-out]">
-                      <div className="space-y-2">
-                        <h4 className="text-sm font-extrabold uppercase text-slate-400 tracking-wider">About the Role</h4>
-                        <p className="text-slate-600 text-sm md:text-base leading-relaxed">
-                          {job.description}
-                        </p>
-                      </div>
-
-                      {/* Skills */}
-                      <div className="space-y-2.5">
-                        <h4 className="text-sm font-extrabold uppercase text-slate-400 tracking-wider">Key Skills</h4>
-                        <div className="flex flex-wrap gap-2">
-                          {job.skills.map((skill) => (
-                            <span key={skill} className="px-3 py-1 bg-slate-100 text-slate-700 text-xs font-semibold rounded-lg">
-                              {skill}
-                            </span>
-                          ))}
+    <section className="pb-20 sm:pb-28" aria-labelledby="roles-title">
+      <div className="mx-auto max-w-[1100px] px-5 sm:px-8 lg:px-12">
+        <h2 id="roles-title" className="font-display text-2xl font-semibold tracking-[-0.02em] text-[#0e2343] sm:text-3xl">Open roles</h2>
+        <ul className="mt-6 space-y-4">
+          {ROLES.map((r) => {
+            const on = open === r.id;
+            return (
+              <li key={r.id} className={`overflow-hidden rounded-[1.5rem] border bg-white transition-shadow ${on ? "border-[#1ea99b]/50 shadow-[0_24px_60px_-30px_rgba(14,35,67,0.4)]" : "border-slate-200"}`}>
+                <button onClick={() => setOpen(on ? null : r.id)} aria-expanded={on} className="flex w-full items-center justify-between gap-4 p-5 text-left sm:p-7">
+                  <span>
+                    <span className="block font-display text-xl font-semibold text-[#0e2343] sm:text-2xl">{r.title}</span>
+                    <span className="mt-2 flex flex-wrap gap-x-5 gap-y-1 text-sm text-slate-500">
+                      <span className="flex items-center gap-1.5 text-slate-500"><Briefcase className="h-4 w-4" />{r.team}</span>
+                      <span className="flex items-center gap-1.5 text-slate-500"><MapPin className="h-4 w-4" />{r.location}</span>
+                      <span className="flex items-center gap-1.5 text-slate-500"><Clock className="h-4 w-4" />{r.type}, {r.experience}</span>
+                    </span>
+                  </span>
+                  <ChevronDown className={`h-6 w-6 shrink-0 text-slate-400 transition-transform ${on ? "rotate-180" : ""}`} />
+                </button>
+                <AnimatePresence initial={false}>
+                  {on && (
+                    <motion.div initial={{ height: 0, opacity: 0 }} animate={{ height: "auto", opacity: 1 }} exit={{ height: 0, opacity: 0 }} transition={{ duration: 0.3 }}>
+                      <div className="grid gap-6 border-t border-slate-100 p-5 sm:p-7 lg:grid-cols-12">
+                        <div className="lg:col-span-7">
+                          <p className="leading-relaxed text-slate-700">{r.about}</p>
+                          <p className="mt-5 font-semibold text-[#0e2343]">You&apos;ll do well here if you have</p>
+                          <ul className="mt-2 list-disc space-y-1.5 pl-5 text-slate-600">
+                            {r.you.map((y) => <li key={y}>{y}</li>)}
+                          </ul>
+                        </div>
+                        <div className="lg:col-span-5">
+                          <div className="flex flex-wrap gap-2">
+                            {r.skills.map((s) => <span key={s} className="rounded-full bg-slate-100 px-3 py-1 text-sm text-slate-600">{s}</span>)}
+                          </div>
+                          <a href={`mailto:info@nexeagle.com?subject=${encodeURIComponent(`Application: ${r.title}`)}&body=${encodeURIComponent(`Hi NexEagle team,\n\nI'd like to apply for the ${r.title} role. My CV and LinkedIn are attached / below.\n\n`)}`} className="mt-6 inline-flex h-12 w-full items-center justify-center rounded-full bg-[#0e2343] font-semibold text-white hover:bg-[#13305c]">
+                            Apply by email
+                          </a>
+                          <p className="mt-2 text-center text-xs text-slate-500">Send your CV to info@nexeagle.com</p>
                         </div>
                       </div>
-
-                      {/* Requirements */}
-                      <div className="space-y-3">
-                        <h4 className="text-sm font-extrabold uppercase text-slate-400 tracking-wider">Requirements</h4>
-                        <ul className="list-disc pl-5 space-y-2 text-sm text-slate-600 leading-relaxed">
-                          {job.requirements.map((req, i) => (
-                            <li key={i}>{req}</li>
-                          ))}
-                        </ul>
-                      </div>
-
-                      {/* Apply CTA */}
-                      <div className="pt-4 flex flex-col sm:flex-row items-center gap-4">
-                        <a 
-                          href={`mailto:info@nexeagle.com?subject=Application for ${job.title}&body=Hi team, I would like to apply for the ${job.title} position...`}
-                          className="w-full sm:w-auto inline-flex items-center justify-center gap-2 px-6 py-3 bg-brand-teal hover:bg-brand-teal/90 text-white rounded-full text-sm font-semibold shadow-md shadow-brand-teal/10 transition-colors"
-                        >
-                          <Mail className="w-4 h-4" />
-                          <span>Apply via Email</span>
-                        </a>
-                        <Button asChild variant="outline" className="w-full sm:w-auto rounded-full border-slate-200 text-slate-700 hover:bg-slate-50">
-                          <Link href="/contact">
-                            <span>Ask Questions</span>
-                            <ArrowRight className="w-4 h-4 ml-1.5" />
-                          </Link>
-                        </Button>
-                      </div>
-                    </div>
+                    </motion.div>
                   )}
-                </div>
-              );
-            })}
+                </AnimatePresence>
+              </li>
+            );
+          })}
+        </ul>
+        <div className="mt-10 rounded-[1.5rem] bg-[#f4f8f8] p-6 sm:flex sm:items-center sm:justify-between sm:p-8">
+          <div>
+            <p className="font-display text-xl font-semibold text-[#0e2343]">Don&apos;t see your role?</p>
+            <p className="mt-1 text-slate-600">If you want to build software that hospitals rely on, tell us what you&apos;d bring.</p>
           </div>
+          <a href="mailto:info@nexeagle.com?subject=General%20application" className="mt-4 inline-flex h-12 items-center rounded-full border border-slate-300 bg-white px-6 font-semibold text-[#0e2343] hover:border-[#0e2343] sm:mt-0">Send a general application</a>
         </div>
-      </section>
-
-      {/* General Application Banner */}
-      <section className="container px-6 md:px-8 lg:px-12 max-w-4xl mx-auto mt-16 select-none">
-        <div className="p-8 rounded-3xl bg-slate-50 border border-slate-200/80 flex flex-col md:flex-row justify-between items-center gap-6">
-          <div className="space-y-2 text-center md:text-left">
-            <h3 className="text-xl font-bold text-slate-900">Don&apos;t see a perfect fit?</h3>
-            <p className="text-sm text-slate-500 max-w-lg leading-relaxed">
-              We are always excited to meet clinicians who code, developers interested in healthcare, and growth specialists. Drop us your resume!
-            </p>
-          </div>
-          <a 
-            href="mailto:info@nexeagle.com?subject=General Application"
-            className="inline-flex items-center gap-2 px-5 py-2.5 border border-slate-300 hover:border-slate-400 bg-white hover:bg-slate-50 text-slate-700 rounded-full text-sm font-semibold shadow-xs transition-colors shrink-0"
-          >
-            <span>General Application</span>
-            <ArrowRight className="w-4 h-4" />
-          </a>
-        </div>
-      </section>
-    </main>
+      </div>
+    </section>
   );
 }

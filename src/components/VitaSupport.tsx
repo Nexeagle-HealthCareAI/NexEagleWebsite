@@ -42,7 +42,7 @@ export default function VitaSupport() {
 
   useEffect(() => {
     if (open && msgs.length === 0) {
-      setMsgs([{ id: ++idRef.current, from: "vita", text: "Hi, I'm Vita, NexEagle's AI assistant. I can answer questions about our hospital software, set up a demo, or connect you with our team. What would you like to know?" }]);
+      setMsgs([{ id: ++idRef.current, from: "vita", text: "Hi, I'm Vita from NexEagle Customer Support. I can answer questions about our hospital software, set up a demo, or connect you with our team. What would you like to know?" }]);
     }
     if (open) setTimeout(() => inputRef.current?.focus(), 250);
   }, [open, msgs.length]);
@@ -110,14 +110,14 @@ export default function VitaSupport() {
             </AnimatePresence>
             <button
               onClick={() => { setNudge(false); setOpen(true); }}
-              aria-label="Ask Vita, NexEagle's assistant"
-              className="group flex h-16 items-center gap-2.5 rounded-full bg-[#0e2343] pl-1.5 pr-5 text-white shadow-[0_16px_40px_-12px_rgba(14,35,67,0.7)] transition-transform hover:-translate-y-0.5 focus:outline-none focus-visible:ring-4 focus-visible:ring-[#1ea99b]/50"
+              aria-label="Vita Customer Support: ask a question"
+              className="group flex h-16 items-center gap-2.5 rounded-full bg-[#0e2343] p-1.5 text-white sm:pr-5 shadow-[0_16px_40px_-12px_rgba(14,35,67,0.7)] transition-transform hover:-translate-y-0.5 focus:outline-none focus-visible:ring-4 focus-visible:ring-[#1ea99b]/50"
             >
               <motion.span animate={reduce ? undefined : { rotate: [0, -8, 8, -4, 0] }} transition={{ duration: 1.6, repeat: Infinity, repeatDelay: 5 }} className="relative block">
                 <Image src="/assets/vita/avatar-present.webp" alt="" width={52} height={52} className="h-[52px] w-[52px] rounded-full ring-2 ring-white/30" />
                 <span className="absolute bottom-0.5 right-0.5 h-3 w-3 rounded-full border-2 border-[#0e2343] bg-emerald-400" />
               </motion.span>
-              <span className="font-semibold text-white">Ask Vita</span>
+              <span className="hidden leading-tight sm:block"><span className="block text-[11px] font-medium text-white/70">Vita Customer Support</span><span className="block font-semibold text-white">Ask Vita</span></span>
             </button>
           </motion.div>
         )}
@@ -128,7 +128,7 @@ export default function VitaSupport() {
         {open && !team && (
           <motion.div
             role="dialog"
-            aria-label="Vita, NexEagle's assistant"
+            aria-label="Vita Customer Support"
             initial={reduce ? { opacity: 0 } : { opacity: 0, y: 24, scale: 0.97 }}
             animate={{ opacity: 1, y: 0, scale: 1 }}
             exit={{ opacity: 0, y: 16 }}
@@ -143,8 +143,8 @@ export default function VitaSupport() {
                   <span className="absolute bottom-0 right-0 h-3 w-3 rounded-full border-2 border-[#0e2343] bg-emerald-400" />
                 </span>
                 <div className="min-w-0 flex-1">
-                  <p className="font-display text-lg font-semibold leading-tight text-white">Vita</p>
-                  <p className="text-xs text-white/75">NexEagle&apos;s AI assistant · replies instantly</p>
+                  <p className="font-display text-lg font-semibold leading-tight text-white">Vita Customer Support</p>
+                  <p className="text-xs text-white/75">NexEagle · AI assistant, replies instantly</p>
                 </div>
                 <button onClick={() => setOpen(false)} aria-label="Close" className="grid h-9 w-9 place-items-center rounded-lg text-white hover:bg-white/15 focus:outline-none focus-visible:ring-2 focus-visible:ring-white">
                   <X className="h-5 w-5" />

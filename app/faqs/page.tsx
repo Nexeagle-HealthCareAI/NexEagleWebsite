@@ -1,108 +1,72 @@
 import type { Metadata } from "next";
-import FAQsClient from "./faqs-client";
+import PageHero from "@/components/site/PageHero";
+import HomeFAQ from "@/components/home-v2/HomeFAQ";
+import { ClosingCTA } from "@/components/home-v2/Sections";
 import AnalyticsTracker from "@/components/AnalyticsTracker";
+import { FAQ } from "@/lib/homeContent";
+import { SITE_URL } from "@/lib/site";
 
 export const metadata: Metadata = {
-  title: "Frequently Asked Questions (FAQs) - Healthcare Software Suite",
-  description: "Find answers to common questions about NexEagle's integrated clinical operating system, including 1HMS EMR, 1Rad PACS, LIS setup, and data security.",
-  keywords: [
-    "healthcare IT FAQs",
-    "hospital software support",
-    "Cloud PACS questions",
-    "LIS integration FAQs",
-    "healthcare data security answers",
-    "NexEagle help"
-  ],
+  title: { absolute: "FAQs: NexEagle Hospital Software, 1Rad AI Reporting, Vita AI Agents" },
+  description: "Answers about NexEagle: 1HMS hospital management software, 1Rad cloud PACS and AI radiology reports, 1Lab, 1Pharma, Vita AI agents, pricing, setup, Hindi support and patient data security in India.",
+  alternates: { canonical: "/faqs" },
 };
 
-const structuredData = {
-  "@context": "https://schema.org",
-  "@type": "FAQPage",
-  "mainEntity": [
-    {
-      "@type": "Question",
-      "name": "What modules are included in the 1HMS platform?",
-      "acceptedAnswer": {
-        "@type": "Answer",
-        "text": "1HMS is a unified hospital management system that includes modules for OPD Consultations, IPD Ward Allocations, EMR record hubs, Auto-Billing, TPA Insurance pre-authorization workflows, and integrated Pharmacy/Laboratory networks. All modules operate under a single source of truth."
-      }
-    },
-    {
-      "@type": "Question",
-      "name": "Can 1HMS work offline or during internet dropouts?",
-      "acceptedAnswer": {
-        "@type": "Answer",
-        "text": "Yes. 1HMS features robust local offline caching. Clinicians can draft and save OPD consult sheets even during active internet outages. The software securely buffers data locally and synchronizes it automatically with the cloud database when connectivity is restored."
-      }
-    },
-    {
-      "@type": "Question",
-      "name": "How long does it take to deploy 1HMS in a hospital?",
-      "acceptedAnswer": {
-        "@type": "Answer",
-        "text": "Our standard setup takes less than 48 hours. This includes deploying the secure cloud workspace, setting up doctor profiles, configuring clinic departments, and customizing basic prescription and billing templates."
-      }
-    },
-    {
-      "@type": "Question",
-      "name": "What is Cloud PACS and how does it render DICOM files?",
-      "acceptedAnswer": {
-        "@type": "Answer",
-        "text": "1Rad's Cloud PACS is a cloud-native picture archiving and communication system. It allows radiologists, technicians, and clinicians to view and sweep heavy CT, MRI, and X-ray slices instantly in a web browser on any device, without installing desktop software."
-      }
-    },
-    {
-      "@type": "Question",
-      "name": "Does 1Rad support speech-to-text voice dictation?",
-      "acceptedAnswer": {
-        "@type": "Answer",
-        "text": "Yes. 1Rad integrates NexEagle AI's speech-to-text engine specifically trained on clinical radiology terminology. Radiologists can dictate complex reports directly into the system, auto-generating structured templates in real-time."
-      }
-    },
-    {
-      "@type": "Question",
-      "name": "What specific workflows does NexEagle AI automate?",
-      "acceptedAnswer": {
-        "@type": "Answer",
-        "text": "NexEagle AI acts as a voice-activated clinical copilot. It listens to doctor consultations to draft structured e-prescriptions, auto-generates patient discharge summaries, suggests relevant diagnostic checklists, and fills out insurer pre-authorization forms."
-      }
-    },
-    {
-      "@type": "Question",
-      "name": "Is NexEagle AI clinically safe and validated?",
-      "acceptedAnswer": {
-        "@type": "Answer",
-        "text": "Absolutely. NexEagle AI is built with input from practising doctors on our team, and every AI output (draft reports, notes, suggestions) is presented for review and sign-off by a qualified clinician — it never acts on its own."
-      }
-    },
-    {
-      "@type": "Question",
-      "name": "Is our clinical data secure?",
-      "acceptedAnswer": {
-        "@type": "Answer",
-        "text": "Yes. NexEagle uses enterprise-grade secure hosting. We encrypt all data in transit using HTTPS/TLS 1.3 and at rest using AES-256. Data is hosted in India, handled in line with the DPDP Act 2023, and protected by role-based access control and detailed activity audit logs."
-      }
-    },
-    {
-      "@type": "Question",
-      "name": "Who owns the patient records entered into the platform?",
-      "acceptedAnswer": {
-        "@type": "Answer",
-        "text": "You do. Your clinic or hospital owns 100% of the patient clinical files and billing records. NexEagle acts strictly as a secure processor. You can export your data in standardized HL7/FHIR formats at any time."
-      }
-    }
-  ]
-};
+const GROUPS: { title: string; intro: string; items: { q: string; a: string }[] }[] = [
+  { title: "About NexEagle", intro: "Who we are, where we work and how to start.", items: FAQ },
+  {
+    title: "1HMS hospital software",
+    intro: "OPD, IPD, prescriptions and billing.",
+    items: [
+      { q: "What does 1HMS include?", a: "OPD tokens and appointments, IPD and wards, EMR and e-prescriptions, lab and radiology orders, pharmacy, billing including insurance and TPA, follow-up reminders and reports, all on one patient record." },
+      { q: "Does the AI write prescriptions without the doctor?", a: "No. 1HMS Vita drafts notes and the prescription from the consultation, and the doctor reviews, edits and signs before anything reaches the patient." },
+      { q: "Can we start with just OPD and billing?", a: "Yes. Many hospitals start with OPD and billing and add IPD, lab, radiology and pharmacy later. Everything stays on the same record." },
+    ],
+  },
+  {
+    title: "1Rad radiology",
+    intro: "Cloud PACS and AI-drafted reports.",
+    items: [
+      { q: "Does 1Rad work with our existing machines?", a: "1Rad's DICOM bridge connects DICOM-capable CT, MRI, X-ray and ultrasound machines. Share your models during the demo and we'll confirm." },
+      { q: "Who signs the report?", a: "Always your radiologist. 1Rad Vita prepares a first draft and marks regions to review; nothing is released without a radiologist's signature." },
+      { q: "Can we run several centres?", a: "Yes. Multiple branches and modalities run from one dashboard, with referral tracking and imaging billing." },
+    ],
+  },
+  {
+    title: "Pricing, setup and support",
+    intro: "What it costs and how we work with you.",
+    items: [
+      { q: "How much does NexEagle cost?", a: "Pricing depends on the products you use, the size of your hospital or centre and the number of users. We share a clear quote after a short call, with setup and training included in the plan we agree." },
+      { q: "How do we get help after go-live?", a: "Every live hospital has a named support contact, and you can reach our team any time through Vita Customer Support on this website, WhatsApp or phone." },
+      { q: "Who owns our data?", a: "You do. Your hospital owns its patient and billing records; NexEagle processes them on your behalf, hosted in India, and you can export them when you need to." },
+    ],
+  },
+];
 
-export default function FAQsPage() {
+export default function Page() {
+  const jsonLd = {
+    "@context": "https://schema.org",
+    "@type": "FAQPage",
+    "@id": `${SITE_URL}/faqs#faq`,
+    mainEntity: GROUPS.flatMap((g) => g.items).map((f) => ({ "@type": "Question", name: f.q, acceptedAnswer: { "@type": "Answer", text: f.a } })),
+  };
   return (
     <main>
-      <script
-        type="application/ld+json"
-        dangerouslySetInnerHTML={{ __html: JSON.stringify(structuredData) }}
-      />
+      <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }} />
       <AnalyticsTracker title="NexEagle FAQs" />
-      <FAQsClient />
+      <PageHero
+        crumb="FAQs"
+        eyebrow="FAQs"
+        title="Questions hospitals ask us"
+        intro="Can't find your answer? Ask Vita Customer Support (bottom right) for an instant reply, or talk to our team."
+        pose={{ src: "/assets/vita/vita-think.webp", w: 466, h: 640, alt: "Vita thinking" }}
+      />
+      {GROUPS.map((g) => (
+        <div key={g.title} className="border-t border-slate-200/70">
+          <HomeFAQ items={g.items} title={g.title} intro={g.intro} vita={false} />
+        </div>
+      ))}
+      <ClosingCTA />
     </main>
   );
 }
