@@ -3,6 +3,7 @@ import { Bot, Building2, Cable, Eye, FileText, Globe2, LayoutDashboard, Monitor,
 import ProductPage, { type ProductConfig } from "@/components/site/ProductPage";
 import { STEPS, type Step } from "@/lib/journeySteps";
 import { RadDemo } from "@/components/home-v2/AgentsSection";
+import { RAD_APP_URL } from "@/lib/site";
 
 const TITLE = "Cloud PACS & AI Radiology Reporting Software in India | 1Rad by NexEagle";
 const DESCRIPTION =
@@ -46,6 +47,7 @@ const c: ProductConfig = {
   sub: "Every study from every machine in one browser viewer. 1Rad Vita runs AI vision analysis, marks what needs a closer look and drafts a structured report, so radiologists report faster, at the centre or from home.",
   points: ["Works with your existing machines", "Report from anywhere", "Images hosted in India"],
   agentTitle: "1Rad Vita",
+  app: { name: "1Rad Flow", url: RAD_APP_URL },
   demo: <RadDemo />,
   modulesTitle: "Everything a diagnostic centre runs on",
   modulesIntro: "From the front desk to the signed report, for one centre or several branches, on one dashboard.",

@@ -1,7 +1,6 @@
 import Image from "next/image";
 import Link from "next/link";
-import type { LucideIcon } from "lucide-react";
-import { Check, ChevronRight } from "lucide-react";
+import { ArrowUpRight, Check, ChevronRight } from "lucide-react";
 import { AgentCard } from "@/components/home-v2/AgentsSection";
 import { StepCards } from "@/components/home-v2/PatientJourney";
 import type { Step } from "@/lib/journeySteps";
@@ -10,6 +9,7 @@ import { ClosingCTA } from "@/components/home-v2/Sections";
 import AnalyticsTracker from "@/components/AnalyticsTracker";
 import { SITE_URL } from "@/lib/site";
 import { Reveal, Float } from "./Motion";
+import ModuleBuilder, { type Module } from "./ModuleBuilder";
 
 export type ProductConfig = {
   slug: string;
@@ -24,7 +24,12 @@ export type ProductConfig = {
   demo: React.ReactNode;
   modulesTitle: string;
   modulesIntro: string;
-  modules: { Icon: LucideIcon; title: string; body: string }[];
+  /** `core`: always on in the module builder (shown as "Always on"). */
+  modules: Module[];
+  /** The module builder starts with only the core modules on ("switch on when you are ready"), or with all of them. */
+  modulesStartWith?: "core" | "all";
+  /** The product's own web app, for customers who already use it: "Log in to 1HMS Flow". */
+  app?: { name: string; url: string };
   stepsTitle: string;
   stepsIntro: string;
   steps: Step[];
@@ -103,6 +108,11 @@ export default function ProductPage({ c }: { c: ProductConfig }) {
                   Ask on WhatsApp
                 </a>
               </div>
+              {c.app ? (
+                <a href={c.app.url} target="_blank" rel="noopener noreferrer" className="mt-4 inline-flex items-center gap-1 text-sm font-semibold text-[#12857a] underline-offset-4 hover:underline">
+                  Already a customer? Log in to {c.app.name} <ArrowUpRight className="h-4 w-4" />
+                </a>
+              ) : null}
               <ul className="mt-8 flex flex-wrap gap-x-6 gap-y-2">
                 {c.points.map((p) => (
                   <li key={p} className="flex items-center gap-2 text-sm text-slate-600">
@@ -131,17 +141,11 @@ export default function ProductPage({ c }: { c: ProductConfig }) {
             <h2 id="mods-title" className="font-display text-[2.1rem] font-semibold leading-[1.05] tracking-[-0.03em] text-[#0e2343] sm:text-[2.8rem] lg:col-span-6">{c.modulesTitle}</h2>
             <p className="text-lg leading-relaxed text-slate-600 lg:col-span-5 lg:col-start-8 lg:self-end">{c.modulesIntro}</p>
           </div>
-          <ul className="mt-12 grid gap-x-10 gap-y-10 sm:grid-cols-2 lg:grid-cols-3">
-            {c.modules.map(({ Icon, title, body }, i) => (
-              <Reveal as="li" key={title} delay={(i % 3) * 0.06} className="border-t border-slate-200 pt-6">
-                <span className="grid h-11 w-11 place-items-center rounded-xl bg-[#1ea99b]/10 text-[#12857a]">
-                  <Icon className="h-5 w-5" />
-                </span>
-                <h3 className="mt-4 font-display text-lg font-semibold text-[#0e2343]">{title}</h3>
-                <p className="mt-1.5 leading-relaxed text-slate-600">{body}</p>
-              </Reveal>
-            ))}
-          </ul>
+          <ModuleBuilder
+            product={c.name}
+            modules={c.modules.map(({ Icon, ...m }) => ({ ...m, icon: <Icon className="h-5 w-5" /> }))}
+            startWith={c.modulesStartWith ?? "all"}
+          />
         </div>
       </section>
 

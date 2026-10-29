@@ -3,6 +3,7 @@ import { BarChart3, BedDouble, CalendarClock, FileSignature, FlaskConical, Langu
 import ProductPage, { type ProductConfig } from "@/components/site/ProductPage";
 import { STEPS } from "@/lib/journeySteps";
 import { ScribeDemo } from "@/components/site/ProductDemos";
+import { HMS_APP_URL } from "@/lib/site";
 
 const TITLE = "Hospital Management Software (HMS) & EMR for Indian Hospitals | 1HMS by NexEagle";
 const DESCRIPTION =
@@ -26,15 +27,17 @@ const c: ProductConfig = {
   sub: "OPD, IPD, prescriptions, lab and radiology orders, pharmacy and billing on one patient record. 1HMS Vita handles the typing, so your doctors and staff spend their time on patients.",
   points: ["Set up and taught on site", "English and Hindi", "Data hosted in India"],
   agentTitle: "1HMS Vita",
+  app: { name: "1HMS Flow", url: HMS_APP_URL },
   demo: <ScribeDemo />,
   modulesTitle: "Everything a hospital day needs, in one place",
   modulesIntro: "Start with OPD and billing, and switch on IPD, lab, radiology and pharmacy when you are ready. Every module shares the same patient record.",
+  modulesStartWith: "core",
   modules: [
-    { Icon: CalendarClock, title: "OPD and appointments", body: "Online and walk-in bookings, OPD tokens and a live queue screen for your waiting area." },
+    { Icon: CalendarClock, core: true, title: "OPD and appointments", body: "Online and walk-in bookings, OPD tokens and a live queue screen for your waiting area." },
     { Icon: Mic, title: "AI voice scribe", body: "1HMS Vita listens to the consultation and drafts notes and the prescription for the doctor to sign." },
     { Icon: FileSignature, title: "EMR and e-prescriptions", body: "Clear digital prescriptions the patient receives by SMS or WhatsApp, with every visit in one history." },
     { Icon: BedDouble, title: "IPD and wards", body: "Admissions, beds, ward care and discharge summaries, on the same record as the OPD visit." },
-    { Icon: Receipt, title: "Billing and insurance", body: "One bill per patient that collects every service automatically, including insurance and TPA billing." },
+    { Icon: Receipt, core: true, title: "Billing and insurance", body: "One bill per patient that collects every service automatically, including insurance and TPA billing." },
     { Icon: FlaskConical, title: "Lab and radiology orders", body: "Orders go straight to 1Lab and 1Rad, and results come back into the patient record." },
     { Icon: Pill, title: "Pharmacy", body: "Prescriptions reach 1Pharma before the patient does, and sales land on the right bill." },
     { Icon: BellRing, title: "Follow-up reminders", body: "Automatic reminders for follow-ups, tests and reviews, so fewer patients miss their next visit." },

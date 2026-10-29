@@ -5,9 +5,9 @@ import Link from "next/link";
 import Image from "next/image";
 import { usePathname } from "next/navigation";
 import { AnimatePresence, motion, useReducedMotion } from "framer-motion";
-import { ChevronDown, Menu, Stethoscope, X } from "lucide-react";
+import { ArrowUpRight, ChevronDown, LogIn, Menu, Stethoscope, X } from "lucide-react";
 import { cn } from "@/lib/utils";
-import { DOCTORDEKHO_URL } from "@/lib/site";
+import { DOCTORDEKHO_URL, SOFTWARE } from "@/lib/site";
 
 const PRODUCTS = [
   { name: "1HMS", line: "Hospital management & EMR", href: "/solutions/1hms", dot: "bg-[#1ea99b]" },
@@ -45,6 +45,7 @@ export default function Navbar() {
   const [scrolled, setScrolled] = useState(false);
   const [open, setOpen] = useState(false);
   const [productsOpen, setProductsOpen] = useState(false);
+  const [loginOpen, setLoginOpen] = useState(false);
 
   useEffect(() => {
     const onScroll = () => setScrolled(window.scrollY > 8);
@@ -54,7 +55,7 @@ export default function Navbar() {
   }, []);
 
   // Close menus on navigation; lock page scroll while the mobile menu is open.
-  useEffect(() => { setOpen(false); setProductsOpen(false); }, [pathname]);
+  useEffect(() => { setOpen(false); setProductsOpen(false); setLoginOpen(false); }, [pathname]);
   useEffect(() => {
     document.documentElement.style.overflow = open ? "hidden" : "";
     return () => { document.documentElement.style.overflow = ""; };
@@ -148,6 +149,51 @@ export default function Navbar() {
           </div>
 
           <div className="hidden items-center gap-2 lg:flex">
+            {/* Log in: the software itself, for hospitals, radiology centres and patients who already use it. */}
+            <div className="relative" onMouseEnter={() => setLoginOpen(true)} onMouseLeave={() => setLoginOpen(false)}>
+              <button
+                type="button"
+                aria-expanded={loginOpen}
+                aria-haspopup="true"
+                onClick={() => setLoginOpen((v) => !v)}
+                className="flex items-center gap-1.5 whitespace-nowrap rounded-full px-3 py-2 text-[0.95rem] font-medium text-slate-600 transition-colors hover:text-[#0e2343] focus-visible:outline focus-visible:outline-2 focus-visible:outline-[#1ea99b]"
+              >
+                <LogIn className="h-4 w-4" />
+                Log in
+                <ChevronDown className={cn("h-4 w-4 transition-transform duration-200", loginOpen && "rotate-180")} />
+              </button>
+              <AnimatePresence>
+                {loginOpen && (
+                  <motion.div
+                    initial={{ opacity: 0, y: 8 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    exit={{ opacity: 0, y: 6 }}
+                    transition={{ duration: 0.18 }}
+                    className="absolute right-0 top-full w-[19rem] pt-3"
+                  >
+                    <div className="rounded-2xl border border-slate-200/80 bg-white p-2 shadow-[0_24px_60px_-20px_rgba(14,35,67,0.35)]">
+                      <p className="px-3 pb-1 pt-2 text-xs font-semibold uppercase tracking-[0.12em] text-slate-400">Our software</p>
+                      {SOFTWARE.map((s) => (
+                        <a
+                          key={s.href}
+                          href={s.href}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="group flex items-start gap-3 rounded-xl p-3 transition-colors hover:bg-slate-50 focus-visible:outline focus-visible:outline-2 focus-visible:outline-[#1ea99b]"
+                        >
+                          <span className={cn("mt-2 h-2 w-2 shrink-0 rounded-full", s.dot)} />
+                          <span className="flex-1">
+                            <span className="block font-display font-semibold text-[#0e2343]">{s.name}</span>
+                            <span className="block text-sm text-slate-500">{s.line}</span>
+                          </span>
+                          <ArrowUpRight className="mt-1 h-4 w-4 text-slate-400 transition-transform group-hover:-translate-y-0.5 group-hover:translate-x-0.5 group-hover:text-[#12857a]" />
+                        </a>
+                      ))}
+                    </div>
+                  </motion.div>
+                )}
+              </AnimatePresence>
+            </div>
             <a
               href={DOCTORDEKHO_URL}
               aria-label="Find a doctor on Doctor Dekho"
@@ -225,6 +271,18 @@ export default function Navbar() {
                   </Link>
                 </motion.div>
               ))}
+              <motion.p variants={item(reduce)} className="px-1 pb-2 pt-6 text-sm text-slate-500">Log in to our software</motion.p>
+              <div className="grid grid-cols-1 gap-1 sm:grid-cols-3">
+                {SOFTWARE.map((s) => (
+                  <motion.div key={s.href} variants={item(reduce)}>
+                    <a href={s.href} target="_blank" rel="noopener noreferrer" className="flex items-center gap-3 rounded-2xl p-3 active:bg-slate-50">
+                      <span className={cn("h-2 w-2 shrink-0 rounded-full", s.dot)} />
+                      <span className="flex-1 font-display text-lg font-semibold text-[#0e2343]">{s.name}</span>
+                      <ArrowUpRight className="h-4 w-4 text-slate-400" />
+                    </a>
+                  </motion.div>
+                ))}
+              </div>
               <motion.div variants={item(reduce)} className="mt-auto grid gap-3 pt-8 sm:grid-cols-2">
                 <a href={DOCTORDEKHO_URL} className="flex h-14 items-center justify-center gap-2 rounded-full border border-slate-300 font-semibold text-[#12857a]">
                   <Stethoscope className="h-5 w-5" />

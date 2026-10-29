@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { AnimatePresence, motion } from "framer-motion";
 import { Check, Clock, Mail, MapPin, Phone } from "lucide-react";
 import { WHATSAPP } from "@/components/site/PageHero";
@@ -14,6 +14,21 @@ export default function ContactClient() {
   const [form, setForm] = useState({ name: "", phone: "", email: "", hospital: "", city: "", role: ROLES[0], message: "" });
   const [interests, setInterests] = useState<string[]>([]);
   const [state, setState] = useState<"idle" | "sending" | "sent" | "error">("idle");
+
+  // Arriving from a product page's module builder ("Book a demo with these"): tick the product and list the modules.
+  // Read from the address after load (not useSearchParams) so the page stays static.
+  useEffect(() => {
+    try {
+      const q = new URLSearchParams(window.location.search);
+      const product = q.get("product");
+      const modules = q.get("modules");
+      const interest = INTERESTS.find((i) => product && i.toLowerCase().startsWith(product.toLowerCase()));
+      if (interest) setInterests((prev) => (prev.includes(interest) ? prev : [...prev, interest]));
+      if (modules) setForm((f) => (f.message ? f : { ...f, message: `Modules I'd like to see${product ? ` in ${product}` : ""}: ${modules}.` }));
+    } catch {
+      /* ignore */
+    }
+  }, []);
 
   const set = (k: keyof typeof form) => (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) =>
     setForm((f) => ({ ...f, [k]: e.target.value }));
