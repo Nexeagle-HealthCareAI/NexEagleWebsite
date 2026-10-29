@@ -1,211 +1,74 @@
 import type { Metadata } from "next";
-import dynamic from "next/dynamic";
-import { LiquidButton } from "@/components/ui/LiquidButton";
-import { ArrowRight, BrainCircuit, ShieldAlert, Clock, TrendingUp } from "lucide-react";
-import Link from "next/link";
-import AnalyticsTracker from "@/components/AnalyticsTracker";
+import { BarChart3, BedDouble, CalendarClock, FileSignature, FlaskConical, Languages, Mic, Pill, Receipt, ShieldCheck, Stethoscope, BellRing } from "lucide-react";
+import ProductPage, { type ProductConfig } from "@/components/site/ProductPage";
+import { STEPS } from "@/lib/journeySteps";
+import { ScribeDemo } from "@/components/site/ProductDemos";
 
-const HospitalSolutions = dynamic(() => import("@/components/home/HospitalSolutions"), { ssr: false });
-const HMSWorkflowAnimation = dynamic(() => import("@/components/home/HMSWorkflowAnimation"), { ssr: false });
-const DeferredLiveChat = dynamic(() => import("@/components/DeferredLiveChat"), { ssr: false });
+const TITLE = "Hospital Management Software (HMS) & EMR for Indian Hospitals | 1HMS by NexEagle";
+const DESCRIPTION =
+  "1HMS is hospital management software and EMR for hospitals, nursing homes and clinics in India: OPD, IPD, e-prescriptions, AI voice scribe, lab and radiology orders, pharmacy and billing. English and Hindi, set up on site.";
 
 export const metadata: Metadata = {
-  title: "1HMS - Complete Hospital Management System & EMR Software",
-  description: "NexEagle's 1HMS is a comprehensive Hospital Management System with NABH documentation support, featuring automated workflows, AI voice scribing, EMR/EHR, and 15+ integrated modules.",
-  keywords: [
-    "hospital management system",
-    "HMS software",
-    "electronic medical records",
-    "EMR",
-    "EHR",
-    "clinical workflow automation",
-    "NexEagle",
-    "NABH compliance",
-    "hospital ERP"
+  title: { absolute: TITLE },
+  description: DESCRIPTION,
+  keywords: ["hospital management software", "hospital management system India", "HMS for small hospitals", "HMIS", "EMR software India", "OPD management software", "IPD management", "hospital billing software", "AI voice scribe", "e-prescription software", "nursing home software", "hospital software Bihar"],
+  alternates: { canonical: "/solutions/1hms" },
+  openGraph: { title: TITLE, description: DESCRIPTION, url: "/solutions/1hms", images: [{ url: "/og/home.png", width: 1200, height: 630 }] },
+};
+
+const c: ProductConfig = {
+  slug: "1hms",
+  name: "1HMS",
+  category: "Hospital management software & EMR",
+  dot: "bg-[#1ea99b]",
+  pose: { src: "/assets/vita/vita-coffee.webp", w: 538, h: 640, alt: "1HMS Vita with a cup of coffee" },
+  h1: "Hospital management software that does the paperwork for you",
+  sub: "OPD, IPD, prescriptions, lab and radiology orders, pharmacy and billing on one patient record. 1HMS Vita handles the typing, so your doctors and staff spend their time on patients.",
+  points: ["Set up and taught on site", "English and Hindi", "Data hosted in India"],
+  agentTitle: "1HMS Vita",
+  demo: <ScribeDemo />,
+  modulesTitle: "Everything a hospital day needs, in one place",
+  modulesIntro: "Start with OPD and billing, and switch on IPD, lab, radiology and pharmacy when you are ready. Every module shares the same patient record.",
+  modules: [
+    { Icon: CalendarClock, title: "OPD and appointments", body: "Online and walk-in bookings, OPD tokens and a live queue screen for your waiting area." },
+    { Icon: Mic, title: "AI voice scribe", body: "1HMS Vita listens to the consultation and drafts notes and the prescription for the doctor to sign." },
+    { Icon: FileSignature, title: "EMR and e-prescriptions", body: "Clear digital prescriptions the patient receives by SMS or WhatsApp, with every visit in one history." },
+    { Icon: BedDouble, title: "IPD and wards", body: "Admissions, beds, ward care and discharge summaries, on the same record as the OPD visit." },
+    { Icon: Receipt, title: "Billing and insurance", body: "One bill per patient that collects every service automatically, including insurance and TPA billing." },
+    { Icon: FlaskConical, title: "Lab and radiology orders", body: "Orders go straight to 1Lab and 1Rad, and results come back into the patient record." },
+    { Icon: Pill, title: "Pharmacy", body: "Prescriptions reach 1Pharma before the patient does, and sales land on the right bill." },
+    { Icon: BellRing, title: "Follow-up reminders", body: "Automatic reminders for follow-ups, tests and reviews, so fewer patients miss their next visit." },
+    { Icon: BarChart3, title: "Reports", body: "Daily OPD count, doctor-wise patients, collections and trends, without building spreadsheets." },
+    { Icon: ShieldCheck, title: "A login for every role", body: "Reception, doctors, nurses, billing and admin each see only what they need, with a full audit trail." },
+    { Icon: Languages, title: "English and Hindi", body: "Staff can work in the language they are comfortable with. Training is given in either." },
+    { Icon: Stethoscope, title: "NABH documentation support", body: "Records, checklists and audit trails that help you prepare for NABH accreditation." },
   ],
+  stepsTitle: "How a patient moves through 1HMS",
+  stepsIntro: "At each counter, 1HMS Vita takes what comes in and hands your team something ready to use.",
+  steps: [STEPS[0], STEPS[1], STEPS[4]],
+  worksWith: [
+    { name: "1Rad", href: "/solutions/1rad", line: "Cloud PACS with AI-drafted radiology reports" },
+    { name: "1Lab", href: "/solutions/1lab", line: "Samples tracked from collection to approved result" },
+    { name: "1Pharma", href: "/solutions/1pharma", line: "Prescriptions, stock and expiry in one counter" },
+    { name: "Doctor Dekho", href: "https://doctordekho.nexeagle.com", line: "Patients find you, book and arrive with their details" },
+  ],
+  faq: [
+    { q: "Is 1HMS suitable for small hospitals and nursing homes?", a: "Yes. 1HMS is built for small and mid-sized hospitals, nursing homes and clinics in India. You can start with OPD and billing and add IPD, lab, radiology and pharmacy as you grow." },
+    { q: "Does the AI write prescriptions without the doctor?", a: "No. 1HMS Vita drafts notes and the prescription from the consultation, but the doctor always reviews, edits and signs before anything reaches the patient." },
+    { q: "Can my staff use 1HMS in Hindi?", a: "Yes. 1HMS works in English and Hindi, and we train your staff in either language." },
+    { q: "How do patients get their prescription?", a: "Once the doctor signs, the prescription can be printed, downloaded or sent to the patient by SMS or WhatsApp." },
+    { q: "Do you help us set it up?", a: "Yes. Our team visits your hospital, configures doctors, services and rates, brings in your existing data, trains every role on site and supports you after go-live." },
+    { q: "Does 1HMS help with NABH?", a: "1HMS keeps the records, checklists and audit trails that NABH assessors look for, which makes preparing for accreditation easier. Accreditation itself is granted to the hospital by NABH." },
+    { q: "Where is our data stored?", a: "Clinical and billing data is hosted in India, handled in line with the DPDP Act 2023, and protected with role-based access, encryption and an audit trail." },
+  ],
+  schema: {
+    name: "NexEagle 1HMS",
+    category: "Hospital management system (HMS), EMR",
+    description: DESCRIPTION,
+  },
+  analyticsTitle: "1HMS - Hospital Management System | NexEagle",
 };
 
-const structuredData = {
-  "@context": "https://schema.org",
-  "@graph": [
-    {
-      "@type": "SoftwareApplication",
-      "@id": "https://nexeagle.com/solutions/1hms#software",
-      "name": "1HMS - Hospital Management System",
-      "url": "https://nexeagle.com/solutions/1hms",
-      "publisher": {
-        "@type": "Organization",
-        "name": "NexEagle",
-        "url": "https://nexeagle.com"
-      },
-      "applicationCategory": "HealthApplication, BusinessApplication",
-      "operatingSystem": "Web, Cloud-based",
-      "description": "AI-powered hospital software with NABH documentation support, voice scribe, and 15+ integrated modules.",
-      "featureList": [
-        "AI Voice Scribe & Auto-EMR Charting",
-        "OPD & IPD Management",
-        "1Lab Diagnostics Integration",
-        "1Rad DICOM PACS Integration",
-        "Auto-Billing & Revenue Cycle Management",
-        "NABH Documentation Support"
-      ],
-      "offers": {
-        "@type": "Offer",
-        "url": "https://nexeagle.com/solutions/1hms",
-        "price": "0",
-        "priceCurrency": "INR",
-        "description": "Free demo available upon request. Contact sales for customized deployment pricing."
-      }
-    },
-    {
-      "@type": "WebPage",
-      "@id": "https://nexeagle.com/solutions/1hms#webpage",
-      "url": "https://nexeagle.com/solutions/1hms",
-      "name": "1HMS - Hospital Management System | NexEagle",
-      "description": "Comprehensive, AI-powered Hospital Management System (HMS) with NABH documentation support, ambient AI voice scribing, and 15+ clinical modules.",
-      "isPartOf": {
-        "@id": "https://nexeagle.com/#website"
-      }
-    }
-  ]
-};
-
-export default function OneHMSPage() {
-  return (
-    <main className="pt-24 relative z-10">
-      <script
-        type="application/ld+json"
-        dangerouslySetInnerHTML={{ __html: JSON.stringify(structuredData) }}
-      />
-      <AnalyticsTracker title="1HMS - Hospital Management System | NexEagle" />
-      
-      {/* Background Image with Faint Watermark Overlay */}
-      <div 
-        className="absolute inset-0 bg-[url('/assets/modern_hospital_bg.webp')] bg-cover bg-center bg-no-repeat pointer-events-none z-0 opacity-[0.06]"
-      />
-
-      {/* Hero Section */}
-      <section className="py-16 md:py-24 relative overflow-hidden">
-        <div className="container px-6 md:px-8 lg:px-12 text-center max-w-4xl mx-auto space-y-8">
-          <h1 className="text-4xl md:text-6xl font-bold text-foreground tracking-tight leading-tight">
-            <span className="text-transparent bg-clip-text bg-gradient-to-r from-brand-teal to-brand-sky">1HMS</span> - Complete Hospital Management
-          </h1>
-          <p className="text-lg md:text-xl text-muted-foreground font-light max-w-2xl mx-auto">
-            AI-powered hospital software with NABH documentation support, voice scribe, and 15+ integrated modules.
-          </p>
-          <div className="flex justify-center gap-4 pt-4">
-            <Link href="/contact" id="onehms-hero-demo-link">
-              <LiquidButton size="lg" id="onehms-hero-demo-button">
-                Book Free Demo <ArrowRight className="w-5 h-5 ml-2" />
-              </LiquidButton>
-            </Link>
-          </div>
-        </div>
-      </section>
-
-      {/* Research & Science-Backed Impact Section */}
-      <section className="py-16 bg-white relative overflow-hidden">
-        <div className="container mx-auto px-6 md:px-8 lg:px-12 relative z-10">
-          <div className="text-center max-w-3xl mx-auto mb-16 space-y-4">
-            <span className="text-xs uppercase font-extrabold text-brand-teal tracking-widest bg-brand-teal/5 px-3 py-1 rounded-full">
-              Research-Backed Healthcare Transformation
-            </span>
-            <h2 className="text-3xl md:text-5xl font-bold text-slate-900 tracking-tight">
-              The Science of <span className="text-transparent bg-clip-text bg-gradient-to-r from-brand-teal to-brand-sky">Unified Care</span>
-            </h2>
-            <p className="text-base md:text-lg text-slate-600 font-light max-w-2xl mx-auto">
-              Peer-reviewed medical informatics research confirms that integrating EMR, PACS, and automated workflow systems dramatically improves clinical outcomes, reduces provider fatigue, and prevents life-threatening errors.
-            </p>
-          </div>
-
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-8 max-w-5xl mx-auto">
-            {/* Card 1: AI Voice Scribing & Charting Burden */}
-            <div className="bg-slate-50 border border-slate-200/80 rounded-2xl p-6 md:p-8 hover:shadow-lg hover:border-brand-teal/40 hover:-translate-y-1 transition-all duration-300 flex flex-col justify-between">
-              <div className="space-y-4">
-                <div className="w-12 h-12 rounded-xl bg-brand-teal/10 flex items-center justify-center text-brand-teal">
-                  <BrainCircuit className="w-6 h-6" />
-                </div>
-                <h3 className="text-xl font-bold text-slate-900">50% Reduction in Documentation Load</h3>
-                <p className="text-sm text-slate-600 font-light leading-relaxed">
-                  Clinical studies show ambient generative AI scribes automatically draft accurate clinical notes from doctor-patient speech, reclaiming up to 2.5 hours per day for direct care while mitigating physician burnout.
-                </p>
-              </div>
-              <div className="mt-6 pt-4 border-t border-slate-200/60 text-[11px] text-slate-500 font-medium">
-                <span className="text-brand-teal font-semibold">Evidence:</span> &quot;Ambient AI Scribes in Primary Care&quot;, <em>JAMA Network Open</em>, 2024.
-              </div>
-            </div>
-
-            {/* Card 2: Eliminating Communication & Medical Errors */}
-            <div className="bg-slate-50 border border-slate-200/80 rounded-2xl p-6 md:p-8 hover:shadow-lg hover:border-brand-sky/40 hover:-translate-y-1 transition-all duration-300 flex flex-col justify-between">
-              <div className="space-y-4">
-                <div className="w-12 h-12 rounded-xl bg-brand-sky/10 flex items-center justify-center text-brand-sky">
-                  <ShieldAlert className="w-6 h-6" />
-                </div>
-                <h3 className="text-xl font-bold text-slate-900">Prevention of Adverse Medical Errors</h3>
-                <p className="text-sm text-slate-600 font-light leading-relaxed">
-                  Siloed systems are responsible for critical information gaps. A fully unified hospital database prevents transcription errors, mismatch of laboratory/imaging orders, and drug interaction risks.
-                </p>
-              </div>
-              <div className="mt-6 pt-4 border-t border-slate-200/60 text-[11px] text-slate-500 font-medium">
-                <span className="text-brand-sky font-semibold">Evidence:</span> &quot;Communication Failures &amp; Diagnostic Safety&quot;, <em>The Joint Commission Journal on Quality and Safety</em>.
-              </div>
-            </div>
-
-            {/* Card 3: Streamlining Diagnostic Turnaround */}
-            <div className="bg-slate-50 border border-slate-200/80 rounded-2xl p-6 md:p-8 hover:shadow-lg hover:border-brand-sky/40 hover:-translate-y-1 transition-all duration-300 flex flex-col justify-between">
-              <div className="space-y-4">
-                <div className="w-12 h-12 rounded-xl bg-brand-sky/10 flex items-center justify-center text-brand-sky">
-                  <Clock className="w-6 h-6" />
-                </div>
-                <h3 className="text-xl font-bold text-slate-900">40% Faster Diagnostic Turnaround Time</h3>
-                <p className="text-sm text-slate-600 font-light leading-relaxed">
-                  Integrating EMR directly with LIS (1Lab) and PACS (1Rad) eliminates delayed manual report entry. Immediate image loading and barcode-driven laboratory systems result in significantly faster treatment starts.
-                </p>
-              </div>
-              <div className="mt-6 pt-4 border-t border-slate-200/60 text-[11px] text-slate-500 font-medium">
-                <span className="text-brand-sky font-semibold">Evidence:</span> &quot;Workflow Automation through Integrated PACS &amp; EHRs&quot;, <em>Journal of Medical Systems</em>, 2023.
-              </div>
-            </div>
-
-            {/* Card 4: Automated Revenue Cycle Management */}
-            <div className="bg-slate-50 border border-slate-200/80 rounded-2xl p-6 md:p-8 hover:shadow-lg hover:border-brand-teal/40 hover:-translate-y-1 transition-all duration-300 flex flex-col justify-between">
-              <div className="space-y-4">
-                <div className="w-12 h-12 rounded-xl bg-brand-teal/10 flex items-center justify-center text-brand-teal">
-                  <TrendingUp className="w-6 h-6" />
-                </div>
-                <h3 className="text-xl font-bold text-slate-900">25% Reduction in Claim Denial Rates</h3>
-                <p className="text-sm text-slate-600 font-light leading-relaxed">
-                  By auto-compiling charging items directly from inpatient wards (IPD), labs, and diagnostics into a unified ledger, hospitals eliminate billing leaks, optimize pricing structures, and secure pre-auth approvals.
-                </p>
-              </div>
-              <div className="mt-6 pt-4 border-t border-slate-200/60 text-[11px] text-slate-500 font-medium">
-                <span className="text-brand-teal font-semibold">Evidence:</span> &quot;Efficacy of Automated AI Coding in Inpatient Billing Systems&quot;, <em>Health Affairs Scholars</em>, 2024.
-              </div>
-            </div>
-          </div>
-        </div>
-      </section>
-
-      {/* Integration Ecosystem Animation Section */}
-      <section className="py-16 bg-slate-50 border-y border-slate-200/60 overflow-hidden">
-        <div className="container mx-auto px-6 md:px-8 lg:px-12">
-          <div className="text-center mb-8 max-w-2xl mx-auto space-y-4">
-            <h2 className="text-3xl md:text-4xl font-bold text-slate-900 tracking-tight">
-              Unified Healthcare Ecosystem
-            </h2>
-            <p className="text-sm md:text-base text-slate-500 font-light max-w-xl mx-auto">
-              Discover how 1HMS connects OPD, IPD, and Billing, with fully integrated diagnostics through 1Lab and 1Rad PACS.
-            </p>
-          </div>
-          
-          <HMSWorkflowAnimation />
-        </div>
-      </section>
-
-      {/* Content Section */}
-      <HospitalSolutions />
-
-      <DeferredLiveChat />
-    </main>
-  );
+export default function Page() {
+  return <ProductPage c={c} />;
 }

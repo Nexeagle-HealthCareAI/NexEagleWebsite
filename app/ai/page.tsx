@@ -1,144 +1,158 @@
 import type { Metadata } from "next";
-import dynamic from "next/dynamic";
-import { BrainCircuit, Activity, FileText, Sparkles } from "lucide-react";
+import Image from "next/image";
+import Link from "next/link";
+import { Check, FileCheck2, History, MapPin, PenLine, UserCheck, Workflow, X } from "lucide-react";
+import AgentsSection from "@/components/home-v2/AgentsSection";
+import HomeFAQ from "@/components/home-v2/HomeFAQ";
+import { ClosingCTA } from "@/components/home-v2/Sections";
 import AnalyticsTracker from "@/components/AnalyticsTracker";
+import { Reveal, Float } from "@/components/site/Motion";
+import { FlyingVita } from "@/components/home-v2/FlyingVita";
+import { SITE_URL } from "@/lib/site";
 
-const WatchNexEagleAIWork = dynamic(() => import("@/components/ai/WatchNexEagleAIWork"), { ssr: false });
+const TITLE = "Vita AI Agents for Hospitals in India: AI Scribe, AI Radiology Reports | NexEagle AI";
+const DESCRIPTION =
+  "Vita is NexEagle's family of healthcare AI agents: symptom-based doctor matching and booking for patients, an AI scribe and workflow automation in 1HMS, and AI vision analysis with drafted radiology reports in 1Rad. A clinician always signs.";
 
 export const metadata: Metadata = {
-  title: "NexEagle AI - Intelligent Healthcare Automation",
-  description: "Experience the future of radiology with NexEagle's AI Voice-to-Report and predictive healthcare analytics.",
+  title: { absolute: TITLE },
+  description: DESCRIPTION,
+  keywords: ["AI agents for hospitals", "healthcare AI India", "AI medical scribe", "AI voice scribe for doctors", "AI radiology report", "AI in hospital management", "symptom checker doctor booking", "Vita AI agent"],
+  alternates: { canonical: "/ai" },
+  openGraph: { title: TITLE, description: DESCRIPTION, url: "/ai", images: [{ url: "/og/home.png", width: 1200, height: 630 }] },
 };
 
-export default function NexEagleAIPage() {
+const RULES = [
+  { Icon: PenLine, title: "A clinician signs", body: "Notes, prescriptions and reports drafted by Vita are never released until a doctor or radiologist approves them." },
+  { Icon: FileCheck2, title: "Drafts look like drafts", body: "Everything Vita writes is clearly marked as a draft, so nobody mistakes it for a signed record." },
+  { Icon: History, title: "Every action is logged", body: "What Vita did, when, and who approved it is kept in the audit trail." },
+  { Icon: UserCheck, title: "Your roles, your rules", body: "Vita only works with the data each role is allowed to see." },
+  { Icon: MapPin, title: "Data stays in India", body: "Patient data is hosted in India and handled in line with the DPDP Act 2023." },
+  { Icon: Workflow, title: "Inside your workflow", body: "Vita works inside 1HMS, 1Rad and Doctor Dekho. Your staff do not learn a new tool." },
+];
+
+const DOES = [
+  "Matches a patient's symptoms to the right kind of doctor",
+  "Books appointments and sends confirmations",
+  "Drafts notes and prescriptions from the consultation",
+  "Routes orders to lab, radiology and pharmacy",
+  "Marks regions on a scan that need a closer look",
+  "Drafts structured radiology reports",
+  "Keeps bills, queues and reminders up to date",
+];
+const DOESNT = [
+  "Diagnose or treat patients on its own",
+  "Sign or release a report or prescription",
+  "Replace your doctors, radiologists or staff",
+  "Share patient data outside your hospital's systems",
+];
+
+const FAQ_AI = [
+  { q: "What is Vita?", a: "Vita is NexEagle's family of AI agents. Vita for patients helps people find the right doctor, book and reach the clinic. 1HMS Vita automates hospital work such as check-in, notes, orders and billing. 1Rad Vita analyses scans and drafts radiology reports." },
+  { q: "Is Vita safe to use with patients?", a: "Vita prepares drafts and does the routine work, while doctors and radiologists make every clinical decision and sign every record. All actions are logged, and data is hosted in India." },
+  { q: "How does the AI scribe work?", a: "With the patient's consent, 1HMS Vita listens to the consultation and drafts the case notes and prescription. The doctor reviews, edits and signs before anything is sent to the patient." },
+  { q: "What does 1Rad Vita do with a scan?", a: "It runs AI vision analysis on the study, marks regions that need a closer look and prepares a structured first-draft report. The radiologist reviews, edits and signs it." },
+  { q: "Do we need to change how our hospital works?", a: "No. Vita works inside the NexEagle products your staff already use, and our team sets it up around your current workflow." },
+];
+
+export default function Page() {
+  const jsonLd = {
+    "@context": "https://schema.org",
+    "@type": "FAQPage",
+    "@id": `${SITE_URL}/ai#faq`,
+    mainEntity: FAQ_AI.map((f) => ({ "@type": "Question", name: f.q, acceptedAnswer: { "@type": "Answer", text: f.a } })),
+  };
   return (
-    <main className="pt-24 pb-16">
-      <AnalyticsTracker title="NexEagle AI Showcase" />
+    <main>
+      <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }} />
+      <AnalyticsTracker title="NexEagle AI - Vita AI agents" />
 
-      {/* Hero Section */}
-      <section className="py-16 md:py-24 relative overflow-hidden">
-        <div className="absolute top-0 inset-x-0 h-[500px] bg-gradient-to-b from-brand-sky/10 to-transparent pointer-events-none"></div>
-        
-        <div className="container px-6 md:px-8 lg:px-12 text-center max-w-4xl mx-auto space-y-8 relative z-10">
-          <h1 className="text-4xl sm:text-5xl md:text-7xl font-bold tracking-tight text-foreground leading-[1.1]">
-            <span className="text-transparent bg-clip-text bg-gradient-to-r from-brand-teal via-brand-sky to-brand-iris">NexEagle AI</span>
-          </h1>
-          
-          <p className="text-lg sm:text-xl text-muted-foreground max-w-2xl mx-auto">
-            Transform the way your hospital operates. Our AI analyzes voice dictations, creates instant reports, and powers predictive clinical decisions.
-          </p>
-        </div>
-      </section>
-
-      {/* Why Use AI in Hospital Workflows Section */}
-      <section className="py-16 bg-slate-50 border-y border-slate-200/60 overflow-hidden">
-        <div className="container mx-auto px-6 md:px-8 lg:px-12 relative z-10">
-          <div className="text-center max-w-3xl mx-auto mb-16 space-y-4">
-            <h2 className="text-3xl md:text-5xl font-bold text-slate-900 tracking-tight">
-              Why Integrate AI in <span className="text-transparent bg-clip-text bg-gradient-to-r from-brand-teal to-brand-sky">Hospital Workflows?</span>
-            </h2>
-            <p className="text-base md:text-lg text-slate-600 font-light max-w-2xl mx-auto">
-              Research shows that clinical workflows are bottlenecked by heavy manual documentation, operational administration, and severe clinician burnout. AI transforms hospital management from reactive to predictive.
+      {/* Hero */}
+      <section className="relative -mt-[4.5rem] overflow-hidden pt-[4.5rem]" aria-labelledby="ai-title">
+        <div aria-hidden className="pointer-events-none absolute inset-0 bg-[radial-gradient(50%_60%_at_78%_45%,rgba(138,111,224,0.14),transparent_70%),radial-gradient(40%_50%_at_60%_80%,hsl(var(--brand-teal)/0.12),transparent_70%)]" />
+        <div className="relative mx-auto grid max-w-[1320px] items-center gap-10 px-5 pb-16 pt-10 sm:px-8 lg:grid-cols-12 lg:px-12 lg:pb-20 lg:pt-16">
+          <Reveal className="lg:col-span-6">
+            <p className="text-[0.95rem] font-medium text-[#6d50cf]">NexEagle AI</p>
+            <h1 id="ai-title" className="mt-4 font-display text-[2.5rem] font-semibold leading-[1.02] tracking-[-0.035em] text-[#0e2343] sm:text-[3.4rem] xl:text-[3.9rem]">
+              Meet Vita, the AI that does the busywork in healthcare
+            </h1>
+            <p className="mt-5 max-w-[34rem] text-lg leading-relaxed text-slate-600">
+              Vita is a family of AI agents that work alongside your doctors and staff. It drafts, routes, reminds and checks, and leaves every clinical decision to the people who should make it.
             </p>
-          </div>
-
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-8 max-w-5xl mx-auto">
-            {/* Card 1: Burnout Reduction */}
-            <div className="bg-white border border-slate-200/80 rounded-2xl p-6 md:p-8 hover:shadow-xl hover:shadow-brand-teal/5 hover:border-brand-teal/40 hover:-translate-y-1 transition-all duration-300 flex flex-col justify-between relative overflow-hidden group">
-              <div className="space-y-4 relative z-10">
-                <div className="flex items-start justify-between">
-                  <div className="w-12 h-12 rounded-xl bg-brand-teal/10 flex items-center justify-center text-brand-teal group-hover:scale-110 transition-transform">
-                    <BrainCircuit className="w-6 h-6" />
-                  </div>
-                  <div className="flex flex-col items-end text-right">
-                    <span className="text-4xl font-extrabold text-transparent bg-clip-text bg-gradient-to-br from-brand-teal to-brand-sky">50%</span>
-                    <span className="text-[10px] font-bold uppercase tracking-wider text-slate-400 mt-1">Less Charting</span>
-                  </div>
-                </div>
-                <h3 className="text-xl font-bold text-slate-900">Combating Clinical Burnout</h3>
-                <p className="text-sm text-slate-600 font-light leading-relaxed">
-                  By converting verbal patient-doctor conversations directly into structured EMR data, clinical AI eliminates the manual &quot;typing tax&quot;, significantly reducing charting work and restoring joy to practice.
-                </p>
-              </div>
-              <div className="mt-6 pt-4 border-t border-slate-200/60 text-[11px] text-slate-500 font-medium relative z-10">
-                <span className="text-brand-teal font-semibold">Evidence:</span> &quot;The EHR Typing Tax &amp; Provider Burnout&quot;, <em>Annals of Internal Medicine</em>.
-              </div>
-              <div className="absolute -right-12 -top-12 w-48 h-48 bg-brand-teal/5 rounded-full blur-3xl group-hover:bg-brand-teal/10 transition-colors pointer-events-none"></div>
+            <div className="mt-8 flex flex-col gap-3 sm:flex-row">
+              <Link href="/contact" className="inline-flex h-[3.25rem] items-center justify-center rounded-full bg-[#0e2343] px-7 font-semibold text-white hover:bg-[#13305c]">See Vita in a demo</Link>
+              <a href="#agents" className="inline-flex h-[3.25rem] items-center justify-center rounded-full border border-slate-300 bg-white/70 px-7 font-semibold text-[#0e2343] hover:border-[#0e2343]">Meet the three agents</a>
             </div>
-
-            {/* Card 2: Clinical Error Prevention */}
-            <div className="bg-white border border-slate-200/80 rounded-2xl p-6 md:p-8 hover:shadow-xl hover:shadow-brand-sky/5 hover:border-brand-sky/40 hover:-translate-y-1 transition-all duration-300 flex flex-col justify-between relative overflow-hidden group">
-              <div className="space-y-4 relative z-10">
-                <div className="flex items-start justify-between">
-                  <div className="w-12 h-12 rounded-xl bg-brand-sky/10 flex items-center justify-center text-brand-sky group-hover:scale-110 transition-transform">
-                    <Activity className="w-6 h-6" />
-                  </div>
-                  <div className="flex flex-col items-end text-right">
-                    <span className="text-4xl font-extrabold text-transparent bg-clip-text bg-gradient-to-br from-brand-sky to-brand-iris">24/7</span>
-                    <span className="text-[10px] font-bold uppercase tracking-wider text-slate-400 mt-1">Safety Net</span>
-                  </div>
-                </div>
-                <h3 className="text-xl font-bold text-slate-900">Reducing Diagnostic & Prescription Errors</h3>
-                <p className="text-sm text-slate-600 font-light leading-relaxed">
-                  AI co-pilots act as real-time safety nets. By cross-referencing patient records, lab values, and radiological findings, clinical algorithms instantly flag adverse drug events and subtle diagnostic oversights.
-                </p>
-              </div>
-              <div className="mt-6 pt-4 border-t border-slate-200/60 text-[11px] text-slate-500 font-medium relative z-10">
-                <span className="text-brand-sky font-semibold">Evidence:</span> &quot;Clinical Decision Support Systems for Safety&quot;, <em>Journal of Patient Safety</em>.
-              </div>
-              <div className="absolute -right-12 -top-12 w-48 h-48 bg-brand-sky/5 rounded-full blur-3xl group-hover:bg-brand-sky/10 transition-colors pointer-events-none"></div>
-            </div>
-
-            {/* Card 3: Intelligent Triage */}
-            <div className="bg-white border border-slate-200/80 rounded-2xl p-6 md:p-8 hover:shadow-xl hover:shadow-brand-sky/5 hover:border-brand-sky/40 hover:-translate-y-1 transition-all duration-300 flex flex-col justify-between relative overflow-hidden group">
-              <div className="space-y-4 relative z-10">
-                <div className="flex items-start justify-between">
-                  <div className="w-12 h-12 rounded-xl bg-brand-sky/10 flex items-center justify-center text-brand-sky group-hover:scale-110 transition-transform">
-                    <Sparkles className="w-6 h-6" />
-                  </div>
-                  <div className="flex flex-col items-end text-right">
-                    <span className="text-4xl font-extrabold text-transparent bg-clip-text bg-gradient-to-br from-brand-sky to-brand-iris">30%</span>
-                    <span className="text-[10px] font-bold uppercase tracking-wider text-slate-400 mt-1">Faster Triage</span>
-                  </div>
-                </div>
-                <h3 className="text-xl font-bold text-slate-900">Accelerated Patient Triage</h3>
-                <p className="text-sm text-slate-600 font-light leading-relaxed">
-                  Automated scan sweeps instantly flag acute emergencies (like stroke signs or critical nodules) and prioritize them on radiologist worklists, dramatically reducing critical patient time-to-treatment.
-                </p>
-              </div>
-              <div className="mt-6 pt-4 border-t border-slate-200/60 text-[11px] text-slate-500 font-medium relative z-10">
-                <span className="text-brand-sky font-semibold">Evidence:</span> &quot;AI-Driven Clinical Triage in Emergency Radiology&quot;, <em>Academic Radiology</em>.
-              </div>
-              <div className="absolute -right-12 -top-12 w-48 h-48 bg-brand-sky/5 rounded-full blur-3xl group-hover:bg-brand-sky/10 transition-colors pointer-events-none"></div>
-            </div>
-
-            {/* Card 4: Administrative Speed */}
-            <div className="bg-white border border-slate-200/80 rounded-2xl p-6 md:p-8 hover:shadow-xl hover:shadow-brand-teal/5 hover:border-brand-teal/40 hover:-translate-y-1 transition-all duration-300 flex flex-col justify-between relative overflow-hidden group">
-              <div className="space-y-4 relative z-10">
-                <div className="flex items-start justify-between">
-                  <div className="w-12 h-12 rounded-xl bg-brand-teal/10 flex items-center justify-center text-brand-teal group-hover:scale-110 transition-transform">
-                    <FileText className="w-6 h-6" />
-                  </div>
-                  <div className="flex flex-col items-end text-right">
-                    <span className="text-4xl font-extrabold text-transparent bg-clip-text bg-gradient-to-br from-brand-teal to-brand-sky">20%</span>
-                    <span className="text-[10px] font-bold uppercase tracking-wider text-slate-400 mt-1">Faster Discharge</span>
-                  </div>
-                </div>
-                <h3 className="text-xl font-bold text-slate-900">Optimized Discharge & Throughput</h3>
-                <p className="text-sm text-slate-600 font-light leading-relaxed">
-                  AI auto-compiles clinical discharge notes and structures inpatient summaries, heavily reducing insurer pre-authorization delays and actively speeding up hospital discharge operations.
-                </p>
-              </div>
-              <div className="mt-6 pt-4 border-t border-slate-200/60 text-[11px] text-slate-500 font-medium relative z-10">
-                <span className="text-brand-teal font-semibold">Evidence:</span> &quot;Natural Language Processing in Discharge Summaries&quot;, <em>BMC Medical Informatics</em>.
-              </div>
-              <div className="absolute -right-12 -top-12 w-48 h-48 bg-brand-teal/5 rounded-full blur-3xl group-hover:bg-brand-teal/10 transition-colors pointer-events-none"></div>
-            </div>
+          </Reveal>
+          <div className="relative mx-auto w-full max-w-[560px] lg:col-span-6">
+            <Float>
+              <Image src="/assets/vita/vita-happy.webp" alt="Vita, NexEagle's AI agent, with wings open" width={1006} height={760} priority sizes="(min-width: 1024px) 560px, 90vw" className="h-auto w-full drop-shadow-[0_30px_40px_rgba(14,35,67,0.22)]" />
+            </Float>
           </div>
         </div>
       </section>
 
-      <WatchNexEagleAIWork />
+      <AgentsSection />
+
+      {/* Safety rules */}
+      <section className="bg-[#0e2343] py-20 text-white sm:py-28" aria-labelledby="rules-title">
+        <div className="mx-auto max-w-[1320px] px-5 sm:px-8 lg:px-12">
+          <div className="grid items-end gap-8 lg:grid-cols-12">
+            <h2 id="rules-title" className="font-display text-[2.2rem] font-semibold leading-[1.04] tracking-[-0.03em] text-white sm:text-5xl lg:col-span-7">
+              The rules Vita works by
+            </h2>
+            <p className="text-lg leading-relaxed text-slate-300 lg:col-span-5">AI in a hospital has to earn trust. These rules are built into every Vita agent, not added as an afterthought.</p>
+          </div>
+          <ul className="mt-14 grid gap-x-10 gap-y-10 sm:grid-cols-2 lg:grid-cols-3">
+            {RULES.map(({ Icon, title, body }, i) => (
+              <Reveal as="li" key={title} delay={(i % 3) * 0.06} className="border-t border-white/15 pt-6">
+                <Icon className="h-6 w-6 text-[#4fd1c1]" />
+                <h3 className="mt-4 font-display text-lg font-semibold text-white">{title}</h3>
+                <p className="mt-1.5 leading-relaxed text-slate-300">{body}</p>
+              </Reveal>
+            ))}
+          </ul>
+        </div>
+      </section>
+
+      {/* Does / doesn't */}
+      <section className="bg-white py-20 sm:py-28" aria-labelledby="dd-title">
+        <div className="mx-auto max-w-[1180px] px-5 sm:px-8 lg:px-12">
+          <h2 id="dd-title" className="max-w-2xl font-display text-[2.2rem] font-semibold leading-[1.04] tracking-[-0.03em] text-[#0e2343] sm:text-5xl">What Vita does, and what it never does</h2>
+          <div className="mt-12 grid gap-6 lg:grid-cols-2">
+            <Reveal className="rounded-[1.75rem] bg-[#1ea99b]/[0.07] p-7 sm:p-9">
+              <p className="font-display text-xl font-semibold text-[#12857a]">Vita does</p>
+              <ul className="mt-5 space-y-3">
+                {DOES.map((d) => (
+                  <li key={d} className="flex items-start gap-3 text-[#0e2343]">
+                    <span className="mt-0.5 grid h-5 w-5 shrink-0 place-items-center rounded-full bg-[#1ea99b] text-white"><Check className="h-3 w-3" strokeWidth={3.5} /></span>
+                    {d}
+                  </li>
+                ))}
+              </ul>
+            </Reveal>
+            <Reveal delay={0.1} className="relative overflow-hidden rounded-[1.75rem] bg-slate-50 p-7 sm:p-9">
+              <p className="font-display text-xl font-semibold text-[#0e2343]">Vita never</p>
+              <ul className="mt-5 space-y-3">
+                {DOESNT.map((d) => (
+                  <li key={d} className="flex items-start gap-3 text-[#0e2343]">
+                    <span className="mt-0.5 grid h-5 w-5 shrink-0 place-items-center rounded-full bg-rose-100 text-rose-600"><X className="h-3 w-3" strokeWidth={3.5} /></span>
+                    {d}
+                  </li>
+                ))}
+              </ul>
+              <div className="pointer-events-none absolute -bottom-6 -right-4 w-[200px] opacity-95 sm:w-[240px]">
+                <div style={{ transform: "scaleX(-1)" }}>
+                  <FlyingVita mode="glide" />
+                </div>
+              </div>
+            </Reveal>
+          </div>
+        </div>
+      </section>
+
+      <HomeFAQ items={FAQ_AI} title="Questions about Vita" intro="How Vita works, and how it keeps clinicians in charge." />
+      <ClosingCTA />
     </main>
   );
 }

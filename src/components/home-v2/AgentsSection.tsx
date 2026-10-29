@@ -10,7 +10,7 @@ import { avatarFor } from "./VitaPanels";
 
 const ease = [0.22, 1, 0.36, 1] as const;
 
-type Log = { t: string; a: string };
+export type Log = { t: string; a: string };
 
 const AGENTS = [
   {
@@ -67,7 +67,7 @@ const TONE = {
   sky: { chip: "bg-sky-50 text-sky-700", dot: "bg-[#1599db]" },
 } as const;
 
-function AgentCard({ title, children }: { title: string; children: React.ReactNode }) {
+export function AgentCard({ title, children }: { title: string; children: React.ReactNode }) {
   return (
     <div className="overflow-hidden rounded-[1.5rem] border border-slate-200/90 bg-white shadow-[0_40px_80px_-40px_rgba(14,35,67,0.5)]">
       <div className="flex items-center gap-3 border-b border-slate-100 px-5 py-3.5">
@@ -85,7 +85,7 @@ function AgentCard({ title, children }: { title: string; children: React.ReactNo
   );
 }
 
-function LogList({ log }: { log: Log[] }) {
+export function LogList({ log }: { log: Log[] }) {
   return (
     <ol className="relative space-y-1 p-5">
       <span aria-hidden className="absolute bottom-8 left-[4.15rem] top-8 w-px bg-slate-200" />
@@ -116,7 +116,7 @@ function LogList({ log }: { log: Log[] }) {
 const DRAFT =
   "Findings: Patchy airspace opacity in the right lower zone. Left lung clear. No pleural effusion. Cardiac size within normal limits. Impression: Right lower zone consolidation, likely infective. Clinical correlation advised.";
 
-function RadDemo() {
+export function RadDemo() {
   const reduce = useReducedMotion();
   const [n, setN] = useState(0);
   const [signed, setSigned] = useState(false);
