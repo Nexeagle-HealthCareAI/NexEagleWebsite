@@ -1,0 +1,26 @@
+# NexEagle
+
+> NexEagle is an Indian healthcare AI company. Its Vita AI agents help patients find the right doctor, book appointments and reach the clinic (on Doctor Dekho); automate the hospital workflow in 1HMS, its hospital management software and EMR; and in 1Rad, its cloud PACS, run AI vision analysis on scans and draft radiology reports for the radiologist to sign. 1Lab (LIS) and 1Pharma (pharmacy) share the same patient record.
+
+Key facts:
+- Products: 1HMS (hospital management software / HMIS / EMR), 1Rad (cloud PACS, DICOM viewer, AI radiology reporting, teleradiology), 1Lab (laboratory information system), 1Pharma (pharmacy and inventory), Doctor Dekho (patient app: find a doctor, book, directions).
+- AI agents: Vita for patients (symptom-based doctor matching, booking, WhatsApp confirmation, directions); 1HMS Vita (check-in from booking, OPD queue, AI scribe for notes and prescriptions, orders to lab/radiology/pharmacy, billing, follow-up reminders); 1Rad Vita (AI vision analysis, findings marked on the image, first-draft structured reports).
+- A qualified clinician always reviews and signs anything the AI drafts.
+- Built for small and mid-sized hospitals, clinics and diagnostic centres in India; English and Hindi; on-site setup and staff training.
+- Data hosted in India, aligned with the Digital Personal Data Protection Act, 2023; role-based access, encryption, audit trail.
+- Live at Sparsh Hospital (Kishanganj, Bihar), Glisan Super Speciality Hospital (Purnea, Bihar) and AG Smart Scan Diagnostic Centre.
+- Contact: info@nexeagle.com, +91 80749 06808.
+
+## Products
+- [1HMS hospital management software](https://nexeagle.com/solutions/1hms): OPD, IPD, EMR, prescriptions, billing and reports with 1HMS Vita
+- [1Rad cloud PACS and AI radiology reporting](https://nexeagle.com/solutions/1rad): DICOM viewer, AI vision analysis, report drafting, teleradiology
+- [1Lab laboratory information system](https://nexeagle.com/solutions/1lab): samples from collection to approved result
+- [1Pharma pharmacy software](https://nexeagle.com/solutions/1pharma): prescriptions, stock, expiry and billing
+- [NexEagle AI](https://nexeagle.com/ai): how Vita AI agents work
+- [Doctor Dekho](https://doctordekho.nexeagle.com): find a doctor and book with Vita
+
+## Company
+- [Security and data protection](https://nexeagle.com/security)
+- [FAQs](https://nexeagle.com/faqs)
+- [Team](https://nexeagle.com/team)
+- [Contact and demo booking](https://nexeagle.com/contact)

@@ -46,7 +46,7 @@ export default function Footer() {
               <span className="font-display text-2xl font-bold tracking-[-0.03em] text-white">NexEagle</span>
             </Link>
             <p className="mt-4 max-w-sm leading-relaxed !text-slate-400">
-              Connected, AI-assisted software for hospitals, clinics and diagnostic centres across India.
+              Vita AI agents, hospital management software, cloud PACS with AI radiology reporting, LIS and pharmacy software for hospitals, clinics and diagnostic centres across India.
             </p>
             <ul className="mt-6 space-y-3">
               <li><a href="tel:+918074906808" className={`inline-flex items-center gap-2.5 ${linkCls}`}><Phone className="h-4 w-4" />+91 80749 06808</a></li>

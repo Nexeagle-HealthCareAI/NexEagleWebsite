@@ -110,7 +110,7 @@ export default function Hero3D() {
         <div className="relative z-10 lg:col-span-5">
           <motion.p {...rise(0)} className="flex items-center gap-2.5 text-[0.95rem] text-slate-600">
             <Image src="/assets/vita/avatar-present.webp" alt="" width={40} height={40} priority className="h-10 w-10 rounded-full ring-2 ring-white" />
-            Meet Vita, NexEagle&apos;s family of AI agents
+            Meet Vita: AI agents for hospitals in India
           </motion.p>
           <motion.h1
             id="hero-title"
@@ -121,7 +121,7 @@ export default function Hero3D() {
             AI agents for every step of the patient journey.
           </motion.h1>
           <motion.p {...rise(0.18)} className="mt-5 max-w-[35rem] text-[1.05rem] leading-relaxed text-slate-600 sm:text-lg">
-            From first symptom to signed report. Vita helps patients find the right doctor, book and reach the clinic. Inside the hospital it runs the 1HMS workflow, and in radiology it reads scans and drafts reports for your radiologist to sign.
+            From first symptom to signed report. Vita helps patients find the right doctor, book and reach the clinic. Inside the hospital it runs 1HMS, our hospital management software and EMR, and in 1Rad cloud PACS it reads scans and drafts radiology reports for your radiologist to sign.
           </motion.p>
           <motion.div {...rise(0.3)} className="mt-8 flex flex-col gap-3 sm:flex-row sm:items-center">
             <Link

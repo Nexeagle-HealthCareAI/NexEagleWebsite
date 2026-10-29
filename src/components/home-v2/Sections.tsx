@@ -19,7 +19,7 @@ export function ClientsStrip() {
   return (
     <section aria-label="Hospitals using NexEagle" className="border-y border-slate-200/70 bg-white/60">
       <div className="mx-auto flex max-w-[1320px] flex-col gap-4 px-5 py-6 sm:px-8 md:flex-row md:items-center md:gap-10 lg:px-12">
-        <p className="shrink-0 text-sm text-slate-500">Running today at</p>
+        <p className="shrink-0 text-sm text-slate-500">Running today in Kishanganj and Purnea, Bihar</p>
         <ul className="grid gap-3 sm:grid-cols-3 md:flex md:flex-1 md:justify-between md:gap-8">
           {CLIENTS.map((c) => (
             <li key={c.name}>
