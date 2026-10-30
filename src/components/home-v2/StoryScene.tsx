@@ -31,7 +31,7 @@ const ink = "#0e2343";
 /* ── Clock: seconds since the current screen began, shared by every set ─────────────── */
 type ClockRef = React.MutableRefObject<{ screen: Screen; t: number }>;
 
-/* ── Vita in three layers ─────────────────────────────────────────────────────────────── */
+/* ── Vita as an actor: flies, lands, and changes pose while she works ─────────────────── */
 const IMG_W = 1200, IMG_H = 851;
 const FARP = { x: 0.453, y: 0.53 }, NEARP = { x: 0.652, y: 0.626 };
 function layerGeometry(px: number, py: number, scale: number) {
@@ -40,48 +40,109 @@ function layerGeometry(px: number, py: number, scale: number) {
   return g;
 }
 
-function Vita({ at, width = 1.3, animate, face = -1 }: { at: React.MutableRefObject<THREE.Vector3>; width?: number; animate: boolean; face?: 1 | -1 }) {
+export type Pose = "fly" | "present" | "think" | "happy";
+const POSES: Record<Exclude<Pose, "fly">, { src: string; w: number; h: number }> = {
+  present: { src: "/assets/vita/vita-present.webp", w: 753, h: 760 },
+  think: { src: "/assets/vita/vita-think.webp", w: 466, h: 640 },
+  happy: { src: "/assets/vita/vita-happy.webp", w: 1006, h: 760 },
+};
+export type Act = { at: THREE.Vector3; pose: Pose };
+type ActRef = React.MutableRefObject<Act>;
+
+function Vita({ act, width = 1.3, animate, face = -1, height = 0.78 }: { act: ActRef; width?: number; animate: boolean; face?: 1 | -1; height?: number }) {
   const scale = width / IMG_W;
-  const [far, body, near] = useTexture(["/assets/vita/fly-wing-far.webp", "/assets/vita/fly-body.webp", "/assets/vita/fly-wing-near.webp"]);
-  [far, body, near].forEach((t) => { t.colorSpace = THREE.SRGBColorSpace; t.anisotropy = 4; });
+  const [far, body, near, present, think, happy] = useTexture([
+    "/assets/vita/fly-wing-far.webp", "/assets/vita/fly-body.webp", "/assets/vita/fly-wing-near.webp",
+    POSES.present.src, POSES.think.src, POSES.happy.src,
+  ]);
+  [far, body, near, present, think, happy].forEach((t) => { t.colorSpace = THREE.SRGBColorSpace; t.anisotropy = 4; });
+  const poseTex = { present, think, happy };
   const rig = useRef<THREE.Group>(null);
-  const inner = useRef<THREE.Group>(null);
+  const flyer = useRef<THREE.Group>(null);
+  const stander = useRef<THREE.Group>(null);
   const farRef = useRef<THREE.Mesh>(null);
   const nearRef = useRef<THREE.Mesh>(null);
   const shadow = useRef<THREE.Mesh>(null);
+  const standMats = useRef<Record<string, THREE.MeshBasicMaterial | null>>({});
+  const flyMats = useRef<THREE.MeshBasicMaterial[]>([]);
   const geo = useMemo(() => ({ far: layerGeometry(FARP.x, FARP.y, scale), body: layerGeometry(0.5, 0.5, scale), near: layerGeometry(NEARP.x, NEARP.y, scale) }), [scale]);
-  const pos = useRef(at.current.clone());
+  const pos = useRef(act.current.at.clone());
   const vel = useRef(new THREE.Vector3());
-  const mat = (map: THREE.Texture) => <meshBasicMaterial map={map} transparent alphaTest={0.04} depthWrite={false} toneMapped={false} side={THREE.DoubleSide} />;
+  const mix = useRef(0); // 0 = flying, 1 = standing
+  const land = useRef(0); // bounce on touchdown
+  const shown = useRef<Exclude<Pose, "fly">>("present");
+
   useFrame(({ clock }, dt) => {
     const r = rig.current;
     if (!r) return;
     const t = clock.elapsedTime;
-    const target = at.current;
+    const { at, pose } = act.current;
     const prev = pos.current.clone();
-    pos.current.x = THREE.MathUtils.damp(pos.current.x, target.x, 2.2, dt);
-    pos.current.y = THREE.MathUtils.damp(pos.current.y, target.y + Math.sin(t * 0.9) * 0.06, 2.2, dt);
-    pos.current.z = THREE.MathUtils.damp(pos.current.z, target.z, 2.2, dt);
+    // Fly toward the target; while standing she settles exactly on it.
+    const k = pose === "fly" ? 2.2 : 3.2;
+    pos.current.x = THREE.MathUtils.damp(pos.current.x, at.x, k, dt);
+    pos.current.y = THREE.MathUtils.damp(pos.current.y, at.y + (pose === "fly" ? Math.sin(t * 0.9) * 0.06 : 0), k, dt);
+    pos.current.z = THREE.MathUtils.damp(pos.current.z, at.z, k, dt);
     vel.current.copy(pos.current).sub(prev).divideScalar(Math.max(dt, 1e-3));
     r.position.copy(pos.current);
     const speed = vel.current.length();
-    if (inner.current) {
-      inner.current.rotation.z = THREE.MathUtils.damp(inner.current.rotation.z, THREE.MathUtils.clamp(-vel.current.x * 0.2 * face, -0.3, 0.3), 3, dt);
-      inner.current.position.y = Math.sin(t * 3 + 1.2) * 0.025;
+    const near = pos.current.distanceTo(at) < 0.12;
+    // Switch to the standing pose only once she has arrived; take off as soon as she must move.
+    const wantStand = pose !== "fly" && near;
+    const before = mix.current;
+    mix.current = THREE.MathUtils.damp(mix.current, wantStand ? 1 : 0, 7, dt);
+    if (before < 0.5 && mix.current >= 0.5) land.current = 1;
+    land.current = Math.max(0, land.current - dt * 2.2);
+    if (pose !== "fly") shown.current = pose;
+
+    // flying layers
+    if (flyer.current) {
+      flyer.current.visible = mix.current < 0.98;
+      const rate = 2.6 + Math.min(speed, 2) * 1.6;
+      const amp = animate ? 0.2 + Math.min(speed, 2) * 0.08 : 0;
+      const beat = Math.sin(t * rate);
+      if (farRef.current) { farRef.current.rotation.z = 0.12 + beat * amp; farRef.current.rotation.x = -0.1 + beat * 0.08; }
+      if (nearRef.current) { nearRef.current.rotation.z = -0.08 - beat * amp * 1.15; nearRef.current.rotation.x = 0.1 - beat * 0.1; }
+      flyer.current.rotation.z = THREE.MathUtils.damp(flyer.current.rotation.z, THREE.MathUtils.clamp(-vel.current.x * 0.2 * face, -0.3, 0.3), 3, dt);
+      flyer.current.position.y = Math.sin(t * rate + 1.2) * 0.025;
+      flyMats.current.forEach((m) => { if (m) m.opacity = 1 - mix.current; });
     }
-    const rate = 2.6 + Math.min(speed, 2) * 1.6;
-    const amp = animate ? 0.2 + Math.min(speed, 2) * 0.08 : 0;
-    const beat = Math.sin(t * rate);
-    if (farRef.current) { farRef.current.rotation.z = 0.12 + beat * amp; farRef.current.rotation.x = -0.1 + beat * 0.08; }
-    if (nearRef.current) { nearRef.current.rotation.z = -0.08 - beat * amp * 1.15; nearRef.current.rotation.x = 0.1 - beat * 0.1; }
-    if (shadow.current) { shadow.current.position.y = -pos.current.y + 0.012; shadow.current.scale.setScalar(Math.max(0.45, 1.1 - pos.current.y * 0.2)); }
+    // standing pose: a little squash on landing, then a gentle breathing sway
+    if (stander.current) {
+      stander.current.visible = mix.current > 0.02;
+      const squash = land.current > 0 ? Math.sin(land.current * Math.PI) * 0.12 : 0;
+      const breathe = 1 + Math.sin(t * 2.1) * 0.012;
+      stander.current.scale.set(face * (1 + squash) * breathe, (1 - squash) * breathe, 1);
+      stander.current.rotation.z = Math.sin(t * 1.3) * 0.02;
+      Object.entries(standMats.current).forEach(([key, m]) => { if (m) m.opacity = key === shown.current ? mix.current : 0; });
+    }
+    if (shadow.current) {
+      const h = pos.current.y - (act.current.pose === "fly" ? 0 : height / 2);
+      shadow.current.position.y = -pos.current.y + 0.012;
+      shadow.current.scale.setScalar(Math.max(0.4, 1.15 - h * 0.25));
+      (shadow.current.material as THREE.MeshBasicMaterial).opacity = 0.1 + mix.current * 0.08;
+    }
   });
+
+  const flyMat = (map: THREE.Texture, i: number) => <meshBasicMaterial ref={(m) => { if (m) flyMats.current[i] = m; }} map={map} transparent alphaTest={0.04} depthWrite={false} toneMapped={false} side={THREE.DoubleSide} />;
   return (
     <group ref={rig}>
-      <group ref={inner} scale={[face, 1, 1]} rotation={[0, 0.25, 0]}>
-        <mesh ref={farRef} geometry={geo.far} position={[(FARP.x - 0.5) * IMG_W * scale, -(FARP.y - 0.5) * IMG_H * scale, -0.06]}>{mat(far)}</mesh>
-        <mesh geometry={geo.body}>{mat(body)}</mesh>
-        <mesh ref={nearRef} geometry={geo.near} position={[(NEARP.x - 0.5) * IMG_W * scale, -(NEARP.y - 0.5) * IMG_H * scale, 0.07]}>{mat(near)}</mesh>
+      <group ref={flyer} scale={[face, 1, 1]} rotation={[0, 0.25, 0]}>
+        <mesh ref={farRef} geometry={geo.far} position={[(FARP.x - 0.5) * IMG_W * scale, -(FARP.y - 0.5) * IMG_H * scale, -0.06]}>{flyMat(far, 0)}</mesh>
+        <mesh geometry={geo.body}>{flyMat(body, 1)}</mesh>
+        <mesh ref={nearRef} geometry={geo.near} position={[(NEARP.x - 0.5) * IMG_W * scale, -(NEARP.y - 0.5) * IMG_H * scale, 0.07]}>{flyMat(near, 2)}</mesh>
+      </group>
+      <group ref={stander} visible={false}>
+        {(Object.keys(POSES) as (keyof typeof POSES)[]).map((key) => {
+          const d = POSES[key];
+          const h = height, w = (d.w / d.h) * h;
+          return (
+            <mesh key={key} position={[0, 0, key === "think" ? 0.002 : 0]}>
+              <planeGeometry args={[w, h]} />
+              <meshBasicMaterial ref={(m) => { standMats.current[key] = m; }} map={poseTex[key]} transparent opacity={0} alphaTest={0.04} depthWrite={false} toneMapped={false} side={THREE.DoubleSide} />
+            </mesh>
+          );
+        })}
       </group>
       <mesh ref={shadow} rotation={[-Math.PI / 2, 0, 0]}>
         <circleGeometry args={[0.36, 24]} />
@@ -90,6 +151,67 @@ function Vita({ at, width = 1.3, animate, face = -1 }: { at: React.MutableRefObj
     </group>
   );
 }
+
+/* ── A stream of glowing particles from one point to another (Vita's work in motion) ──── */
+function Stream({ from, to, on, color = "#1ea99b", count = 14 }: { from: [number, number, number]; to: [number, number, number]; on: boolean; color?: string; count?: number }) {
+  const parts = useRef<THREE.Mesh[]>([]);
+  const a = useMemo(() => new THREE.Vector3(...from), [from]);
+  const b = useMemo(() => new THREE.Vector3(...to), [to]);
+  const strength = useRef(0);
+  useFrame(({ clock }, dt) => {
+    strength.current = THREE.MathUtils.damp(strength.current, on ? 1 : 0, 6, dt);
+    parts.current.forEach((m, i) => {
+      if (!m) return;
+      const u = (clock.elapsedTime * 0.55 + i / count) % 1;
+      m.position.lerpVectors(a, b, u);
+      m.position.y += Math.sin(u * Math.PI) * 0.25 + Math.sin(clock.elapsedTime * 7 + i) * 0.03;
+      m.position.x += Math.cos(clock.elapsedTime * 5 + i * 1.7) * 0.03;
+      const s = strength.current * (0.5 + Math.sin(u * Math.PI) * 0.6);
+      m.scale.setScalar(Math.max(0.001, s));
+    });
+  });
+  return (
+    <group>
+      {Array.from({ length: count }).map((_, i) => (
+        <mesh key={i} ref={(el) => { if (el) parts.current[i] = el; }} scale={0.001}>
+          <sphereGeometry args={[0.035, 8, 8]} />
+          <meshBasicMaterial color={color} toneMapped={false} />
+        </mesh>
+      ))}
+    </group>
+  );
+}
+
+/* ── One glowing orb that travels from A to B when fired, then waits ──────────────────── */
+function Orb({ from, to, go, color = "#8a6fe0", seconds = 1.2, trail }: { from: [number, number, number]; to: [number, number, number]; go: boolean; color?: string; seconds?: number; trail?: boolean }) {
+  const m = useRef<THREE.Mesh>(null);
+  const u = useRef(0);
+  const a = useMemo(() => new THREE.Vector3(...from), [from]);
+  const b = useMemo(() => new THREE.Vector3(...to), [to]);
+  useFrame((_, dt) => {
+    if (!m.current) return;
+    u.current = go ? Math.min(1, u.current + dt / seconds) : 0;
+    const k = u.current;
+    m.current.visible = go && k < 1;
+    m.current.position.lerpVectors(a, b, k);
+    m.current.position.y += Math.sin(k * Math.PI) * 0.5;
+    m.current.scale.setScalar(0.6 + Math.sin(k * Math.PI) * 0.6);
+  });
+  void trail;
+  return (
+    <mesh ref={m} visible={false}>
+      <sphereGeometry args={[0.06, 12, 12]} />
+      <meshBasicMaterial color={color} toneMapped={false} />
+    </mesh>
+  );
+}
+
+/* ── Typing dots, for when Vita is "thinking" ─────────────────────────────────────────── */
+const Dots = () => (
+  <span className="inline-flex items-center gap-0.5 align-middle">
+    {[0, 1, 2].map((i) => <span key={i} className="h-1.5 w-1.5 animate-bounce rounded-full bg-slate-400" style={{ animationDelay: `${i * 0.15}s` }} />)}
+  </span>
+);
 
 /* ── Shared set pieces ────────────────────────────────────────────────────────────────── */
 function Floor({ w, d, color = "#f3f8f8" }: { w: number; d: number; color?: string }) {
@@ -204,19 +326,26 @@ function HomeSet({ clock, animate }: { clock: ClockRef; animate: boolean }) {
   const [phase, setPhase] = useState(0);
   const walk = useRef(0);
   const phone = useRef<THREE.Mesh>(null);
-  const vitaAt = useRef(new THREE.Vector3(0.35, 1.35, 0.9));
+  // Vita: hovers in (listening), lands beside the patient to talk, steps over to present the
+  // doctors, sends the token to the phone, then takes off ahead of the patient.
+  const act = useRef<Act>({ at: new THREE.Vector3(0.9, 1.6, 0.9), pose: "fly" });
   useFrame(({ clock: c }, dt) => {
     const on = clock.current.screen === "find";
     const t = on ? clock.current.t : 0;
-    const p = !on ? 0 : t < 1.2 ? 1 : t < 3.4 ? 2 : t < 6.2 ? 3 : t < 8.6 ? 4 : 5;
+    const p = !on ? 0 : t < 1.4 ? 1 : t < 3.6 ? 2 : t < 6.4 ? 3 : t < 8.8 ? 4 : 5;
     if (p !== phase) setPhase(p);
-    const target = p >= 4 ? new THREE.Vector3(1.4, 1.5, 0.3) : p >= 2 ? new THREE.Vector3(0.7, 1.3, 0.9) : new THREE.Vector3(0.35, 1.35, 0.9);
-    vitaAt.current.lerp(target, Math.min(1, dt * 3));
+    const a = act.current;
+    if (p <= 1) { a.at.set(0.9, 1.6, 0.9); a.pose = "fly"; }
+    else if (p === 2) { a.at.set(0.35, 0.4, 1.05); a.pose = "think"; }
+    else if (p === 3) { a.at.set(0.95, 0.4, 1.2); a.pose = "present"; }
+    else if (p === 4) { a.at.set(0.95, 0.4, 1.2); a.pose = "happy"; }
+    else { a.at.set(2.2, 1.7, 0.4); a.pose = "fly"; }
     if (phone.current) {
       const m = phone.current.material as THREE.MeshStandardMaterial;
-      m.emissiveIntensity = on && animate ? 1.2 + Math.sin(c.elapsedTime * 5) * 0.5 : 0.2;
+      m.emissiveIntensity = on && animate ? (p === 4 ? 2.4 : 1.2) + Math.sin(c.elapsedTime * 5) * 0.5 : 0.2;
     }
     walk.current = THREE.MathUtils.damp(walk.current, p >= 5 ? 1 : 0, 6, dt);
+    void dt;
   });
   const docs = [
     { n: "Dr. A. Kumar", s: "General Physician · 2.1 km · ₹300", t: "Today 11:30", r: "4.8", pick: true },
@@ -244,16 +373,22 @@ function HomeSet({ clock, animate }: { clock: ClockRef; animate: boolean }) {
           <meshStandardMaterial color="#ffffff" emissive="#8a6fe0" emissiveIntensity={1} toneMapped={false} />
         </mesh>
       </group>
-      <Vita at={vitaAt} animate={animate} face={1} width={1.25} />
+      <Vita act={act} animate={animate} face={1} width={1.25} />
+      {/* the patient's words reach Vita; the booking token goes back to the phone */}
+      <Stream from={[-0.25, 0.65, 0.65]} to={[0.4, 0.75, 1.05]} on={phase === 2} color="#8a6fe0" count={10} />
+      <Orb from={[0.95, 0.7, 1.2]} to={[-0.25, 0.6, 0.65]} go={phase === 4} color="#1ea99b" seconds={1.1} />
 
       {/* conversation and result cards */}
-      <Card pos={[-1.7, 2.45, 0.4]} show={phase >= 1} w={200}>
+      <Card pos={[-1.7, 2.3, 0.4]} show={phase >= 1} w={200}>
         <Bubble me>Fever and cough for 3 days. My chest hurts when I breathe.</Bubble>
       </Card>
-      <Card pos={[1.5, 2.55, 0.4]} show={phase >= 2} w={220}>
+      <Card pos={[0.35, 1.55, 1.05]} show={phase === 2} w={160}>
+        <p className="text-[11px] text-slate-500">Vita is listening <Dots /></p>
+      </Card>
+      <Card pos={[1.5, 2.45, 0.4]} show={phase >= 3} w={220}>
         <Bubble>That should be seen today by a general physician. Two good options near you:</Bubble>
       </Card>
-      <Card pos={[1.9, 1.25, 1.2]} show={phase >= 3} w={236}>
+      <Card pos={[2.05, 1.35, 1.2]} show={phase >= 3} w={236}>
         <div className="space-y-1.5">
           {docs.map((d) => (
             <div key={d.n} className={`flex items-center justify-between gap-2 rounded-xl border px-2.5 py-2 transition-colors ${phase >= 4 && d.pick ? "border-[#1ea99b] bg-[#effaf8]" : "border-slate-200 bg-white"}`}>
@@ -290,12 +425,19 @@ const HMS_STEPS = [
 
 function RoomSet({ clock, animate }: { clock: ClockRef; animate: boolean }) {
   const [n, setN] = useState(0);
-  const vitaAt = useRef(new THREE.Vector3(-0.4, 1.75, 0.2));
+  // Vita: flies in and lands on the desk by the screen, reads and works (particles into the
+  // monitor), cheers when the doctor signs, then stands and sends the orders out.
+  const act = useRef<Act>({ at: new THREE.Vector3(-1.5, 1.9, 0.6), pose: "fly" });
   useFrame(() => {
     const on = clock.current.screen === "hms";
     const t = on ? clock.current.t - 3.6 : -1; // the room starts after the campus shot
     const k = t < 0 ? 0 : HMS_STEPS.filter((s) => t >= s.t).length;
     if (k !== n) setN(k);
+    const a = act.current;
+    if (t < -0.6) { a.at.set(-1.5, 1.9, 0.6); a.pose = "fly"; }
+    else if (k < 4) { a.at.set(-0.42, 0.8, -0.55); a.pose = "think"; }
+    else if (k === 4) { a.at.set(-0.42, 0.8, -0.55); a.pose = "happy"; }
+    else { a.at.set(-0.42, 0.8, -0.55); a.pose = "present"; }
   });
   const done = n >= 4;
   return (
@@ -328,7 +470,14 @@ function RoomSet({ clock, animate }: { clock: ClockRef; animate: boolean }) {
       <group position={[-1.4, 0.02, 0.9]} rotation={[0, 2.4, 0]}>
         <Person look={{ shirt: "#1ea99b", skin: "#e4b08a", hair: "#3b2a22" }} walk={still} scale={1.35} />
       </group>
-      <Vita at={vitaAt} animate={animate} width={1.15} />
+      <Vita act={act} animate={animate} width={1.15} height={0.7} />
+      {/* her work flows into the screen; signed orders leave for 1Rad and 1Pharma */}
+      <Stream from={[-0.3, 0.95, -0.55]} to={[0.55, 0.85, -0.72]} on={n >= 1 && n < 4} color="#1ea99b" count={12} />
+      <Orb from={[0.55, 0.9, -0.72]} to={[3.0, 1.3, -0.2]} go={n >= 5} color="#1599db" seconds={1.3} />
+      <Orb from={[0.55, 0.9, -0.72]} to={[3.0, 0.6, 1.4]} go={n >= 6} color="#22a559" seconds={1.3} />
+      <Card pos={[-0.42, 1.35, -0.55]} show={n >= 1 && n < 3} w={150}>
+        <p className="text-[11px] text-slate-500">Writing the notes <Dots /></p>
+      </Card>
 
       {/* the agent's log, growing line by line */}
       <Card pos={[2.35, 1.95, 0.3]} show={n > 0} w={240}>
@@ -357,7 +506,9 @@ function RadSet({ clock, animate }: { clock: ClockRef; animate: boolean }) {
   const ring = useRef<THREE.Mesh>(null);
   const table = useRef<THREE.Group>(null);
   const report = useRef<THREE.Group>(null);
-  const vitaAt = useRef(new THREE.Vector3(-0.2, 1.9, 0.9));
+  // Vita: reads the scan at the gantry, flies the draft to the console, cheers at the signature,
+  // then sees the report off to 1HMS.
+  const act = useRef<Act>({ at: new THREE.Vector3(-1.5, 1.9, 0.9), pose: "fly" });
   const sent = useRef(0);
   useFrame(({ clock: c }, dt) => {
     const on = clock.current.screen === "rad";
@@ -366,8 +517,12 @@ function RadSet({ clock, animate }: { clock: ClockRef; animate: boolean }) {
     if (p !== phase) setPhase(p);
     if (ring.current && animate) ring.current.rotation.z += dt * (p === 1 ? 5 : 0.6);
     if (table.current) table.current.position.z = THREE.MathUtils.damp(table.current.position.z, p === 1 ? -0.35 : 0.25, 2, dt);
-    const target = p >= 2 ? new THREE.Vector3(0.6, 1.7, 1.2) : new THREE.Vector3(-0.2, 1.9, 0.9);
-    vitaAt.current.lerp(target, Math.min(1, dt * 3));
+    const a = act.current;
+    if (p <= 1) { a.at.set(-1.5, 1.9, 0.9); a.pose = p === 1 ? "think" : "fly"; }
+    else if (p === 2) { a.at.set(-1.5, 1.9, 0.9); a.pose = "think"; }
+    else if (p === 3) { a.at.set(1.25, 0.82, 1.45); a.pose = "present"; }
+    else if (p === 4) { a.at.set(1.25, 0.82, 1.45); a.pose = "happy"; }
+    else { a.at.set(1.25, 0.82, 1.45); a.pose = "present"; }
     // the signed report flies off to 1HMS (back toward the hospital, to the left)
     if (report.current) {
       sent.current = p >= 5 ? Math.min(1, sent.current + dt / 1.6) : 0;
@@ -412,7 +567,13 @@ function RadSet({ clock, animate }: { clock: ClockRef; animate: boolean }) {
         <Person look={{ shirt: "#1599db", coat: true, skin: "#d4a07a" }} walk={still} scale={1.35} />
       </group>
       <Plant x={2.9} z={-1.9} />
-      <Vita at={vitaAt} animate={animate} width={1.15} />
+      <Vita act={act} animate={animate} width={1.15} height={0.7} />
+      {/* the scan streams into Vita while she reads; her draft flows into the console */}
+      <Stream from={[-1.5, 0.95, -0.5]} to={[-1.5, 1.6, 0.9]} on={phase === 2} color="#1599db" count={12} />
+      <Stream from={[1.25, 1.0, 1.45]} to={[1.5, 0.85, 0.75]} on={phase === 3} color="#1599db" count={10} />
+      <Card pos={[-1.5, 2.55, 0.9]} show={phase === 2} w={150}>
+        <p className="text-[11px] text-slate-500">Reading the scan <Dots /></p>
+      </Card>
 
       {/* the report, as a little document that flies to 1HMS once signed */}
       <group ref={report} visible={false}>
@@ -427,8 +588,8 @@ function RadSet({ clock, animate }: { clock: ClockRef; animate: boolean }) {
         <p className="text-[11px] font-semibold text-[#0e2343]">Chest X-ray in progress</p>
         <p className="text-[10.5px] text-slate-500">Study goes straight to 1Rad cloud PACS</p>
       </Card>
-      <Card pos={[-1.4, 2.5, 0.4]} show={phase >= 2 && phase < 5} w={240}>
-        <p className="mb-1.5 flex items-center gap-1.5 text-[10px] font-semibold uppercase tracking-[0.1em] text-sky-700"><span className="h-1.5 w-1.5 rounded-full bg-[#1599db]" />1Rad Vita · {phase === 2 ? "reading the scan" : "draft ready"}</p>
+      <Card pos={[-0.3, 2.45, 0.4]} show={phase >= 3 && phase < 5} w={240}>
+        <p className="mb-1.5 flex items-center gap-1.5 text-[10px] font-semibold uppercase tracking-[0.1em] text-sky-700"><span className="h-1.5 w-1.5 rounded-full bg-[#1599db]" />1Rad Vita · draft ready</p>
         <div className="relative h-16 overflow-hidden rounded-lg bg-[#0e2343]">
           <div className="absolute left-[18%] top-[18%] h-[62%] w-[26%] rounded-full border border-white/30" />
           <div className="absolute left-[56%] top-[18%] h-[62%] w-[26%] rounded-full border border-white/30" />
