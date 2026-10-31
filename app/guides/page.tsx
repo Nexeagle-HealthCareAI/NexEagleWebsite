@@ -45,7 +45,7 @@ export default function Page() {
         <ul className="mx-auto grid max-w-[1320px] gap-5 px-5 sm:px-8 md:grid-cols-3 lg:px-12">
           {GUIDES.map((g, i) => (
             <Reveal as="li" key={g.slug} delay={i * 0.06}>
-              <Link href={`/guides/${g.slug}`} className="group flex h-full flex-col rounded-[1.75rem] border border-slate-200 p-7 transition-[border-color,box-shadow] hover:border-[#1ea99b]/60 hover:shadow-[0_30px_70px_-40px_rgba(14,35,67,0.45)]">
+              <Link href={`/guides/${g.slug}`} data-spot className="group flex h-full flex-col rounded-[1.75rem] border border-slate-200 p-7 transition-[border-color,box-shadow] hover:border-[#1ea99b]/60 hover:shadow-[0_30px_70px_-40px_rgba(14,35,67,0.45)]">
                 <span className="text-sm font-medium text-[#12857a]">{g.short}</span>
                 <span className="mt-3 font-display text-xl font-semibold leading-snug text-[#0e2343]">{g.title}</span>
                 <span className="mt-3 line-clamp-4 text-slate-600">{g.answer}</span>

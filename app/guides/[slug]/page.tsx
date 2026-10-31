@@ -62,9 +62,9 @@ export default function Page({ params }: { params: { slug: string } }) {
       <AnalyticsTracker title={`Guide: ${g.short}`} />
       <article className="mx-auto max-w-[760px] px-5 pb-20 pt-10 sm:px-8 sm:pt-14">
         <nav aria-label="Breadcrumb" className="flex items-center gap-1.5 text-sm text-slate-500">
-          <Link href="/" className="hover:text-[#0e2343]">Home</Link>
+          <Link href="/" className="-my-2 inline-block py-2 hover:text-[#0e2343]">Home</Link>
           <ChevronRight className="h-3.5 w-3.5" />
-          <Link href="/guides" className="hover:text-[#0e2343]">Guides</Link>
+          <Link href="/guides" className="-my-2 inline-block py-2 hover:text-[#0e2343]">Guides</Link>
           <ChevronRight className="h-3.5 w-3.5" />
           <span className="text-[#0e2343]">{g.short}</span>
         </nav>
@@ -127,7 +127,7 @@ export default function Page({ params }: { params: { slug: string } }) {
           <ul className="mt-3 space-y-2">
             {g.sources.map((s) => (
               <li key={s.url}>
-                <a href={s.url} target="_blank" rel="noopener noreferrer" className="inline-flex items-center gap-1.5 text-[#12857a] hover:text-[#0e2343]">
+                <a href={s.url} target="_blank" rel="noopener noreferrer" className="inline-flex items-center gap-1.5 py-1.5 text-[#12857a] hover:text-[#0e2343]">
                   {s.title}<ExternalLink className="h-3.5 w-3.5" />
                 </a>
               </li>
@@ -140,7 +140,7 @@ export default function Page({ params }: { params: { slug: string } }) {
           <ul className="mt-4 grid gap-3 sm:grid-cols-2">
             {others.map((o) => (
               <li key={o.slug}>
-                <Link href={`/guides/${o.slug}`} className="group block rounded-2xl border border-slate-200 p-5 hover:border-[#1ea99b]">
+                <Link href={`/guides/${o.slug}`} data-spot className="group block rounded-2xl border border-slate-200 p-5 hover:border-[#1ea99b]">
                   <span className="text-sm text-[#12857a]">{o.short}</span>
                   <span className="mt-1 block font-display font-semibold text-[#0e2343]">{o.title}</span>
                 </Link>

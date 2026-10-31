@@ -14,7 +14,7 @@ export const FAQ: { q: string; a: string }[] = [
     a: "Vita is NexEagle's family of AI agents. Vita for patients matches symptoms to the right doctor, books the appointment and gives directions to the clinic. 1HMS Vita automates hospital work such as check-in, OPD queues, prescription drafting, orders and billing. 1Rad Vita runs AI vision analysis on scans and drafts radiology reports.",
   },
   {
-    q: "Which is good hospital management software for small hospitals in India?",
+    q: "What should a small hospital in India look for in hospital management software?",
     a: "Small and mid-sized hospitals in India need software that covers OPD, IPD, billing, pharmacy and lab in one place, works in English and Hindi, and is set up on site. NexEagle 1HMS is built for this: our team configures it, moves your data in and trains every role in your hospital before go-live.",
   },
   {

@@ -135,7 +135,7 @@ export function StockDemo() {
   const items = [
     { n: "Amoxicillin 500 mg", q: "10 caps", b: "Batch AMX-2241, exp. Mar 2027", ok: true },
     { n: "Paracetamol 650 mg", q: "10 tabs", b: "Batch PCM-0912, exp. Jan 2027", ok: true },
-    { n: "Cough syrup 100 ml", q: "1 bottle", b: "Batch CS-117 expires in 20 days, using CS-131", ok: false },
+    { n: "Cough syrup 100 ml", q: "1 bottle", b: "Batch CS-117 expires in 20 days: dispense this one first", ok: false },
   ];
   return (
     <MotionConfig reducedMotion="user">

@@ -7,7 +7,7 @@ export const CERTS = [
       status: "Aligned"
     },
     {
-      name: "ABDM Ready",
+      name: "ABDM integration",
       description: "Built to interoperate with the Ayushman Bharat Digital Mission ecosystem (ABHA IDs, health-record linking).",
       status: "Roadmap"
     },
@@ -17,7 +17,7 @@ export const CERTS = [
       status: "Supported"
     },
     {
-      name: "ISO 27001 Controls",
+      name: "ISO 27001",
       description: "Our information-security practices are modelled on ISO 27001 controls. Formal certification is on our roadmap.",
       status: "Roadmap"
     }

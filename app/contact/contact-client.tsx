@@ -111,11 +111,11 @@ export default function ContactClient() {
             </span>
             <span><span className="block font-display text-lg font-semibold text-[#0e2343]">WhatsApp us</span><span className="block text-sm text-slate-600">Fastest reply, in English or Hindi</span></span>
           </a>
-          <a href="tel:+918074906808" className="flex items-center gap-4 rounded-2xl border border-slate-200 p-5 transition-colors hover:border-[#1ea99b]">
+          <a href="tel:+918074906808" data-spot className="flex items-center gap-4 rounded-2xl border border-slate-200 p-5 transition-colors hover:border-[#1ea99b]">
             <span className="grid h-12 w-12 shrink-0 place-items-center rounded-full bg-[#1ea99b]/10 text-[#12857a]"><Phone className="h-5 w-5" /></span>
             <span><span className="block font-display text-lg font-semibold text-[#0e2343]">+91 80749 06808</span><span className="block text-sm text-slate-600">Call us</span></span>
           </a>
-          <a href="mailto:info@nexeagle.com" className="flex items-center gap-4 rounded-2xl border border-slate-200 p-5 transition-colors hover:border-[#1ea99b]">
+          <a href="mailto:info@nexeagle.com" data-spot className="flex items-center gap-4 rounded-2xl border border-slate-200 p-5 transition-colors hover:border-[#1ea99b]">
             <span className="grid h-12 w-12 shrink-0 place-items-center rounded-full bg-[#1ea99b]/10 text-[#12857a]"><Mail className="h-5 w-5" /></span>
             <span><span className="block font-display text-lg font-semibold text-[#0e2343]">info@nexeagle.com</span><span className="block text-sm text-slate-600">Email us</span></span>
           </a>

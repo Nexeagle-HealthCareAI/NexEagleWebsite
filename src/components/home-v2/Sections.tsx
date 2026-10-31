@@ -7,13 +7,10 @@ import { FileLock2, History, KeyRound, MapPin, Phone, ServerCog, UserCheck } fro
 import { Photo } from "./Photo";
 import { FlyingVita } from "./FlyingVita";
 import { useEffect, useState } from "react";
+import { CUSTOMERS } from "@/lib/customers";
 
 /* ── Live customers (real) ──────────────────────────────────────────────────────── */
-const CLIENTS = [
-  { name: "Sparsh Hospital", place: "Kishanganj", url: "https://sparshhospitalkishanganj.com/", logo: "/assets/sparsh_logo_resized.png" },
-  { name: "Glisan Super Speciality Hospital", place: "Purnea", url: "https://www.facebook.com/p/Glisan-Super-Speciality-Hospital-Purnea-61576274793889/" },
-  { name: "AG Smart Scan Diagnostic Centre", place: "Diagnostics & imaging", url: "https://share.google/2ADNkQXtrRt4w6ewv" },
-];
+const CLIENTS = CUSTOMERS.map((c) => ({ name: c.name, place: c.place ?? c.type, url: c.url, logo: c.logo, initials: c.initials }));
 
 export function ClientsStrip() {
   return (
@@ -28,7 +25,7 @@ export function ClientsStrip() {
                   {c.logo ? (
                     <Image src={c.logo} alt="" width={40} height={40} className="h-8 w-8 object-contain" />
                   ) : (
-                    <span className="font-display text-sm font-bold text-[#0e2343]">{c.name.split(" ").map((w) => w[0]).slice(0, 2).join("")}</span>
+                    <span className="font-display text-sm font-bold text-[#0e2343]">{c.initials}</span>
                   )}
                 </span>
                 <span className="leading-tight">
@@ -111,27 +108,26 @@ const TRUST = [
 
 export function DataTrust() {
   return (
-    <section className="bg-[#0e2343] py-20 text-white sm:py-28" aria-labelledby="trust-title">
+    <section className="bg-[#f4f8f8] py-20 sm:py-28" aria-labelledby="trust-title">
       <div className="mx-auto grid max-w-[1320px] gap-12 px-5 sm:px-8 lg:grid-cols-12 lg:px-12">
         <div className="lg:col-span-4">
-          <h2 id="trust-title" className="font-display text-[2.2rem] font-semibold leading-[1.04] tracking-[-0.03em] text-white sm:text-5xl">
+          <h2 id="trust-title" className="font-display text-[2.2rem] font-semibold leading-[1.04] tracking-[-0.03em] text-[#0e2343] sm:text-5xl">
             Your patients&apos; data stays in India
           </h2>
-          <p className="mt-4 text-lg leading-relaxed text-slate-300">
+          <p className="mt-4 text-lg leading-relaxed text-slate-600">
             Patients trust you with their records. These are the protections every NexEagle hospital gets.
           </p>
-          <Link href="/security" className="mt-8 inline-flex h-12 items-center rounded-full border border-white/25 px-6 font-semibold transition-colors hover:bg-white/10 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#1ea99b]">
+          <Link href="/trust" className="mt-8 inline-flex h-12 items-center rounded-full border border-slate-300 bg-white px-6 font-semibold text-[#0e2343] transition-[border-color,transform] hover:border-[#1ea99b] active:scale-[0.98] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#1ea99b]">
             How we protect data
           </Link>
-          <Image src="/assets/vita/vita-relax.webp" alt="Vita relaxing on a cushion" width={725} height={640} sizes="240px" className="mt-12 hidden h-auto w-[240px] drop-shadow-[0_20px_30px_rgba(0,0,0,0.35)] lg:block" />
         </div>
-        <ul className="grid gap-x-10 gap-y-9 sm:grid-cols-2 lg:col-span-7 lg:col-start-6">
+        <ul className="grid gap-4 sm:grid-cols-2 lg:col-span-8">
           {TRUST.map(({ Icon, title, body }) => (
-            <li key={title} className="flex gap-4">
-              <Icon className="mt-1 h-6 w-6 shrink-0 text-[#4fd1c1]" />
+            <li key={title} data-spot className="flex gap-4 rounded-2xl border border-slate-200/80 bg-white p-5">
+              <span className="grid h-10 w-10 shrink-0 place-items-center rounded-xl bg-[#1ea99b]/10 text-[#12857a]"><Icon className="h-5 w-5" /></span>
               <span>
-                <span className="block font-display text-lg font-semibold text-white">{title}</span>
-                <span className="mt-1 block leading-relaxed text-slate-300">{body}</span>
+                <span className="block font-display text-lg font-semibold text-[#0e2343]">{title}</span>
+                <span className="mt-1 block leading-relaxed text-slate-600">{body}</span>
               </span>
             </li>
           ))}

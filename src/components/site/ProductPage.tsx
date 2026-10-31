@@ -80,9 +80,9 @@ export default function ProductPage({ c }: { c: ProductConfig }) {
         <div className="relative mx-auto grid max-w-[1320px] items-center gap-12 px-5 pb-16 pt-8 sm:px-8 lg:grid-cols-12 lg:gap-10 lg:px-12 lg:pb-24 lg:pt-14">
           <div className="lg:col-span-6">
             <nav aria-label="Breadcrumb" className="flex items-center gap-1.5 text-sm text-slate-500">
-              <Link href="/" className="hover:text-[#0e2343]">Home</Link>
+              <Link href="/" className="-my-2 inline-block py-2 hover:text-[#0e2343]">Home</Link>
               <ChevronRight className="h-3.5 w-3.5" />
-              <Link href="/products" className="hover:text-[#0e2343]">Products</Link>
+              <Link href="/products" className="-my-2 inline-block py-2 hover:text-[#0e2343]">Products</Link>
               <ChevronRight className="h-3.5 w-3.5" />
               <span className="text-[#0e2343]">{c.name}</span>
             </nav>
@@ -166,7 +166,7 @@ export default function ProductPage({ c }: { c: ProductConfig }) {
           <ul className="mt-8 grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
             {c.worksWith.map((w) => (
               <li key={w.name}>
-                <Link href={w.href} className="group flex h-full flex-col rounded-2xl border border-slate-200 p-5 transition-colors hover:border-[#1ea99b]">
+                <Link href={w.href} data-spot className="group flex h-full flex-col rounded-2xl border border-slate-200 p-5 transition-colors hover:border-[#1ea99b]">
                   <span className="font-display text-lg font-semibold text-[#0e2343]">{w.name}</span>
                   <span className="mt-1 text-sm leading-snug text-slate-600">{w.line}</span>
                   <span className="mt-4 inline-flex items-center gap-1 text-sm font-semibold text-[#12857a]">
@@ -179,7 +179,7 @@ export default function ProductPage({ c }: { c: ProductConfig }) {
         </div>
       </section>
 
-      <HomeFAQ items={c.faq} title={`${c.name} questions`} intro={`What hospitals usually ask before choosing ${c.name}.`} />
+      <HomeFAQ items={c.faq} title={`${c.name} questions`} intro={`What teams usually ask before choosing ${c.name}.`} />
       <ClosingCTA />
     </main>
   );

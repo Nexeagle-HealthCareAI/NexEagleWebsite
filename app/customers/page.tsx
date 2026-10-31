@@ -61,7 +61,7 @@ export default function Page() {
         <div className="mx-auto grid max-w-[1320px] gap-5 px-5 sm:px-8 md:grid-cols-3 lg:px-12">
           {CUSTOMERS.map((c, i) => (
             <Reveal key={c.id} delay={i * 0.06}>
-              <article className="flex h-full flex-col rounded-[1.75rem] border border-slate-200 bg-white p-7 shadow-[0_30px_70px_-50px_rgba(14,35,67,0.5)]">
+              <article data-spot className="flex h-full flex-col rounded-[1.75rem] border border-slate-200 bg-white p-7 shadow-[0_30px_70px_-50px_rgba(14,35,67,0.5)]">
                 <span className="grid h-20 w-20 place-items-center overflow-hidden rounded-2xl border border-slate-100 bg-white">
                   {c.logo ? <Image src={c.logo} alt={`${c.name} logo`} width={80} height={80} className="h-16 w-16 object-contain" /> : <span className="font-display text-2xl font-bold text-[#0e2343]">{c.initials}</span>}
                 </span>
@@ -96,7 +96,7 @@ export default function Page() {
                 )}
 
                 <a href={c.url} target="_blank" rel="noopener noreferrer" className="mt-auto inline-flex items-center gap-1.5 pt-8 text-sm font-semibold text-[#12857a] hover:text-[#0e2343]">
-                  Visit {c.name.split(" ")[0]}
+                  Visit website
                   <ExternalLink className="h-3.5 w-3.5" />
                 </a>
               </article>

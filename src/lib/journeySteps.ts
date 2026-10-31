@@ -47,6 +47,6 @@ export const STEPS: Step[] = [
     body: "The pharmacy sees the prescription before the patient arrives, stock updates itself, and every service used along the way is already on one bill.",
     inn: { title: "Comes in", items: ["Signed prescription", "Services used today", "Stock levels"] },
     vita: { title: "Vita does", items: ["Reserves the medicines", "Adds everything to one bill", "Sets a follow-up reminder"] },
-    out: { title: "Your team gets", items: ["Medicines ready at the counter", "One bill: ₹1,140", "Reminder in 7 days"] },
+    out: { title: "Your team gets", items: ["Medicines ready at the counter", "One bill: ₹1,140", "Review reminder in 5 days"] },
   },
 ];

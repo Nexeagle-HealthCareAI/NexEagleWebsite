@@ -621,7 +621,7 @@ function RadSet({ clock, animate }: { clock: ClockRef; animate: boolean }) {
           <div className="absolute left-[18%] top-[18%] h-[62%] w-[26%] rounded-full border border-white/30" />
           <div className="absolute left-[56%] top-[18%] h-[62%] w-[26%] rounded-full border border-white/30" />
           <div className={`absolute left-[58%] top-[52%] h-[24%] w-[18%] rounded-md border-2 border-[#1ea99b] transition-opacity duration-700 ${phase >= 2 ? "opacity-100" : "opacity-0"}`} />
-          <span className="absolute right-1.5 top-1 rounded bg-[#1ea99b] px-1 text-[9px] font-semibold text-white">Opacity 0.91</span>
+          <span className="absolute right-1.5 top-1 rounded bg-[#1ea99b] px-1 text-[9px] font-semibold text-white">Possible opacity</span>
         </div>
         <p className={`mt-1.5 text-[10.5px] leading-snug text-slate-600 transition-opacity duration-500 ${phase >= 3 ? "opacity-100" : "opacity-0"}`}>
           <span className="font-semibold text-[#0e2343]">Draft impression:</span> patchy opacity, right lower zone, suggestive of consolidation. Clinical correlation advised.
@@ -719,7 +719,7 @@ function Lighting() {
 // Glow for the particle streams and screens, contact shadows in the corners, smooth edges.
 function Post() {
   return (
-    <EffectComposer multisampling={0}>
+    <EffectComposer multisampling={0} disableNormalPass>
       <Bloom luminanceThreshold={1.0} luminanceSmoothing={0.15} intensity={0.7} mipmapBlur radius={0.55} />
       <SMAA />
     </EffectComposer>

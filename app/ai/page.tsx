@@ -41,10 +41,10 @@ const DOES = [
   "Keeps bills, queues and reminders up to date",
 ];
 const DOESNT = [
-  "Diagnose or treat patients on its own",
-  "Sign or release a report or prescription",
-  "Replace your doctors, radiologists or staff",
-  "Share patient data outside your hospital's systems",
+  "Diagnoses or treats patients on its own",
+  "Signs or releases a report or prescription",
+  "Replaces your doctors, radiologists or staff",
+  "Shares patient data outside your hospital's systems",
 ];
 
 const FAQ_AI = [

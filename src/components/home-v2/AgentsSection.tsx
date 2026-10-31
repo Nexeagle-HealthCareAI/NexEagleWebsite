@@ -46,7 +46,7 @@ const AGENTS = [
       { t: "11:42", a: "Dr. Kumar reviewed and signed" },
       { t: "11:42", a: "Chest X-ray sent to 1Rad, CBC sent to 1Lab" },
       { t: "11:43", a: "Medicines sent to 1Pharma, bill updated" },
-      { t: "11:43", a: "Follow-up reminder set for 7 days" },
+      { t: "11:43", a: "Follow-up reminder set for 5 days" },
     ] as Log[],
   },
   {
@@ -141,8 +141,8 @@ export function RadDemo() {
           <motion.div initial={{ top: "-12%" }} animate={{ top: "112%" }} transition={{ duration: 1.8, ease: "easeInOut", delay: 0.3 }} className="absolute inset-x-0 h-10 bg-gradient-to-b from-transparent via-[#4fd1c1]/40 to-transparent" />
         )}
         {[
-          { x: 55, y: 52, w: 26, h: 22, l: "Opacity 0.91", c: "amber", d: 1.5 },
-          { x: 20, y: 30, w: 22, h: 18, l: "Normal 0.97", c: "teal", d: 1.9 },
+          { x: 55, y: 52, w: 26, h: 22, l: "Possible opacity", c: "amber", d: 1.5 },
+          { x: 20, y: 30, w: 22, h: 18, l: "Left lung clear", c: "teal", d: 1.9 },
         ].map((b) => (
           <motion.div key={b.l} initial={{ opacity: 0, scale: 1.3 }} animate={{ opacity: 1, scale: 1 }} transition={{ delay: b.d, duration: 0.35 }}
             className={`absolute rounded-md border-2 ${b.c === "amber" ? "border-amber-400" : "border-[#4fd1c1]"}`} style={{ left: `${b.x}%`, top: `${b.y}%`, width: `${b.w}%`, height: `${b.h}%` }}>

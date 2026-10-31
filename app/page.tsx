@@ -1,6 +1,5 @@
 import type { Metadata } from "next";
 import Hero from "@/components/home-v2/Hero";
-import PatientJourney from "@/components/home-v2/PatientJourney";
 import AgentsSection from "@/components/home-v2/AgentsSection";
 import HomeFAQ from "@/components/home-v2/HomeFAQ";
 import { ClientsStrip, ClosingCTA, DataTrust, GoLive } from "@/components/home-v2/Sections";
@@ -127,9 +126,8 @@ export default function HomePage() {
       <ClientsStrip />
       <AgentsSection />
       <BeforeAfter />
-      <PatientJourney />
-      <TeamStrip />
       <GoLive />
+      <TeamStrip />
       <DataTrust />
       <HomeFAQ />
       <ClosingCTA />

@@ -4,7 +4,7 @@ import { FAQ } from "@/lib/homeContent";
 
 // Plain HTML <details> so every answer is in the page source for search engines and AI answer
 // engines, and works without JavaScript. Mirrors the FAQPage JSON-LD on the homepage.
-export default function HomeFAQ({ items = FAQ, title = "Questions hospitals ask us", intro = "About Vita AI agents, 1HMS hospital management software and 1Rad AI radiology reporting.", vita = true }: { items?: { q: string; a: string }[]; title?: string; intro?: string; vita?: boolean }) {
+export default function HomeFAQ({ items = FAQ, title = "Questions hospitals ask us", intro = "About Vita AI agents, 1HMS hospital management software and 1Rad AI radiology reporting.", vita = false }: { items?: { q: string; a: string }[]; title?: string; intro?: string; vita?: boolean }) {
   return (
     <section className="bg-white py-20 sm:py-28" aria-label={title}>
       <div className="mx-auto grid max-w-[1320px] gap-12 px-5 sm:px-8 lg:grid-cols-12 lg:px-12">

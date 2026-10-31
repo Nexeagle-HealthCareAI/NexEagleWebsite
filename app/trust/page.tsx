@@ -86,7 +86,7 @@ export default function Page() {
           <ul className="mt-10 grid gap-4 md:grid-cols-3">
             {DOCS.map((d) => (
               <li key={d.href}>
-                <Link href={d.href} className="group flex h-full flex-col rounded-2xl border border-slate-200 p-6 transition-colors hover:border-[#1ea99b]">
+                <Link href={d.href} data-spot className="group flex h-full flex-col rounded-2xl border border-slate-200 p-6 transition-colors hover:border-[#1ea99b]">
                   <FileText className="h-5 w-5 text-[#12857a]" />
                   <span className="mt-4 font-display text-xl font-semibold text-[#0e2343]">{d.title}</span>
                   <span className="mt-1 text-slate-600">{d.body}</span>

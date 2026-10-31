@@ -25,7 +25,7 @@ export default function PageHero({
       <div className="relative mx-auto grid max-w-[1320px] items-center gap-10 px-5 pb-14 pt-8 sm:px-8 lg:grid-cols-12 lg:px-12 lg:pb-20 lg:pt-14">
         <Reveal className="lg:col-span-8">
           <nav aria-label="Breadcrumb" className="flex items-center gap-1.5 text-sm text-slate-500">
-            <Link href="/" className="hover:text-[#0e2343]">Home</Link>
+            <Link href="/" className="-my-2 inline-block py-2 hover:text-[#0e2343]">Home</Link>
             <ChevronRight className="h-3.5 w-3.5" />
             <span className="text-[#0e2343]">{crumb}</span>
           </nav>
@@ -48,6 +48,6 @@ export default function PageHero({
   );
 }
 
-export const btnPrimary = "inline-flex h-[3.25rem] items-center justify-center whitespace-nowrap rounded-full bg-[#0e2343] px-7 font-semibold text-white shadow-[0_10px_30px_-10px_rgba(14,35,67,0.6)] transition-colors hover:bg-[#13305c] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#1ea99b]";
-export const btnSecondary = "inline-flex h-[3.25rem] items-center justify-center whitespace-nowrap rounded-full border border-slate-300 bg-white/70 px-7 font-semibold text-[#0e2343] transition-colors hover:border-[#0e2343] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#1ea99b]";
+export const btnPrimary = "inline-flex h-[3.25rem] items-center justify-center whitespace-nowrap rounded-full bg-[#0e2343] px-7 font-semibold text-white shadow-[0_10px_30px_-10px_rgba(14,35,67,0.6)] transition-[background-color,transform] hover:bg-[#13305c] active:scale-[0.98] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#1ea99b]";
+export const btnSecondary = "inline-flex h-[3.25rem] items-center justify-center whitespace-nowrap rounded-full border border-slate-300 bg-white/70 px-7 font-semibold text-[#0e2343] transition-[border-color,transform] hover:border-[#0e2343] active:scale-[0.98] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#1ea99b]";
 export const WHATSAPP = (msg: string) => `https://wa.me/918074906808?text=${encodeURIComponent(msg)}`;

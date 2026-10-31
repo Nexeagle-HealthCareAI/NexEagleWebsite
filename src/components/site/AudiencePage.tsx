@@ -70,7 +70,7 @@ export default function AudiencePage({ c }: { c: AudienceConfig }) {
         <div className="relative mx-auto grid max-w-[1320px] items-center gap-12 px-5 pb-16 pt-8 sm:px-8 lg:grid-cols-12 lg:gap-10 lg:px-12 lg:pb-24 lg:pt-14">
           <div className="lg:col-span-6">
             <nav aria-label="Breadcrumb" className="flex items-center gap-1.5 text-sm text-slate-500">
-              <Link href="/" className="hover:text-[#0e2343]">Home</Link>
+              <Link href="/" className="-my-2 inline-block py-2 hover:text-[#0e2343]">Home</Link>
               <ChevronRight className="h-3.5 w-3.5" />
               <span className="text-[#0e2343]">{c.crumb}</span>
             </nav>
@@ -133,7 +133,7 @@ export default function AudiencePage({ c }: { c: AudienceConfig }) {
           <ul className="mt-10 grid gap-4 sm:grid-cols-2">
             {c.products.map((p, i) => (
               <Reveal as="li" key={p.name} delay={(i % 2) * 0.06}>
-                <Link href={p.href} className="group flex h-full flex-col rounded-2xl border border-slate-200 bg-white p-6 transition-[border-color,box-shadow] hover:border-[#1ea99b]/60 hover:shadow-[0_24px_60px_-40px_rgba(14,35,67,0.45)]">
+                <Link href={p.href} data-spot className="group flex h-full flex-col rounded-2xl border border-slate-200 bg-white p-6 transition-[border-color,box-shadow] hover:border-[#1ea99b]/60 hover:shadow-[0_24px_60px_-40px_rgba(14,35,67,0.45)]">
                   <span className={`self-start rounded-full px-2.5 py-0.5 text-xs font-semibold ${p.when === "Start with" ? "bg-[#1ea99b]/10 text-[#12857a]" : "bg-slate-100 text-slate-600"}`}>{p.when}</span>
                   <span className="mt-3 font-display text-2xl font-semibold text-[#0e2343]">{p.name}</span>
                   <span className="mt-1 text-slate-600">{p.line}</span>

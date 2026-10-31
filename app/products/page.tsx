@@ -38,7 +38,7 @@ export default function Page() {
         <div className="mx-auto grid max-w-[1320px] gap-5 px-5 sm:grid-cols-2 sm:px-8 lg:px-12">
           {PRODUCTS.map((p, i) => (
             <Reveal key={p.name} delay={(i % 2) * 0.08}>
-              <Link href={p.href} className="group flex h-full flex-col rounded-[1.75rem] border border-slate-200 bg-white p-7 transition-[border-color,box-shadow,transform] hover:-translate-y-0.5 hover:border-[#1ea99b]/60 hover:shadow-[0_30px_70px_-40px_rgba(14,35,67,0.45)] sm:p-9">
+              <Link href={p.href} data-spot className="group flex h-full flex-col rounded-[1.75rem] border border-slate-200 bg-white p-7 transition-[border-color,box-shadow,transform] hover:-translate-y-0.5 hover:border-[#1ea99b]/60 hover:shadow-[0_30px_70px_-40px_rgba(14,35,67,0.45)] sm:p-9">
                 <span className="flex items-center gap-2 text-sm font-medium text-slate-500"><span className={`h-2.5 w-2.5 rounded-full ${p.dot}`} />{p.cat}</span>
                 <span className="mt-4 font-display text-4xl font-semibold tracking-[-0.03em] text-[#0e2343]">{p.name}</span>
                 <span className="mt-3 text-lg leading-relaxed text-slate-600">{p.line}</span>

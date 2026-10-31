@@ -142,7 +142,7 @@ export default function ServicesPage() {
           <h2 id="svc-title" className="max-w-2xl font-display text-[2.2rem] font-semibold leading-[1.04] tracking-[-0.03em] text-[#0e2343] sm:text-5xl">What we can do for you</h2>
           <ul className="mt-12 grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
             {SERVICES.map(({ Icon, name, line, items }, i) => (
-              <Reveal as="li" key={name} delay={(i % 3) * 0.06} className="rounded-[1.5rem] border border-slate-200 bg-white p-7 transition-[border-color,box-shadow] hover:border-[#1ea99b]/60 hover:shadow-[0_30px_70px_-40px_rgba(14,35,67,0.45)]">
+              <Reveal as="li" key={name} delay={(i % 3) * 0.06} className="spot-host rounded-[1.5rem] border border-slate-200 bg-white p-7 transition-[border-color,box-shadow] hover:border-[#1ea99b]/60 hover:shadow-[0_30px_70px_-40px_rgba(14,35,67,0.45)]">
                 <span className="grid h-11 w-11 place-items-center rounded-xl bg-[#1ea99b]/10 text-[#12857a]"><Icon className="h-5 w-5" /></span>
                 <h3 className="mt-5 font-display text-xl font-semibold text-[#0e2343]">{name}</h3>
                 <p className="mt-1 text-slate-600">{line}</p>

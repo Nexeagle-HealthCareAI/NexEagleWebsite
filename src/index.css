@@ -698,3 +698,36 @@
   border-color: rgba(30, 169, 155, 0.45);
 }
 .ne-scene-label.is-active span { display: block; }
+
+/* ── Calm interaction layer ──────────────────────────────────────────────────────────── */
+/* Cards marked data-spot get a soft glow that follows the cursor, a hairline lift and a press. */
+[data-spot], .spot-host {
+  position: relative;
+  isolation: isolate;
+  transition: transform 0.35s cubic-bezier(0.22, 1, 0.36, 1), box-shadow 0.35s ease, border-color 0.35s ease;
+}
+[data-spot]::before, .spot-host::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  background: radial-gradient(380px circle at var(--mx, 50%) var(--my, 50%), hsl(var(--brand-teal) / 0.09), transparent 45%);
+  opacity: 0;
+  transition: opacity 0.4s ease;
+  pointer-events: none;
+  z-index: -1;
+}
+@media (hover: hover) {
+  [data-spot]:hover::before, .spot-host:hover::before { opacity: 1; }
+}
+[data-spot]:active, .spot-host:active { transform: scale(0.99); }
+
+/* Text selection and focus in brand colours */
+::selection { background: hsl(var(--brand-teal) / 0.22); color: #0e2343; }
+:focus-visible { outline: 2px solid #1ea99b; outline-offset: 3px; border-radius: 6px; }
+
+@media (prefers-reduced-motion: reduce) {
+  html { scroll-behavior: auto; }
+  [data-spot], [data-spot]::before, .spot-host::before { transition: none; }
+  [data-spot]:active { transform: none; }
+}
