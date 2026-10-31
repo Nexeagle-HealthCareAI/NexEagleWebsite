@@ -1,7 +1,7 @@
 import Image from "next/image";
 import Link from "next/link";
 import type { LucideIcon } from "lucide-react";
-import { Check, ChevronRight } from "lucide-react";
+import { ArrowUpRight, Check, ChevronRight } from "lucide-react";
 import { AgentCard } from "@/components/home-v2/AgentsSection";
 import { StepCards } from "@/components/home-v2/PatientJourney";
 import type { Step } from "@/lib/journeySteps";
@@ -32,6 +32,8 @@ export type ProductConfig = {
   faq: { q: string; a: string }[];
   schema: { name: string; category: string; description: string };
   analyticsTitle: string;
+  /** The live app customers sign in to, if this product has its own. */
+  app?: string;
 };
 
 const WHATSAPP = "https://wa.me/918074906808?text=";
@@ -103,6 +105,15 @@ export default function ProductPage({ c }: { c: ProductConfig }) {
                   Ask on WhatsApp
                 </a>
               </div>
+              {c.app && (
+                <p className="mt-4 text-sm text-slate-500">
+                  Already using {c.name}?{" "}
+                  <a href={c.app} target="_blank" rel="noopener noreferrer" className="inline-flex items-center gap-0.5 py-1 font-semibold text-[#12857a] underline-offset-4 hover:text-[#0e2343] hover:underline">
+                    Open {c.name}
+                    <ArrowUpRight className="h-3.5 w-3.5" />
+                  </a>
+                </p>
+              )}
               <ul className="mt-8 flex flex-wrap gap-x-6 gap-y-2">
                 {c.points.map((p) => (
                   <li key={p} className="flex items-center gap-2 text-sm text-slate-600">

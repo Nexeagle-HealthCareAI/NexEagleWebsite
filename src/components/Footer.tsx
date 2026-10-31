@@ -1,6 +1,7 @@
 import Link from "next/link";
 import Image from "next/image";
-import { Linkedin, Mail, Phone } from "lucide-react";
+import { ArrowUpRight, Linkedin, Mail, Phone } from "lucide-react";
+import { APPS } from "@/lib/site";
 import TrackingChoicesLink from "./TrackingChoicesLink";
 
 const COLS = [
@@ -79,7 +80,16 @@ export default function Footer() {
             ))}
           </div>
         </div>
-        <div className="mt-14 flex flex-col gap-3 border-t border-white/10 pt-6 text-sm text-slate-500 sm:flex-row sm:items-center sm:justify-between">
+        <div className="mt-12 flex flex-wrap items-center gap-x-2 gap-y-2 border-t border-white/10 pt-6">
+          <span className="mr-2 text-sm text-slate-500">Sign in</span>
+          {APPS.map((a) => (
+            <a key={a.href} href={a.href} target="_blank" rel="noopener noreferrer" className="inline-flex items-center gap-1 rounded-full border border-white/15 px-3.5 py-1.5 text-sm font-medium text-slate-300 transition-colors hover:border-white/40 hover:text-white focus-visible:outline focus-visible:outline-2 focus-visible:outline-[#1ea99b]">
+              {a.name}
+              <ArrowUpRight className="h-3.5 w-3.5" />
+            </a>
+          ))}
+        </div>
+        <div className="mt-6 flex flex-col gap-3 border-t border-white/10 pt-6 text-sm text-slate-500 sm:flex-row sm:items-center sm:justify-between">
           <p className="text-slate-500">© {new Date().getFullYear()} NexEagle. All rights reserved. Photography via <a href="https://unsplash.com" target="_blank" rel="noopener noreferrer" className="underline-offset-2 hover:text-white hover:underline">Unsplash</a>.</p>
           <TrackingChoicesLink className="self-start rounded text-slate-500 transition-colors hover:text-white focus-visible:outline focus-visible:outline-2 focus-visible:outline-[#1ea99b] sm:self-auto" />
         </div>

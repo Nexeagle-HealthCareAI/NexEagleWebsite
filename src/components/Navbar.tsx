@@ -5,9 +5,9 @@ import Link from "next/link";
 import Image from "next/image";
 import { usePathname } from "next/navigation";
 import { AnimatePresence, motion, useReducedMotion } from "framer-motion";
-import { ChevronDown, Menu, Stethoscope, X } from "lucide-react";
+import { ArrowUpRight, ChevronDown, Menu, Stethoscope, X } from "lucide-react";
 import { cn } from "@/lib/utils";
-import { DOCTORDEKHO_URL } from "@/lib/site";
+import { APPS, DOCTORDEKHO_URL } from "@/lib/site";
 
 const PRODUCTS = [
   { name: "1HMS", line: "Hospital management & EMR", href: "/solutions/1hms", dot: "bg-[#1ea99b]" },
@@ -127,6 +127,15 @@ export default function Navbar() {
                         </Link>
                       ))}
                     </div>
+                    <div className="col-span-2 flex flex-wrap items-center gap-x-1 gap-y-1 border-t border-slate-100 px-3 pb-1 pt-3">
+                      <span className="mr-2 text-xs font-semibold uppercase tracking-[0.12em] text-slate-400">Open an app</span>
+                      {APPS.map((a) => (
+                        <a key={a.href} href={a.href} target="_blank" rel="noopener noreferrer" className="inline-flex items-center gap-1 rounded-full px-3 py-1.5 text-sm font-semibold text-[#12857a] transition-colors hover:bg-[#1ea99b]/10 focus-visible:outline focus-visible:outline-2 focus-visible:outline-[#1ea99b]">
+                          {a.name}
+                          <ArrowUpRight className="h-3.5 w-3.5" />
+                        </a>
+                      ))}
+                    </div>
                     </div>
                   </motion.div>
                 )}
@@ -217,6 +226,15 @@ export default function Navbar() {
                   </motion.div>
                 ))}
               </div>
+              <motion.p variants={item(reduce)} className="px-1 pb-1 pt-5 text-sm text-slate-500">Open an app</motion.p>
+              <motion.div variants={item(reduce)} className="flex flex-wrap gap-2 px-1">
+                {APPS.map((a) => (
+                  <a key={a.href} href={a.href} target="_blank" rel="noopener noreferrer" className="inline-flex h-11 items-center gap-1 rounded-full border border-slate-200 px-4 font-semibold text-[#12857a] active:bg-slate-50">
+                    {a.name}
+                    <ArrowUpRight className="h-4 w-4" />
+                  </a>
+                ))}
+              </motion.div>
               <div className="my-4 h-px bg-slate-200" />
               {LINKS.map((l) => (
                 <motion.div key={l.href} variants={item(reduce)}>

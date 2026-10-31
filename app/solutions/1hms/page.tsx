@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import { DOCTORDEKHO_URL, HMS_APP_URL } from "@/lib/site";
 import { BarChart3, BedDouble, CalendarClock, FileSignature, FlaskConical, Languages, Mic, Pill, Receipt, ShieldCheck, Stethoscope, BellRing } from "lucide-react";
 import ProductPage, { type ProductConfig } from "@/components/site/ProductPage";
 import { STEPS } from "@/lib/journeySteps";
@@ -50,7 +51,7 @@ const c: ProductConfig = {
     { name: "1Rad", href: "/solutions/1rad", line: "Cloud PACS with AI-drafted radiology reports" },
     { name: "1Lab", href: "/solutions/1lab", line: "Samples tracked from collection to approved result" },
     { name: "1Pharma", href: "/solutions/1pharma", line: "Prescriptions, stock and expiry in one counter" },
-    { name: "Doctor Dekho", href: "https://doctordekho.nexeagle.com", line: "Patients find you, book and arrive with their details" },
+    { name: "Doctor Dekho", href: DOCTORDEKHO_URL, line: "Patients find you, book and arrive with their details" },
   ],
   faq: [
     { q: "Is 1HMS suitable for small hospitals and nursing homes?", a: "Yes. 1HMS is built for small and mid-sized hospitals, nursing homes and clinics in India. You can start with OPD and billing and add IPD, lab, radiology and pharmacy as you grow." },
@@ -67,6 +68,7 @@ const c: ProductConfig = {
     description: DESCRIPTION,
   },
   analyticsTitle: "1HMS - Hospital Management System | NexEagle",
+  app: HMS_APP_URL,
 };
 
 export default function Page() {

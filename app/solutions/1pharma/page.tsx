@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import { DOCTORDEKHO_URL } from "@/lib/site";
 import { AlertTriangle, BarChart3, ScanLine, ClipboardList, PackageSearch, Receipt, ShieldCheck, Truck } from "lucide-react";
 import ProductPage, { type ProductConfig } from "@/components/site/ProductPage";
 import { STEPS, type Step } from "@/lib/journeySteps";
@@ -56,7 +57,7 @@ const c: ProductConfig = {
     { name: "1HMS", href: "/solutions/1hms", line: "Prescriptions arrive as soon as the doctor signs" },
     { name: "1Lab", href: "/solutions/1lab", line: "Tests and medicines on one bill" },
     { name: "1Rad", href: "/solutions/1rad", line: "Contrast and consumables tracked with the scan" },
-    { name: "Doctor Dekho", href: "https://doctordekho.nexeagle.com", line: "Patients book and arrive with their details" },
+    { name: "Doctor Dekho", href: DOCTORDEKHO_URL, line: "Patients book and arrive with their details" },
   ],
   faq: [
     { q: "Can 1Pharma run a standalone medical store?", a: "Yes. 1Pharma works on its own for a pharmacy or medical store, and connects to 1HMS when it sits inside a hospital." },

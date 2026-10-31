@@ -1,13 +1,13 @@
 import type { Metadata } from "next";
 import Image from "next/image";
 import Link from "next/link";
-import { ChevronRight } from "lucide-react";
+import { ArrowUpRight, ChevronRight } from "lucide-react";
 import PageHero, { btnPrimary, btnSecondary } from "@/components/site/PageHero";
 import { Reveal } from "@/components/site/Motion";
 import AgentsSection from "@/components/home-v2/AgentsSection";
 import { ClosingCTA } from "@/components/home-v2/Sections";
 import AnalyticsTracker from "@/components/AnalyticsTracker";
-import { DOCTORDEKHO_URL } from "@/lib/site";
+import { DOCTORDEKHO_URL, HMS_APP_URL, RAD_APP_URL } from "@/lib/site";
 
 export const metadata: Metadata = {
   title: { absolute: "NexEagle Products: 1HMS, 1Rad, 1Lab, 1Pharma and Vita AI Agents" },
@@ -16,8 +16,8 @@ export const metadata: Metadata = {
 };
 
 const PRODUCTS = [
-  { name: "1HMS", cat: "Hospital management software & EMR", line: "OPD, IPD, e-prescriptions, AI scribe, orders and billing on one record.", href: "/solutions/1hms", dot: "bg-[#1ea99b]", for: "Hospitals, nursing homes, clinics" },
-  { name: "1Rad", cat: "Cloud PACS & AI radiology reporting", line: "Browser DICOM viewer, AI vision analysis and drafted reports your radiologist signs.", href: "/solutions/1rad", dot: "bg-[#1599db]", for: "Diagnostic centres, hospital radiology" },
+  { name: "1HMS", cat: "Hospital management software & EMR", line: "OPD, IPD, e-prescriptions, AI scribe, orders and billing on one record.", href: "/solutions/1hms", dot: "bg-[#1ea99b]", for: "Hospitals, nursing homes, clinics", app: HMS_APP_URL },
+  { name: "1Rad", cat: "Cloud PACS & AI radiology reporting", line: "Browser DICOM viewer, AI vision analysis and drafted reports your radiologist signs.", href: "/solutions/1rad", dot: "bg-[#1599db]", for: "Diagnostic centres, hospital radiology", app: RAD_APP_URL },
   { name: "1Lab", cat: "Laboratory information system", line: "Barcoded samples, analyser results, abnormal flags and pathologist approval.", href: "/solutions/1lab", dot: "bg-[#8a6fe0]", for: "Pathology labs, hospital labs" },
   { name: "1Pharma", cat: "Pharmacy & inventory", line: "Prescriptions from the doctor, barcode dispensing, expiry alerts and billing.", href: "/solutions/1pharma", dot: "bg-[#22a559]", for: "Hospital pharmacies, medical stores" },
 ];
@@ -38,13 +38,23 @@ export default function Page() {
         <div className="mx-auto grid max-w-[1320px] gap-5 px-5 sm:grid-cols-2 sm:px-8 lg:px-12">
           {PRODUCTS.map((p, i) => (
             <Reveal key={p.name} delay={(i % 2) * 0.08}>
-              <Link href={p.href} data-spot className="group flex h-full flex-col rounded-[1.75rem] border border-slate-200 bg-white p-7 transition-[border-color,box-shadow,transform] hover:-translate-y-0.5 hover:border-[#1ea99b]/60 hover:shadow-[0_30px_70px_-40px_rgba(14,35,67,0.45)] sm:p-9">
+              <article data-spot className="group relative flex h-full flex-col rounded-[1.75rem] border border-slate-200 bg-white p-7 transition-[border-color,box-shadow,transform] hover:-translate-y-0.5 hover:border-[#1ea99b]/60 hover:shadow-[0_30px_70px_-40px_rgba(14,35,67,0.45)] sm:p-9">
                 <span className="flex items-center gap-2 text-sm font-medium text-slate-500"><span className={`h-2.5 w-2.5 rounded-full ${p.dot}`} />{p.cat}</span>
-                <span className="mt-4 font-display text-4xl font-semibold tracking-[-0.03em] text-[#0e2343]">{p.name}</span>
+                <h2 className="mt-4 font-display text-4xl font-semibold tracking-[-0.03em] text-[#0e2343]">
+                  <Link href={p.href} className="after:absolute after:inset-0 after:rounded-[1.75rem] focus-visible:outline-none">{p.name}</Link>
+                </h2>
                 <span className="mt-3 text-lg leading-relaxed text-slate-600">{p.line}</span>
                 <span className="mt-6 text-sm text-slate-500">For: {p.for}</span>
-                <span className="mt-auto inline-flex items-center gap-1 pt-6 font-semibold text-[#12857a]">Explore {p.name}<ChevronRight className="h-4 w-4 transition-transform group-hover:translate-x-1" /></span>
-              </Link>
+                <span className="mt-auto flex flex-wrap items-center justify-between gap-3 pt-6">
+                  <span className="inline-flex items-center gap-1 font-semibold text-[#12857a]">Explore {p.name}<ChevronRight className="h-4 w-4 transition-transform group-hover:translate-x-1" /></span>
+                  {"app" in p && p.app && (
+                    <a href={p.app} target="_blank" rel="noopener noreferrer" className="relative z-10 inline-flex items-center gap-1 rounded-full border border-slate-200 px-3.5 py-1.5 text-sm font-semibold text-[#0e2343] transition-colors hover:border-[#1ea99b] hover:text-[#12857a]">
+                      Open {p.name}
+                      <ArrowUpRight className="h-3.5 w-3.5" />
+                    </a>
+                  )}
+                </span>
+              </article>
             </Reveal>
           ))}
           <Reveal className="sm:col-span-2">

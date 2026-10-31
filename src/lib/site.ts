@@ -19,3 +19,14 @@ export const DOCTORDEKHO_URL = stripTrailingSlash(
 
 /** True only for the real production origin -- dev/preview deployments must not be indexed. */
 export const IS_PRODUCTION_SITE = SITE_URL === PROD_SITE_URL;
+
+/** The product apps customers sign in to (separate deployments). Overridable per environment. */
+export const HMS_APP_URL = stripTrailingSlash(process.env.NEXT_PUBLIC_HMS_APP_URL || "https://1hms.nexeagle.com");
+export const RAD_APP_URL = stripTrailingSlash(process.env.NEXT_PUBLIC_RAD_APP_URL || "https://1rad.nexeagle.com");
+
+/** Every app, in one list, for menus and the footer. */
+export const APPS = [
+  { name: "1HMS", line: "Hospital management", href: HMS_APP_URL },
+  { name: "1Rad", line: "Cloud PACS & reporting", href: RAD_APP_URL },
+  { name: "Doctor Dekho", line: "Find a doctor", href: DOCTORDEKHO_URL },
+] as const;

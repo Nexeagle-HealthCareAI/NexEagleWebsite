@@ -1,6 +1,8 @@
 // What Vita (the support assistant) can answer instantly. Written answers only, so every reply is
 // accurate and approved; anything Vita can't match is handed to the NexEagle team.
 
+import { DOCTORDEKHO_URL, HMS_APP_URL, RAD_APP_URL } from "@/lib/site";
+
 export type Topic = {
   id: string;
   label: string; // chip text
@@ -64,7 +66,7 @@ export const TOPICS: Topic[] = [
     label: "Find a doctor",
     keywords: ["doctor", "appointment", "patient", "doctor dekho", "find a doctor", "symptom", "near me", "booking for me", "consult", "sick", "fever"],
     answer: "If you're a patient looking for a doctor, Vita can help on Doctor Dekho: describe how you feel, see nearby doctors with fees and open slots, and book. For an emergency, please call 112 or go to the nearest hospital.",
-    link: { text: "Open Doctor Dekho", href: "https://doctordekho.nexeagle.com" },
+    link: { text: "Open Doctor Dekho", href: DOCTORDEKHO_URL },
   },
   {
     id: "scribe",
@@ -125,6 +127,14 @@ export const TOPICS: Topic[] = [
     answer: "NexEagle was founded by doctors and engineers, including a urologist (MCh, SSKM) who checks every clinical workflow, with engineers from NIT Warangal and IIT Bombay.",
     link: { text: "Meet the team", href: "/team" },
     next: ["demo"],
+  },
+  {
+    id: "signin",
+    label: "Open my app",
+    keywords: ["login", "log in", "sign in", "signin", "open app", "open the app", "app link", "my account", "portal"],
+    answer: `Hospital teams sign in to 1HMS at ${HMS_APP_URL.replace("https://", "")} and to 1Rad at ${RAD_APP_URL.replace("https://", "")}. Patients use Doctor Dekho at ${DOCTORDEKHO_URL.replace("https://", "")}. If your login isn't working, tell me and I'll connect you with support.`,
+    link: { text: "Open 1HMS", href: HMS_APP_URL },
+    next: ["support"],
   },
   {
     id: "support",

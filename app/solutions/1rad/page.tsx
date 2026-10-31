@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import { DOCTORDEKHO_URL, RAD_APP_URL } from "@/lib/site";
 import { Bot, Building2, Cable, Eye, FileText, Globe2, LayoutDashboard, Monitor, Receipt, Share2, ShieldCheck, Users } from "lucide-react";
 import ProductPage, { type ProductConfig } from "@/components/site/ProductPage";
 import { STEPS, type Step } from "@/lib/journeySteps";
@@ -70,7 +71,7 @@ const c: ProductConfig = {
     { name: "1HMS", href: "/solutions/1hms", line: "Scan orders arrive from the doctor's consultation" },
     { name: "1Lab", href: "/solutions/1lab", line: "Lab results sit next to imaging in one record" },
     { name: "1Pharma", href: "/solutions/1pharma", line: "Contrast and consumables on the same bill" },
-    { name: "Doctor Dekho", href: "https://doctordekho.nexeagle.com", line: "Patients find your centre and book a scan" },
+    { name: "Doctor Dekho", href: DOCTORDEKHO_URL, line: "Patients find your centre and book a scan" },
   ],
   faq: [
     { q: "Does 1Rad AI replace the radiologist?", a: "No. 1Rad Vita analyses each study, marks regions that need a closer look and prepares a first-draft report. A qualified radiologist always reviews, edits and signs the report before it is released." },
@@ -87,6 +88,7 @@ const c: ProductConfig = {
     description: DESCRIPTION,
   },
   analyticsTitle: "1Rad - Cloud PACS & RIS | NexEagle",
+  app: RAD_APP_URL,
 };
 
 export default function Page() {

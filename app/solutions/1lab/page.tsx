@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import { DOCTORDEKHO_URL } from "@/lib/site";
 import { ScanLine, BellRing, ClipboardCheck, Cpu, FileText, FlaskConical, Gauge, Receipt, ShieldCheck } from "lucide-react";
 import ProductPage, { type ProductConfig } from "@/components/site/ProductPage";
 import { STEPS, type Step } from "@/lib/journeySteps";
@@ -57,7 +58,7 @@ const c: ProductConfig = {
     { name: "1HMS", href: "/solutions/1hms", line: "Test orders arrive from the consultation" },
     { name: "1Rad", href: "/solutions/1rad", line: "Imaging and lab results side by side" },
     { name: "1Pharma", href: "/solutions/1pharma", line: "One bill for tests and medicines" },
-    { name: "Doctor Dekho", href: "https://doctordekho.nexeagle.com", line: "Patients find your lab and book a test" },
+    { name: "Doctor Dekho", href: DOCTORDEKHO_URL, line: "Patients find your lab and book a test" },
   ],
   faq: [
     { q: "Can 1Lab work for a standalone pathology lab?", a: "Yes. 1Lab works on its own for pathology and diagnostic labs, and connects to 1HMS when the lab is part of a hospital." },
