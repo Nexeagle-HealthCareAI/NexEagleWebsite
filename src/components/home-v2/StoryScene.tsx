@@ -719,7 +719,7 @@ function Lighting() {
 // Glow for the particle streams and screens, contact shadows in the corners, smooth edges.
 function Post() {
   return (
-    <EffectComposer multisampling={0} disableNormalPass>
+    <EffectComposer multisampling={0}>
       <Bloom luminanceThreshold={1.0} luminanceSmoothing={0.15} intensity={0.7} mipmapBlur radius={0.55} />
       <SMAA />
     </EffectComposer>
