@@ -111,7 +111,7 @@ export default function Hero() {
           className="relative lg:col-span-7"
         >
           <div className="relative">
-          <div className="relative -mx-5 h-[360px] sm:-mx-8 sm:h-[500px] lg:mx-0 lg:h-[min(680px,calc(100svh-9rem))]">
+          <div className="relative -mx-5 h-[360px] [mask-image:linear-gradient(to_bottom,transparent,#000_7%,#000_93%,transparent)] sm:-mx-8 sm:h-[500px] lg:mx-0 lg:h-[min(680px,calc(100svh-9rem))] lg:[mask-image:radial-gradient(115%_105%_at_50%_48%,#000_52%,transparent_100%)]">
             <StoryScene screen={stage.key} onPick={pick} />
           </div>
 
@@ -140,7 +140,7 @@ export default function Hero() {
           </div>
 
           {/* Step strip: the same five stages, for touch and for anyone who skips the 3D */}
-          <ol aria-label="The patient journey with Vita" className="-mx-5 mt-1 flex gap-2 overflow-x-auto px-5 pb-2 [scrollbar-width:none] sm:-mx-8 sm:px-8 lg:mx-0 lg:px-0">
+          <ol aria-label="The patient journey with Vita" className="-mx-5 mt-1 flex gap-2 overflow-x-auto px-5 pb-2 [scrollbar-width:none] sm:-mx-8 sm:px-8 lg:mx-0 lg:px-0 lg:pr-60">
             {SCREENS.map((s, n) => {
               const on = n === i;
               return (

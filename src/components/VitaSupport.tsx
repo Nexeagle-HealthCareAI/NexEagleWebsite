@@ -31,13 +31,19 @@ export default function VitaSupport() {
   const scrollRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLInputElement>(null);
 
-  // A small hello bubble after a while, once per visit.
+  // A small hello bubble once per visit: after a while, and only once the visitor has scrolled a
+  // little, so it never sits on top of the homepage hero.
   useEffect(() => {
     let seen = false;
     try { seen = sessionStorage.getItem("vita-nudged") === "1"; } catch { /* ignore */ }
     if (seen) return;
-    const t = setTimeout(() => { setNudge(true); try { sessionStorage.setItem("vita-nudged", "1"); } catch { /* ignore */ } }, 12000);
-    return () => clearTimeout(t);
+    let ready = false;
+    let scrolled = window.scrollY > 160;
+    const show = () => { if (ready && scrolled) { setNudge(true); try { sessionStorage.setItem("vita-nudged", "1"); } catch { /* ignore */ } window.removeEventListener("scroll", onScroll); } };
+    const onScroll = () => { if (window.scrollY > 160) { scrolled = true; show(); } };
+    window.addEventListener("scroll", onScroll, { passive: true });
+    const t = setTimeout(() => { ready = true; show(); }, 12000);
+    return () => { clearTimeout(t); window.removeEventListener("scroll", onScroll); };
   }, []);
 
   useEffect(() => {

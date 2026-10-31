@@ -9,6 +9,7 @@ import { useFrame } from "@react-three/fiber";
 import * as THREE from "three";
 import { BUILDINGS, C, HOME, HUB, ROAD, type Stage } from "./HospitalScene";
 
+const DT_CAP = typeof window !== "undefined" && window.location.hash.includes("fast") ? 10 : 0.1;
 const door = (k: string) => BUILDINGS.find((b) => b.key === k)!.door;
 const V = (p: [number, number, number] | THREE.Vector3) => (p instanceof THREE.Vector3 ? p.clone() : new THREE.Vector3(...p));
 
@@ -17,70 +18,105 @@ export type Look = { shirt: string; skin?: string; hair?: string; coat?: boolean
 
 export function Person({ look, walk, phase = 0, scale = 1 }: { look: Look; walk: React.MutableRefObject<number>; phase?: number; scale?: number }) {
   const g = useRef<THREE.Group>(null);
-  const l1 = useRef<THREE.Mesh>(null);
-  const l2 = useRef<THREE.Mesh>(null);
-  const a1 = useRef<THREE.Mesh>(null);
-  const a2 = useRef<THREE.Mesh>(null);
-  useFrame(({ clock }) => {
+  const torso = useRef<THREE.Group>(null);
+  const head = useRef<THREE.Group>(null);
+  const hipL = useRef<THREE.Group>(null);
+  const hipR = useRef<THREE.Group>(null);
+  const kneeL = useRef<THREE.Group>(null);
+  const kneeR = useRef<THREE.Group>(null);
+  const shL = useRef<THREE.Group>(null);
+  const shR = useRef<THREE.Group>(null);
+  const elL = useRef<THREE.Group>(null);
+  const elR = useRef<THREE.Group>(null);
+  const stride = useRef(phase);
+  useFrame(({ clock }, rawDt) => {
+    const dt = Math.min(rawDt, DT_CAP);
     const w = walk.current; // 0 = standing, 1 = full stride
-    const t = clock.elapsedTime * 9 + phase;
-    const s = Math.sin(t) * 0.55 * w;
-    if (l1.current) l1.current.rotation.x = s;
-    if (l2.current) l2.current.rotation.x = -s;
-    if (a1.current) a1.current.rotation.x = -s * 0.8;
-    if (a2.current) a2.current.rotation.x = s * 0.8;
-    if (g.current) g.current.position.y = Math.abs(Math.sin(t)) * 0.012 * w + Math.sin(clock.elapsedTime * 1.6 + phase) * 0.004;
+    stride.current += dt * (6.5 + w * 3.5) * Math.max(w, 0.0001); // legs only cycle while walking
+    const t = stride.current;
+    const T = clock.elapsedTime + phase;
+    const sw = Math.sin(t) * 0.6 * w;
+    // thighs swing; each knee bends as that leg comes forward and straightens at heel strike
+    if (hipL.current) hipL.current.rotation.x = sw;
+    if (hipR.current) hipR.current.rotation.x = -sw;
+    if (kneeL.current) kneeL.current.rotation.x = -Math.max(0, Math.sin(t + 0.9)) * 0.95 * w;
+    if (kneeR.current) kneeR.current.rotation.x = -Math.max(0, Math.sin(t + Math.PI + 0.9)) * 0.95 * w;
+    // arms counter-swing with a bent elbow; at rest they hang with a slow breath
+    if (shL.current) shL.current.rotation.x = -sw * 0.75 + Math.sin(T * 1.4) * 0.03;
+    if (shR.current) shR.current.rotation.x = sw * 0.75 - Math.sin(T * 1.4) * 0.03;
+    if (elL.current) elL.current.rotation.x = -0.25 - Math.max(0, -Math.sin(t)) * 0.5 * w;
+    if (elR.current) elR.current.rotation.x = -0.25 - Math.max(0, Math.sin(t)) * 0.5 * w;
+    // body: lean into the walk, bob on each step, sway at the hips; idle breathing and glances
+    if (torso.current) {
+      torso.current.rotation.x = 0.06 * w;
+      torso.current.rotation.z = Math.sin(t) * 0.04 * w;
+      torso.current.rotation.y = Math.sin(t) * 0.06 * w;
+      torso.current.scale.y = 1 + Math.sin(T * 1.6) * 0.008 * (1 - w);
+    }
+    if (head.current) {
+      head.current.rotation.y = (1 - w) * Math.sin(T * 0.45) * 0.35 + Math.sin(t) * 0.04 * w;
+      head.current.rotation.x = (1 - w) * Math.sin(T * 0.9 + 1) * 0.05;
+    }
+    if (g.current) g.current.position.y = Math.abs(Math.sin(t)) * 0.016 * w;
   });
   const skin = look.skin ?? "#d9a37a";
   const hair = look.hair ?? "#2b2420";
   const shirt = look.coat ? "#ffffff" : look.shirt;
   const leg = look.coat ? "#4b5563" : "#334155";
+  const Leg = ({ hip, knee, x }: { hip: React.RefObject<THREE.Group>; knee: React.RefObject<THREE.Group>; x: number }) => (
+    <group ref={hip} position={[x, 0.245, 0]}>
+      <mesh position={[0, -0.055, 0]} castShadow><capsuleGeometry args={[0.028, 0.07, 3, 8]} /><meshStandardMaterial color={leg} roughness={0.9} /></mesh>
+      <group ref={knee} position={[0, -0.11, 0]}>
+        <mesh position={[0, -0.055, 0]} castShadow><capsuleGeometry args={[0.025, 0.07, 3, 8]} /><meshStandardMaterial color={leg} roughness={0.9} /></mesh>
+        <mesh position={[0, -0.115, 0.015]} castShadow><boxGeometry args={[0.05, 0.025, 0.08]} /><meshStandardMaterial color="#1f2937" roughness={0.8} /></mesh>
+      </group>
+    </group>
+  );
+  const Arm = ({ sh, el, x }: { sh: React.RefObject<THREE.Group>; el: React.RefObject<THREE.Group>; x: number }) => (
+    <group ref={sh} position={[x, 0.15, 0]}>
+      <mesh position={[0, -0.05, 0]} castShadow><capsuleGeometry args={[0.02, 0.06, 3, 8]} /><meshStandardMaterial color={shirt} roughness={0.8} /></mesh>
+      <group ref={el} position={[0, -0.1, 0]}>
+        <mesh position={[0, -0.045, 0]} castShadow><capsuleGeometry args={[0.018, 0.05, 3, 8]} /><meshStandardMaterial color={skin} roughness={0.7} /></mesh>
+      </group>
+    </group>
+  );
   return (
     <group ref={g} scale={scale}>
-      {/* legs, hinged at the hip */}
-      <mesh ref={l1} position={[-0.035, 0.16, 0]} castShadow>
-        <cylinderGeometry args={[0.028, 0.03, 0.17, 8]} />
-        <meshStandardMaterial color={leg} roughness={0.9} />
-      </mesh>
-      <mesh ref={l2} position={[0.035, 0.16, 0]} castShadow>
-        <cylinderGeometry args={[0.028, 0.03, 0.17, 8]} />
-        <meshStandardMaterial color={leg} roughness={0.9} />
-      </mesh>
-      {/* body */}
-      <mesh position={[0, 0.3, 0]} castShadow>
-        <capsuleGeometry args={[0.065, 0.12, 4, 10]} />
-        <meshStandardMaterial color={shirt} roughness={0.8} />
-      </mesh>
-      {look.coat && (
-        <mesh position={[0, 0.3, 0.035]}>
-          <boxGeometry args={[0.05, 0.14, 0.04]} />
-          <meshStandardMaterial color={look.shirt} roughness={0.8} />
+      <Leg hip={hipL} knee={kneeL} x={-0.035} />
+      <Leg hip={hipR} knee={kneeR} x={0.035} />
+      <group ref={torso} position={[0, 0.24, 0]}>
+        <mesh position={[0, 0.07, 0]} castShadow>
+          <capsuleGeometry args={[0.065, 0.12, 4, 10]} />
+          <meshStandardMaterial color={shirt} roughness={0.8} />
         </mesh>
-      )}
-      {/* arms */}
-      <mesh ref={a1} position={[-0.085, 0.33, 0]} castShadow>
-        <capsuleGeometry args={[0.02, 0.1, 3, 8]} />
-        <meshStandardMaterial color={shirt} roughness={0.8} />
-      </mesh>
-      <mesh ref={a2} position={[0.085, 0.33, 0]} castShadow>
-        <capsuleGeometry args={[0.02, 0.1, 3, 8]} />
-        <meshStandardMaterial color={shirt} roughness={0.8} />
-      </mesh>
-      {/* head and hair */}
-      <mesh position={[0, 0.465, 0]} castShadow>
-        <sphereGeometry args={[0.062, 16, 16]} />
-        <meshStandardMaterial color={skin} roughness={0.7} />
-      </mesh>
-      <mesh position={[0, 0.5, -0.01]}>
-        <sphereGeometry args={[0.058, 16, 16, 0, Math.PI * 2, 0, Math.PI / 2]} />
-        <meshStandardMaterial color={hair} roughness={0.9} />
-      </mesh>
-      {look.bag && (
-        <mesh position={[0.1, 0.22, 0.02]}>
-          <boxGeometry args={[0.03, 0.09, 0.07]} />
-          <meshStandardMaterial color="#8a6fe0" roughness={0.8} />
-        </mesh>
-      )}
+        {look.coat && (
+          <mesh position={[0, 0.07, 0.04]}>
+            <boxGeometry args={[0.05, 0.14, 0.03]} />
+            <meshStandardMaterial color={look.shirt} roughness={0.8} />
+          </mesh>
+        )}
+        <Arm sh={shL} el={elL} x={-0.088} />
+        <Arm sh={shR} el={elR} x={0.088} />
+        <group ref={head} position={[0, 0.225, 0]}>
+          <mesh castShadow>
+            <sphereGeometry args={[0.062, 16, 16]} />
+            <meshStandardMaterial color={skin} roughness={0.7} />
+          </mesh>
+          <mesh position={[0, 0.035, -0.01]}>
+            <sphereGeometry args={[0.058, 16, 16, 0, Math.PI * 2, 0, Math.PI / 2]} />
+            <meshStandardMaterial color={hair} roughness={0.9} />
+          </mesh>
+          {[-0.022, 0.022].map((x) => (
+            <mesh key={x} position={[x, 0.005, 0.056]}><sphereGeometry args={[0.007, 8, 8]} /><meshStandardMaterial color="#1f1a17" /></mesh>
+          ))}
+        </group>
+        {look.bag && (
+          <mesh position={[0.1, -0.02, 0.02]}>
+            <boxGeometry args={[0.03, 0.09, 0.07]} />
+            <meshStandardMaterial color="#8a6fe0" roughness={0.8} />
+          </mesh>
+        )}
+      </group>
     </group>
   );
 }
@@ -92,7 +128,9 @@ function Walker({ path, speed = 0.35, pause = 1.4, offset = 0, look, loop = fals
   const state = useRef({ u: offset % 1, dir: 1, wait: 0 });
   const len = useMemo(() => path.getLength(), [path]);
   const tmp = useMemo(() => new THREE.Vector3(), []);
-  useFrame((_, dt) => {
+  const heading = useRef<number | null>(null);
+  useFrame((_, rawDt) => {
+    const dt = Math.min(rawDt, DT_CAP);
     const s = state.current;
     if (s.wait > 0) { s.wait -= dt; walk.current = THREE.MathUtils.damp(walk.current, 0, 8, dt); }
     else {
@@ -106,8 +144,13 @@ function Walker({ path, speed = 0.35, pause = 1.4, offset = 0, look, loop = fals
     const p = path.getPointAt(THREE.MathUtils.clamp(s.u, 0, 1));
     g.current.position.copy(p);
     const tan = path.getTangentAt(THREE.MathUtils.clamp(s.u, 0.001, 0.999)).multiplyScalar(s.dir);
-    tmp.copy(p).add(tan);
-    g.current.lookAt(tmp);
+    const want = Math.atan2(tan.x, tan.z);
+    if (heading.current === null) heading.current = want;
+    let d = want - heading.current;
+    d = Math.atan2(Math.sin(d), Math.cos(d));
+    heading.current += d * Math.min(1, dt * 6); // turn smoothly instead of snapping
+    g.current.rotation.y = heading.current;
+    void tmp;
   });
   return (
     <group ref={g}>
@@ -152,8 +195,10 @@ function Patient({ stage, animate }: { stage: Stage; animate: boolean }) {
     walk.current = THREE.MathUtils.damp(walk.current, moving ? 1 : 0, 8, dt);
     if (g.current) {
       g.current.position.copy(p);
-      if (moving) g.current.lookAt(tmp.x, p.y, tmp.z);
-      else if (stage === "find" || stage === "book") g.current.rotation.y = THREE.MathUtils.damp(g.current.rotation.y, 0.6, 4, dt);
+      const want = moving ? Math.atan2(tmp.x - p.x, tmp.z - p.z) : stage === "find" || stage === "book" ? 0.6 : g.current.rotation.y;
+      let d = want - g.current.rotation.y;
+      d = Math.atan2(Math.sin(d), Math.cos(d));
+      g.current.rotation.y += d * Math.min(1, dt * 6);
     }
     if (glow.current) {
       const on = stage === "find" || stage === "book";

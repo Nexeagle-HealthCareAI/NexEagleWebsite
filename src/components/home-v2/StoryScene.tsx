@@ -12,7 +12,8 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 import * as THREE from "three";
 import { Canvas, useFrame, useThree } from "@react-three/fiber";
-import { ContactShadows, Html, RoundedBox, useTexture } from "@react-three/drei";
+import { ContactShadows, Environment, Html, PerformanceMonitor, RoundedBox, SoftShadows, useTexture } from "@react-three/drei";
+import { Bloom, EffectComposer, SMAA } from "@react-three/postprocessing";
 import { Check, FileText, MapPin, Star } from "lucide-react";
 import { CAMPUS_Y, Campus } from "./HospitalScene";
 import People, { Person } from "./People";
@@ -27,6 +28,9 @@ export const SCREENS: { key: Screen; step: string; agent: string; ms: number }[]
 // Where each set sits on the stage (world x), and the campus in the middle.
 const X = { home: -15, campus: 0, room: 12.5, rad: 25 };
 const ink = "#0e2343";
+// Frame-time cap: keeps motion smooth when a device stalls. '#fast' in the URL lifts it (for testing).
+const DT_CAP = typeof window !== "undefined" && window.location.hash.includes("fast") ? 10 : 0.1;
+const glow = (hex: string, k = 3.2) => new THREE.Color(hex).multiplyScalar(k);
 
 /* ── Clock: seconds since the current screen began, shared by every set ─────────────── */
 type ClockRef = React.MutableRefObject<{ screen: Screen; t: number }>;
@@ -72,25 +76,43 @@ function Vita({ act, width = 1.3, animate, face = -1, height = 0.78 }: { act: Ac
   const land = useRef(0); // bounce on touchdown
   const shown = useRef<Exclude<Pose, "fly">>("present");
 
-  useFrame(({ clock }, dt) => {
+  const trip = useRef({ from: act.current.at.clone(), to: act.current.at.clone(), ctrl: act.current.at.clone(), t: 1, dur: 1 });
+  const flare = useRef(0);
+  useFrame(({ clock }, rawDt) => {
+    const dt = Math.min(rawDt, DT_CAP);
     const r = rig.current;
     if (!r) return;
     const t = clock.elapsedTime;
     const { at, pose } = act.current;
+    const tr = trip.current;
+    // A new destination starts a new trip: an arc that rises first, then settles, eased so she
+    // accelerates out and slows into the landing.
+    if (tr.to.distanceTo(at) > 0.05) {
+      tr.from.copy(pos.current); tr.to.copy(at);
+      const dist = tr.from.distanceTo(tr.to);
+      tr.ctrl.lerpVectors(tr.from, tr.to, 0.5);
+      tr.ctrl.y += Math.min(1.2, 0.35 + dist * 0.25);
+      tr.ctrl.z += 0.15;
+      tr.dur = THREE.MathUtils.clamp(0.6 + dist * 0.42, 0.8, 2.6);
+      tr.t = 0;
+    }
+    tr.t = Math.min(1, tr.t + dt / tr.dur);
+    const e = tr.t < 1 ? (tr.t < 0.5 ? 2 * tr.t * tr.t : 1 - Math.pow(-2 * tr.t + 2, 2) / 2) : 1;
     const prev = pos.current.clone();
-    // Fly toward the target; while standing she settles exactly on it.
-    const k = pose === "fly" ? 2.2 : 3.2;
-    pos.current.x = THREE.MathUtils.damp(pos.current.x, at.x, k, dt);
-    pos.current.y = THREE.MathUtils.damp(pos.current.y, at.y + (pose === "fly" ? Math.sin(t * 0.9) * 0.06 : 0), k, dt);
-    pos.current.z = THREE.MathUtils.damp(pos.current.z, at.z, k, dt);
+    const q = new THREE.Vector3();
+    q.copy(tr.from).multiplyScalar((1 - e) * (1 - e)).addScaledVector(tr.ctrl, 2 * (1 - e) * e).addScaledVector(tr.to, e * e);
+    if (pose === "fly" && tr.t >= 1) q.y += Math.sin(t * 0.9) * 0.06; // hover
+    pos.current.copy(q);
     vel.current.copy(pos.current).sub(prev).divideScalar(Math.max(dt, 1e-3));
     r.position.copy(pos.current);
     const speed = vel.current.length();
-    const near = pos.current.distanceTo(at) < 0.12;
+    const arriving = tr.t > 0.7 && tr.t < 1; // wings spread wide to brake
+    flare.current = THREE.MathUtils.damp(flare.current, arriving && pose !== "fly" ? 1 : 0, 6, dt);
+    const near = tr.t >= 1;
     // Switch to the standing pose only once she has arrived; take off as soon as she must move.
     const wantStand = pose !== "fly" && near;
     const before = mix.current;
-    mix.current = THREE.MathUtils.damp(mix.current, wantStand ? 1 : 0, 7, dt);
+    mix.current = THREE.MathUtils.damp(mix.current, wantStand ? 1 : 0, 6, dt);
     if (before < 0.5 && mix.current >= 0.5) land.current = 1;
     land.current = Math.max(0, land.current - dt * 2.2);
     if (pose !== "fly") shown.current = pose;
@@ -98,12 +120,15 @@ function Vita({ act, width = 1.3, animate, face = -1, height = 0.78 }: { act: Ac
     // flying layers
     if (flyer.current) {
       flyer.current.visible = mix.current < 0.98;
-      const rate = 2.6 + Math.min(speed, 2) * 1.6;
-      const amp = animate ? 0.2 + Math.min(speed, 2) * 0.08 : 0;
+      const rate = (2.6 + Math.min(speed, 2) * 1.6) * (1 - flare.current * 0.45);
+      const amp = animate ? (0.2 + Math.min(speed, 2) * 0.08) * (1 + flare.current * 0.9) : 0;
       const beat = Math.sin(t * rate);
-      if (farRef.current) { farRef.current.rotation.z = 0.12 + beat * amp; farRef.current.rotation.x = -0.1 + beat * 0.08; }
-      if (nearRef.current) { nearRef.current.rotation.z = -0.08 - beat * amp * 1.15; nearRef.current.rotation.x = 0.1 - beat * 0.1; }
-      flyer.current.rotation.z = THREE.MathUtils.damp(flyer.current.rotation.z, THREE.MathUtils.clamp(-vel.current.x * 0.2 * face, -0.3, 0.3), 3, dt);
+      const spread = flare.current * 0.35; // wings held high and wide while braking
+      if (farRef.current) { farRef.current.rotation.z = 0.12 + spread + beat * amp; farRef.current.rotation.x = -0.1 + beat * 0.08; }
+      if (nearRef.current) { nearRef.current.rotation.z = -0.08 - spread - beat * amp * 1.15; nearRef.current.rotation.x = 0.1 - beat * 0.1; }
+      // bank into turns, pitch up when braking
+      flyer.current.rotation.z = THREE.MathUtils.damp(flyer.current.rotation.z, THREE.MathUtils.clamp(-vel.current.x * 0.18 * face, -0.3, 0.3), 3, dt);
+      flyer.current.rotation.x = THREE.MathUtils.damp(flyer.current.rotation.x, flare.current * 0.25 - Math.min(speed, 2) * 0.05, 3, dt);
       flyer.current.position.y = Math.sin(t * rate + 1.2) * 0.025;
       flyMats.current.forEach((m) => { if (m) m.opacity = 1 - mix.current; });
     }
@@ -174,8 +199,8 @@ function Stream({ from, to, on, color = "#1ea99b", count = 14 }: { from: [number
     <group>
       {Array.from({ length: count }).map((_, i) => (
         <mesh key={i} ref={(el) => { if (el) parts.current[i] = el; }} scale={0.001}>
-          <sphereGeometry args={[0.035, 8, 8]} />
-          <meshBasicMaterial color={color} toneMapped={false} />
+          <sphereGeometry args={[0.03, 8, 8]} />
+          <meshBasicMaterial color={glow(color)} toneMapped={false} />
         </mesh>
       ))}
     </group>
@@ -200,8 +225,8 @@ function Orb({ from, to, go, color = "#8a6fe0", seconds = 1.2, trail }: { from: 
   void trail;
   return (
     <mesh ref={m} visible={false}>
-      <sphereGeometry args={[0.06, 12, 12]} />
-      <meshBasicMaterial color={color} toneMapped={false} />
+      <sphereGeometry args={[0.055, 12, 12]} />
+      <meshBasicMaterial color={glow(color)} toneMapped={false} />
     </mesh>
   );
 }
@@ -222,7 +247,7 @@ function Floor({ w, d, color = "#f3f8f8" }: { w: number; d: number; color?: stri
       </RoundedBox>
       <mesh rotation={[-Math.PI / 2, 0, 0]} position={[0, 0.002, 0]} receiveShadow>
         <planeGeometry args={[w - 0.4, d - 0.4]} />
-        <meshStandardMaterial color={color} roughness={1} />
+        <meshStandardMaterial color={color} roughness={0.38} metalness={0.02} />
       </mesh>
     </group>
   );
@@ -231,11 +256,11 @@ function Floor({ w, d, color = "#f3f8f8" }: { w: number; d: number; color?: stri
 function Walls({ w, d, h = 1.9, color = "#eef3f4" }: { w: number; d: number; h?: number; color?: string }) {
   return (
     <group>
-      <mesh position={[0, h / 2, -d / 2 + 0.2]} receiveShadow castShadow>
+      <mesh position={[0, h / 2, -d / 2 + 0.17]} receiveShadow castShadow>
         <boxGeometry args={[w - 0.4, h, 0.12]} />
         <meshStandardMaterial color={color} roughness={0.9} />
       </mesh>
-      <mesh position={[-w / 2 + 0.2, h / 2, 0]} receiveShadow castShadow>
+      <mesh position={[-w / 2 + 0.17, h / 2, 0]} receiveShadow castShadow>
         <boxGeometry args={[0.12, h, d - 0.4]} />
         <meshStandardMaterial color={color} roughness={0.9} />
       </mesh>
@@ -280,7 +305,7 @@ function Monitor({ x = 0, z = -0.12, w = 0.52, h = 0.34, lit = true, color = "#1
       <mesh position={[0, 0.12 + h / 2, 0]} castShadow><boxGeometry args={[w, h, 0.03]} /><meshStandardMaterial color="#2b3a46" roughness={0.5} /></mesh>
       <mesh position={[0, 0.12 + h / 2, 0.017]}>
         <planeGeometry args={[w - 0.04, h - 0.04]} />
-        <meshStandardMaterial color={lit ? "#0e2343" : "#111827"} emissive={lit ? color : "#000"} emissiveIntensity={lit ? 0.35 : 0} />
+        <meshStandardMaterial color={lit ? "#0e2343" : "#111827"} emissive={lit ? color : "#000"} emissiveIntensity={lit ? 0.9 : 0} toneMapped={false} />
       </mesh>
       {children}
     </group>
@@ -329,7 +354,8 @@ function HomeSet({ clock, animate }: { clock: ClockRef; animate: boolean }) {
   // Vita: hovers in (listening), lands beside the patient to talk, steps over to present the
   // doctors, sends the token to the phone, then takes off ahead of the patient.
   const act = useRef<Act>({ at: new THREE.Vector3(0.9, 1.6, 0.9), pose: "fly" });
-  useFrame(({ clock: c }, dt) => {
+  useFrame(({ clock: c }, rawDt) => {
+    const dt = Math.min(rawDt, DT_CAP);
     const on = clock.current.screen === "find";
     const t = on ? clock.current.t : 0;
     const p = !on ? 0 : t < 1.4 ? 1 : t < 3.6 ? 2 : t < 6.4 ? 3 : t < 8.8 ? 4 : 5;
@@ -510,7 +536,8 @@ function RadSet({ clock, animate }: { clock: ClockRef; animate: boolean }) {
   // then sees the report off to 1HMS.
   const act = useRef<Act>({ at: new THREE.Vector3(-1.5, 1.9, 0.9), pose: "fly" });
   const sent = useRef(0);
-  useFrame(({ clock: c }, dt) => {
+  useFrame(({ clock: c }, rawDt) => {
+    const dt = Math.min(rawDt, DT_CAP);
     const on = clock.current.screen === "rad";
     const t = on ? clock.current.t : 0;
     const p = !on ? 0 : t < 2.6 ? 1 : t < 5.2 ? 2 : t < 7.6 ? 3 : t < 9.2 ? 4 : 5;
@@ -545,7 +572,7 @@ function RadSet({ clock, animate }: { clock: ClockRef; animate: boolean }) {
         </mesh>
         <mesh ref={ring} position={[0, 0.95, 0.02]}>
           <torusGeometry args={[0.62, 0.06, 10, 40]} />
-          <meshStandardMaterial color="#1599db" emissive="#1599db" emissiveIntensity={0.7} />
+          <meshStandardMaterial color="#1599db" emissive="#1599db" emissiveIntensity={1.6} toneMapped={false} />
         </mesh>
         <mesh position={[0, 0.3, 0]} castShadow><boxGeometry args={[1.6, 0.6, 0.5]} /><meshStandardMaterial color="#f1f5f7" /></mesh>
         <group ref={table} position={[0, 0, 0.25]}>
@@ -618,35 +645,58 @@ const SHOTS: Record<Screen, (t: number) => Shot> = {
   rad: () => ({ pos: [X.rad + 0.2, 2.6, 6.1], look: [X.rad + 0.1, 1.2, 0], fov: 32 }),
 };
 
+const easeInOut = (x: number) => (x < 0.5 ? 4 * x * x * x : 1 - Math.pow(-2 * x + 2, 3) / 2);
+type Rig = { pos: THREE.Vector3; look: THREE.Vector3; fov: number };
+
 function Director({ clock, pointer }: { clock: ClockRef; pointer: React.MutableRefObject<{ x: number; y: number }> }) {
   const { camera, size } = useThree();
-  const look = useRef(new THREE.Vector3(X.home + 0.3, 0.9, 0));
+  const from = useRef<Rig>({ pos: new THREE.Vector3(), look: new THREE.Vector3(), fov: 32 });
+  const to = useRef<Rig>({ pos: new THREE.Vector3(), look: new THREE.Vector3(), fov: 32 });
+  const cur = useRef<Rig>({ pos: new THREE.Vector3(), look: new THREE.Vector3(), fov: 32 });
+  const move = useRef({ t: 1, dur: 1, key: "" });
+  const soft = useRef({ x: 0, y: 0 });
   const first = useRef(true);
-  useFrame((_, dt) => {
+  useFrame(({ clock: c }, rawDt) => {
+    const dt = Math.min(rawDt, DT_CAP);
     const s = SHOTS[clock.current.screen](clock.current.t);
     const aspect = size.width / Math.max(1, size.height);
     const back = size.width < 480 ? 2.0 : aspect < 1.05 ? 1.5 : aspect < 1.2 ? 1.2 : 1.05;
-    const wx = s.pos[0] + pointer.current.x * 0.5, wy = s.pos[1] * back + pointer.current.y * 0.3, wz = s.pos[2] * back;
-    const k = first.current ? 1 : 1.6;
-    camera.position.x = THREE.MathUtils.damp(camera.position.x, wx, k, dt);
-    camera.position.y = THREE.MathUtils.damp(camera.position.y, wy, k, dt);
-    camera.position.z = THREE.MathUtils.damp(camera.position.z, wz, k, dt);
-    look.current.x = THREE.MathUtils.damp(look.current.x, s.look[0], 2, dt);
-    look.current.y = THREE.MathUtils.damp(look.current.y, s.look[1], 2, dt);
-    look.current.z = THREE.MathUtils.damp(look.current.z, s.look[2], 2, dt);
-    if (first.current) { camera.position.set(wx, wy, wz); look.current.set(...s.look); first.current = false; }
-    camera.lookAt(look.current);
+    const key = `${clock.current.screen}:${s.pos.join(",")}`;
+    if (key !== move.current.key) {
+      // A new shot: ease from wherever the camera is now, over a time that suits the distance.
+      from.current.pos.copy(cur.current.pos); from.current.look.copy(cur.current.look); from.current.fov = cur.current.fov;
+      to.current.pos.set(s.pos[0], s.pos[1] * back, s.pos[2] * back); to.current.look.set(...s.look); to.current.fov = s.fov;
+      const dist = from.current.pos.distanceTo(to.current.pos);
+      move.current = { t: first.current ? 1 : 0, dur: THREE.MathUtils.clamp(0.9 + dist * 0.09, 1.2, 2.6), key };
+      if (first.current) { cur.current.pos.copy(to.current.pos); cur.current.look.copy(to.current.look); cur.current.fov = s.fov; first.current = false; }
+    }
+    to.current.pos.set(s.pos[0], s.pos[1] * back, s.pos[2] * back); // keep tracking the screen size
+    move.current.t = Math.min(1, move.current.t + dt / move.current.dur);
+    const e = easeInOut(move.current.t);
+    cur.current.pos.lerpVectors(from.current.pos, to.current.pos, e);
+    cur.current.look.lerpVectors(from.current.look, to.current.look, e);
+    cur.current.fov = THREE.MathUtils.lerp(from.current.fov, to.current.fov, e);
+    // A breath of handheld drift and a slow follow of the cursor, so the shot never sits dead still.
+    soft.current.x = THREE.MathUtils.damp(soft.current.x, pointer.current.x, 1.5, dt);
+    soft.current.y = THREE.MathUtils.damp(soft.current.y, pointer.current.y, 1.5, dt);
+    const t = c.elapsedTime;
+    const driftX = Math.sin(t * 0.23) * 0.06 + Math.sin(t * 0.61) * 0.03;
+    const driftY = Math.sin(t * 0.31 + 1) * 0.04;
+    camera.position.set(cur.current.pos.x + soft.current.x * 0.5 + driftX, cur.current.pos.y + soft.current.y * 0.3 + driftY, cur.current.pos.z);
+    camera.lookAt(cur.current.look.x + driftX * 0.4, cur.current.look.y + driftY * 0.4, cur.current.look.z);
     const cam = camera as THREE.PerspectiveCamera;
-    if (Math.abs(cam.fov - s.fov) > 0.01) { cam.fov = THREE.MathUtils.damp(cam.fov, s.fov, 2, dt); cam.updateProjectionMatrix(); }
+    if (Math.abs(cam.fov - cur.current.fov) > 0.01) { cam.fov = cur.current.fov; cam.updateProjectionMatrix(); }
   });
   return null;
 }
 
-// One sun that follows the action, so every set gets crisp shadows.
-function Sun() {
+// Daylight: an HDR sky for soft fill and reflections, a sun that follows the action for crisp
+// shadows, and soft shadow edges.
+function Lighting() {
   const light = useRef<THREE.DirectionalLight>(null);
   const { camera } = useThree();
   const fwd = useMemo(() => new THREE.Vector3(), []);
+  const hdr = "/hdr/city.exr"; // a small HDR sky, served from /public
   useFrame(() => {
     const l = light.current;
     if (!l) return;
@@ -656,11 +706,29 @@ function Sun() {
     l.target.position.set(cx, 0, 0);
     l.target.updateMatrixWorld();
   });
-  return <directionalLight ref={light} intensity={2.2} castShadow shadow-mapSize={[2048, 2048]} shadow-camera-left={-9} shadow-camera-right={9} shadow-camera-top={9} shadow-camera-bottom={-9} shadow-bias={-0.0004} />;
+  return (
+    <>
+      <SoftShadows size={18} samples={12} focus={0.6} />
+      <Environment files={hdr} environmentIntensity={0.4} />
+      <ambientLight intensity={0.2} />
+      <directionalLight ref={light} intensity={1.6} color="#fff6ea" castShadow shadow-mapSize={[2048, 2048]} shadow-camera-left={-9} shadow-camera-right={9} shadow-camera-top={9} shadow-camera-bottom={-9} shadow-bias={-0.0003} shadow-normalBias={0.02} />
+    </>
+  );
+}
+
+// Glow for the particle streams and screens, contact shadows in the corners, smooth edges.
+function Post() {
+  return (
+    <EffectComposer multisampling={0} disableNormalPass>
+      <Bloom luminanceThreshold={1.0} luminanceSmoothing={0.15} intensity={0.7} mipmapBlur radius={0.55} />
+      <SMAA />
+    </EffectComposer>
+  );
 }
 
 function Ticker({ clock, screen }: { clock: ClockRef; screen: Screen }) {
-  useFrame((_, dt) => {
+  useFrame((_, rawDt) => {
+    const dt = Math.min(rawDt, DT_CAP);
     if (clock.current.screen !== screen) { clock.current.screen = screen; clock.current.t = 0; }
     else clock.current.t += dt;
   });
@@ -674,6 +742,8 @@ export default function StoryScene({ screen, onPick }: { screen: Screen; onPick:
   const clock = useRef({ screen, t: 0 });
   const [visible, setVisible] = useState(true);
   const [reduced, setReduced] = useState(false);
+  const [dpr, setDpr] = useState(1.5);
+  const [low, setLow] = useState(false); // weak device: lower resolution, no post-processing
 
   useEffect(() => {
     try { setReduced(window.matchMedia("(prefers-reduced-motion: reduce)").matches); } catch { /* ignore */ }
@@ -700,17 +770,18 @@ export default function StoryScene({ screen, onPick }: { screen: Screen; onPick:
     <div ref={wrap} className="absolute inset-0">
       <Canvas
         shadows
-        dpr={[1, 1.75]}
+        dpr={dpr}
         frameloop={animate ? "always" : "demand"}
         camera={{ position: [X.home + 0.6, 2.3, 5.9], fov: 32, near: 0.1, far: 120 }}
         flat
-        gl={{ antialias: true, alpha: true, powerPreference: "high-performance" }}
+        gl={{ antialias: false, alpha: false, powerPreference: "high-performance", stencil: false }}
       >
+        <PerformanceMonitor onIncline={() => setDpr(Math.min(1.75, window.devicePixelRatio))} onDecline={() => { setDpr(1); setLow(true); }} flipflops={2} onFallback={() => { setDpr(1); setLow(true); }} />
+        <color attach="background" args={["#f9fbfb"]} />
+        <fog attach="fog" args={["#f9fbfb", 16, 40]} />
         <Ticker clock={clock} screen={screen} />
         <Director clock={clock} pointer={pointer} />
-        <ambientLight intensity={0.85} />
-        <hemisphereLight args={["#ffffff", "#cfe4e1", 0.85]} />
-        <Sun />
+        <Lighting />
         <HomeSet clock={clock} animate={animate} />
         <Campus stage={campusStage} onPick={() => onPick("hms")} animate={animate} fixed people>
           <People stage={campusStage} animate={animate} />
@@ -718,6 +789,7 @@ export default function StoryScene({ screen, onPick }: { screen: Screen; onPick:
         <RoomSet clock={clock} animate={animate} />
         <RadSet clock={clock} animate={animate} />
         <ContactShadows position={[X.campus, CAMPUS_Y - 0.16, 0.4]} opacity={0.3} scale={14} blur={2.6} far={3} frames={1} />
+        {!low && <Post />}
       </Canvas>
     </div>
   );
