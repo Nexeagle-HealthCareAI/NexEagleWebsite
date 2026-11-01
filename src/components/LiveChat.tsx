@@ -22,6 +22,7 @@ const API_ORIGIN =
   "http://151.185.45.77:5002";
 const CHAT_HUB_URL = `${API_ORIGIN}/chathub`;
 const SUPPORT_EMAIL = "info@nexeagle.com";
+const SUPPORT_WHATSAPP = `https://wa.me/918074906808?text=${encodeURIComponent("Hi NexEagle, I tried the live chat on your website and would like to talk to the team.")}`;
 
 const KEY_GUEST_ID = "nex_eagle_guest_id";
 const KEY_NAME = "nex_eagle_guest_name";
@@ -440,9 +441,14 @@ export default function LiveChat({ embedded = false, visible = false, onBack }: 
               <span className="flex-1">
                 {connState === "connecting" && "Connecting…"}
                 {connState === "reconnecting" && "Connection lost. Reconnecting…"}
-                {connState === "failed" && "We couldn't connect. Check your internet and try again."}
+                {connState === "failed" && (
+                  <>We couldn&apos;t connect. Try again, or message us on{" "}
+                    <a className="font-semibold underline" href={SUPPORT_WHATSAPP} target="_blank" rel="noopener noreferrer">WhatsApp</a>.</>
+                )}
                 {connState === "blocked" && (
-                  <>Chat isn&apos;t available here right now. Email us at <a className="underline" href={`mailto:${SUPPORT_EMAIL}`}>{SUPPORT_EMAIL}</a>.</>
+                  <>Live chat isn&apos;t connected on this page yet. Reach the team on{" "}
+                    <a className="font-semibold underline" href={SUPPORT_WHATSAPP} target="_blank" rel="noopener noreferrer">WhatsApp</a>{" "}
+                    or email <a className="font-semibold underline" href={`mailto:${SUPPORT_EMAIL}`}>{SUPPORT_EMAIL}</a>.</>
                 )}
               </span>
               {connState === "failed" && (
