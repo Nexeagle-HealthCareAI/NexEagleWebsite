@@ -9,8 +9,11 @@ export const dynamic = "force-dynamic";
 // only, so any events/leads in a batch are ignored. Sizes are capped; the old
 // single-beacon routes stay for clients still running a cached older build. Always 200: a visitor
 // must never see an error because analytics recording had a bad moment.
-const LIMITS = { visits: 5 } as const;
-const UPSTREAM = { visits: "/public/track-visit" } as const;
+// Journey events (audience doors, WhatsApp taps, demo requests) are forwarded only when an upstream
+// path is configured, e.g. EASYHMS_EVENT_PATH=/public/track-event; otherwise they are dropped here.
+const EVENT_PATH = process.env.EASYHMS_EVENT_PATH || "";
+const LIMITS = { visits: 5, events: 10 } as const;
+const UPSTREAM = { visits: "/public/track-visit", events: EVENT_PATH } as const;
 
 // Tells EasyHMS which website a page view came from (both sites write the same table).
 const SITE = "nexeagle";
@@ -25,11 +28,12 @@ export async function POST(req: NextRequest) {
     const body = (await req.json()) as Partial<Record<keyof typeof LIMITS, unknown>>;
     const calls: Promise<unknown>[] = [];
     for (const kind of Object.keys(LIMITS) as (keyof typeof LIMITS)[]) {
+      if (!UPSTREAM[kind]) continue;
       const items = Array.isArray(body?.[kind]) ? (body[kind] as unknown[]) : [];
       for (const item of items.slice(0, LIMITS[kind])) {
         if (item && typeof item === "object") {
           // Page views carry the site and the request's own user agent (what EasyHMS classifies).
-          const payload = kind === "visits" ? { ...(item as Record<string, unknown>), site: SITE, userAgent: requestUa } : item;
+          const payload = { ...(item as Record<string, unknown>), site: SITE, ...(kind === "visits" ? { userAgent: requestUa } : {}) };
           calls.push(easyhmsFetch(UPSTREAM[kind], { method: "POST", body: JSON.stringify(payload) }));
         }
       }

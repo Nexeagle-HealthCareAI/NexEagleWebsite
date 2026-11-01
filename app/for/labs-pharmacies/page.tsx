@@ -39,6 +39,7 @@ const c: AudienceConfig = {
   proofTitle: "Part of NexEagle at hospitals in Bihar",
   proof: ["sparsh", "glisan"],
   faq: [
+    { q: "What if it doesn't work out for us?", a: "Start with one counter and grow from there. Our team sets it up and trains your staff on site, and you keep a named contact after go-live. Your records are yours and can be exported whenever you need." },
     { q: "Can a standalone lab use 1Lab without 1HMS?", a: "Yes. 1Lab works on its own. If the hospital also uses 1HMS, orders and results flow between them automatically." },
     { q: "Who approves lab results?", a: "Your pathologist. Vita flags abnormal values, but a pathologist approves every report before it's released." },
     { q: "Can 1Pharma run a standalone medical store?", a: "Yes. 1Pharma works on its own for a pharmacy or medical store, and connects to 1HMS when it sits inside a hospital." },

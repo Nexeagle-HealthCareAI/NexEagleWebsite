@@ -41,6 +41,7 @@ const c: AudienceConfig = {
   proofTitle: "Doctors use it every day in Bihar",
   proof: ["sparsh", "glisan"],
   faq: [
+    { q: "Can I change what Vita writes?", a: "Every line. Vita's note and prescription are drafts; you edit anything you like, and nothing reaches the patient until you sign." },
     { q: "Can I use NexEagle in a single-doctor clinic?", a: "Yes. Start with OPD, prescriptions and billing in 1HMS. You can add a lab or pharmacy counter later." },
     { q: "Does the AI decide the treatment?", a: "No. Vita drafts the note and prescription from what you say. You review, edit and sign before anything reaches the patient." },
     { q: "Can I work in Hindi?", a: "Yes. 1HMS works in English and Hindi, and we train your staff in either." },

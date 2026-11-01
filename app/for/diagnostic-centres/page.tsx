@@ -39,6 +39,7 @@ const c: AudienceConfig = {
   proofTitle: "Reporting live at AG Smart Scan Diagnostic Centre",
   proof: ["agsmart"],
   faq: [
+    { q: "What if we decide 1Rad isn't for us?", a: "Your centre owns its studies and reports and can export them whenever you need. You can also start with one modality or one branch and grow from there." },
     { q: "Does the AI replace the radiologist?", a: "No. Vita drafts a first report and marks regions worth a closer look. Your radiologist reviews, edits and signs every report before it goes out." },
     { q: "Can we connect our existing machines?", a: "Yes, if they are DICOM-capable. 1Rad's DICOM bridge sends studies to the cloud automatically. We check your machines during the demo." },
     { q: "Can our radiologist report from home?", a: "Yes. Studies open in a web browser, so the radiologist can review and sign from anywhere with a secure login." },

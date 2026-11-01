@@ -50,6 +50,8 @@ const c: AudienceConfig = {
   proofTitle: "Running every day in hospitals in Kishanganj and Purnea",
   proof: ["sparsh", "glisan"],
   faq: [
+    { q: "What if it doesn't work out for us?", a: "Start small, with one counter such as registration and billing, and add more only when your staff are comfortable. Our team is with you on go-live day and you keep a named contact after. Your hospital owns its records and can export them whenever you need, so you are never locked in." },
+    { q: "How much work is this for our staff?", a: "Very little. We configure the software, bring in your existing data and train each role on site, in English or Hindi, on only the screens they use. Most of what your team does is tell us how your hospital works today." },
     { q: "Can we start with just billing and registration?", a: "Yes. Many hospitals start with registration, OPD and billing, then add wards, EMR, lab, radiology and pharmacy as staff get comfortable." },
     { q: "Can you bring in data from our current software?", a: "In most cases, yes. We import patient lists, rates, stock and other records from your current system or spreadsheets, and check what's possible during the first visit." },
     { q: "How do you train our staff?", a: "On site, role by role, in English or Hindi. Reception, nurses, doctors, lab, pharmacy and accounts each learn only the screens they use." },

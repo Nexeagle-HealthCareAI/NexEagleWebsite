@@ -170,3 +170,22 @@ export function trackPageView(): void {
     /* best-effort */
   }
 }
+
+/**
+ * A step in the visitor's journey: an audience door, a WhatsApp tap, a demo request, an app link.
+ * Same consent and batching rules as page views. The server forwards these only once an events
+ * endpoint is configured (EASYHMS_EVENT_PATH); until then they are dropped server-side.
+ */
+export function trackEvent(name: string, props?: Record<string, string | number | boolean | null>): void {
+  try {
+    enqueue("events", {
+      eventName: name.slice(0, 64),
+      pagePath: window.location.pathname,
+      sessionId: getOrCreateSessionId(),
+      props: props ?? null,
+      at: new Date().toISOString(),
+    });
+  } catch {
+    /* best-effort */
+  }
+}

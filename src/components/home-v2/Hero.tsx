@@ -8,7 +8,9 @@ import { useEffect, useRef, useState } from "react";
 import dynamic from "next/dynamic";
 import Link from "next/link";
 import { AnimatePresence, motion, useInView, useReducedMotion } from "framer-motion";
-import { Check, ChevronRight } from "lucide-react";
+import { Building2, FlaskConical, MapPin, MessageCircle, ScanLine, Stethoscope, User } from "lucide-react";
+import { WHATSAPP } from "@/components/site/PageHero";
+import { DOCTORDEKHO_URL } from "@/lib/site";
 import Image from "next/image";
 import { avatarFor } from "./VitaPanels";
 import { SCREENS, type Screen } from "./StoryScene";
@@ -31,7 +33,15 @@ const CAPTION: Record<Screen, string> = {
   rad: "In radiology, 1Rad Vita reads the scan and drafts the report in seconds. The radiologist signs, and it lands in 1HMS.",
 };
 
-const PROOF = ["Running in hospitals in Bihar", "Doctors sign everything Vita drafts", "Data hosted in India", "English and Hindi"];
+const DOORS = [
+  { key: "hospital", label: "A hospital owner", href: "/for/hospitals", Icon: Building2 },
+  { key: "doctor", label: "A doctor", href: "/for/doctors", Icon: Stethoscope },
+  { key: "diagnostic", label: "A diagnostic centre", href: "/for/diagnostic-centres", Icon: ScanLine },
+  { key: "lab", label: "A lab or pharmacy", href: "/for/labs-pharmacies", Icon: FlaskConical },
+  { key: "patient", label: "A patient", href: DOCTORDEKHO_URL, Icon: User, external: true },
+];
+const doorCls =
+  "inline-flex h-10 items-center gap-2 rounded-full border border-slate-200 bg-white/80 px-4 text-[0.92rem] font-medium backdrop-blur transition-[border-color,background-color,transform] hover:border-[#1ea99b] hover:bg-white active:scale-[0.97] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#1ea99b]";
 
 export default function Hero() {
   const [i, setI] = useState(0);
@@ -70,7 +80,7 @@ export default function Hero() {
           <motion.h1
             id="hero-title"
             {...rise(0.06)}
-            className="mt-5 font-display text-[2.5rem] font-semibold leading-[1.0] tracking-[-0.035em] text-[#0e2343] sm:text-[3.5rem] xl:text-[4rem]"
+            className="mt-5 font-display text-[2.5rem] font-semibold leading-[1.0] tracking-[-0.035em] text-[#0e2343] sm:text-[3.3rem] xl:text-[3.6rem]"
             style={{ fontVariationSettings: "'opsz' 96, 'wdth' 92" }}
           >
             Hospital software that does the paperwork itself.
@@ -78,29 +88,52 @@ export default function Hero() {
           <motion.p {...rise(0.16)} className="mt-5 max-w-[33rem] text-[1.05rem] leading-relaxed text-slate-600 sm:text-lg">
             Vita finds patients the right doctor, runs your front desk, wards and billing in 1HMS, and drafts radiology reports in 1Rad. Your doctors check and sign. Your staff stop typing.
           </motion.p>
-          <motion.div {...rise(0.26)} className="mt-8 flex flex-col gap-3 sm:flex-row sm:items-center">
+          <motion.div {...rise(0.26)} className="mt-7 flex flex-col gap-3 sm:flex-row sm:items-center">
             <Link
               href="/contact"
-              className="inline-flex h-[3.25rem] items-center justify-center whitespace-nowrap rounded-full bg-[#0e2343] px-7 text-[0.98rem] font-semibold text-white shadow-[0_10px_30px_-10px_rgba(14,35,67,0.6)] transition-[transform,background-color] hover:-translate-y-0.5 hover:bg-[#13305c] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#1ea99b]"
+              data-track="hero_book_demo"
+              className="inline-flex h-[3.25rem] items-center justify-center whitespace-nowrap rounded-full bg-[#0e2343] px-7 text-[0.98rem] font-semibold text-white shadow-[0_10px_30px_-10px_rgba(14,35,67,0.6)] transition-[transform,background-color] hover:-translate-y-0.5 hover:bg-[#13305c] active:scale-[0.98] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#1ea99b]"
             >
               Book a demo
             </Link>
-            <Link
-              href="/customers"
-              className="group inline-flex h-[3.25rem] items-center justify-center gap-1 whitespace-nowrap rounded-full border border-slate-300/80 bg-white/70 px-6 text-[0.98rem] font-semibold text-[#0e2343] backdrop-blur transition-colors hover:border-[#1ea99b] hover:text-[#12857a] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#1ea99b]"
+            <a
+              href={WHATSAPP("Hi NexEagle, I have a quick question about your hospital software.")}
+              target="_blank"
+              rel="noopener noreferrer"
+              data-track="hero_whatsapp"
+              className="group inline-flex h-[3.25rem] items-center justify-center gap-2 whitespace-nowrap rounded-full border border-slate-300/80 bg-white/70 px-6 text-[0.98rem] font-semibold text-[#0e2343] backdrop-blur transition-[border-color,color,transform] hover:border-[#25d366] hover:text-[#128c4a] active:scale-[0.98] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#1ea99b]"
             >
-              See it in a hospital
-              <ChevronRight className="h-4 w-4 transition-transform group-hover:translate-x-0.5" />
-            </Link>
+              <MessageCircle className="h-4 w-4 text-[#25d366]" />
+              Ask a quick question
+            </a>
           </motion.div>
-          <motion.ul {...rise(0.36)} className="mt-8 grid max-w-[33rem] grid-cols-1 gap-x-6 gap-y-2 sm:grid-cols-2">
-            {PROOF.map((p) => (
-              <li key={p} className="flex items-center gap-2 text-[0.92rem] text-slate-600">
-                <Check className="h-4 w-4 shrink-0 text-[#1ea99b]" strokeWidth={3} />
-                <span className="text-slate-600">{p}</span>
-              </li>
-            ))}
-          </motion.ul>
+
+          {/* Doors: each visitor picks who they are and lands on a page written for them */}
+          <motion.nav {...rise(0.36)} aria-label="Choose what describes you" className="mt-8">
+            <p className="text-sm font-medium text-slate-500">I&apos;m here as</p>
+            <ul className="mt-3 flex flex-wrap gap-2">
+              {DOORS.map((d) => (
+                <li key={d.label}>
+                  {d.external ? (
+                    <a href={d.href} data-track={`hero_door_${d.key}`} className={doorCls}>
+                      <d.Icon className="h-4 w-4 text-[#12857a]" />
+                      <span className="text-[#0e2343]">{d.label}</span>
+                    </a>
+                  ) : (
+                    <Link href={d.href} data-track={`hero_door_${d.key}`} className={doorCls}>
+                      <d.Icon className="h-4 w-4 text-[#12857a]" />
+                      <span className="text-[#0e2343]">{d.label}</span>
+                    </Link>
+                  )}
+                </li>
+              ))}
+            </ul>
+          </motion.nav>
+
+          <motion.p {...rise(0.44)} className="mt-6 flex max-w-[34rem] items-start gap-2 text-[0.92rem] leading-snug text-slate-500">
+            <MapPin className="mt-0.5 h-4 w-4 shrink-0 text-[#1ea99b]" />
+            <span className="text-slate-500">Running every day at Sparsh Hospital, Kishanganj and Glisan Super Speciality Hospital, Purnea. Data hosted in India.</span>
+          </motion.p>
         </div>
 
         {/* Vita in 3D with the journey orbiting her */}

@@ -41,4 +41,8 @@ export const FAQ: { q: string; a: string }[] = [
     q: "How do we get started?",
     a: "Book a demo. Our team visits your hospital, maps your current workflow, sets up the software with your doctors, services and rates, trains your staff on site and supports you after go-live.",
   },
+  {
+    q: "What if NexEagle doesn't work out for us?",
+    a: "Start small, with one counter such as registration and billing, and add more when your staff are ready. Our team is on site on go-live day and you keep a named contact after. Your hospital owns its records and can export them whenever you need, so there is no lock-in.",
+  },
 ];

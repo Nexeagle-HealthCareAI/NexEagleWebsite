@@ -1,11 +1,13 @@
 "use client";
 
+import { trackEvent } from "@/lib/analytics";
+
 import { useState } from "react";
 import { AnimatePresence, motion } from "framer-motion";
 import { Check, Clock, Mail, MapPin, Phone } from "lucide-react";
 import { WHATSAPP } from "@/components/site/PageHero";
 
-const INTERESTS = ["1HMS hospital software", "1Rad PACS & AI reports", "1Lab", "1Pharma", "Vita for patients", "Not sure yet"];
+const INTERESTS = ["1HMS hospital software", "1Rad PACS & AI reports", "1Lab", "1Pharma", "Vita for patients", "Not sure yet", "Just exploring for now"];
 const ROLES = ["Hospital owner / director", "Doctor", "Administrator / manager", "Radiologist / diagnostic centre", "Other"];
 
 const field = "h-12 w-full rounded-xl border border-slate-300 bg-white px-4 text-[0.98rem] text-[#0e2343] outline-none transition-colors placeholder:text-slate-400 focus:border-[#1ea99b] focus:ring-4 focus:ring-[#1ea99b]/15";
@@ -40,6 +42,7 @@ export default function ContactClient() {
       });
       if (!res.ok) throw new Error();
       setState("sent");
+      trackEvent("demo_request", { role: form.role, exploring: interests.includes("Just exploring for now") });
     } catch {
       setState("error");
     }
@@ -97,7 +100,7 @@ export default function ContactClient() {
                 <button type="submit" disabled={state === "sending"} className="h-[3.25rem] w-full rounded-full bg-[#0e2343] font-semibold text-white transition-colors hover:bg-[#13305c] disabled:opacity-60">
                   {state === "sending" ? "Sending…" : "Request my demo"}
                 </button>
-                <p className="text-center text-xs text-slate-500">We use these details only to contact you about NexEagle.</p>
+                <p className="text-center text-xs text-slate-500">No obligation. We use these details only to contact you about NexEagle.</p>
               </motion.form>
             )}
           </AnimatePresence>
