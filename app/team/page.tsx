@@ -1,70 +1,31 @@
 import type { Metadata } from "next";
-import AboutHero from "@/components/about/AboutHero";
-import CompanyStory from "@/components/about/CompanyStory";
-import MissionVision from "@/components/about/MissionVision";
-import TeamSection from "@/components/about/TeamSection";
-import AboutCTA from "@/components/about/AboutCTA";
-import AnalyticsTracker from "@/components/AnalyticsTracker";
+import TeamPage from "@/components/site/TeamPage";
+import { TEAM } from "@/lib/team";
+import { SITE_URL } from "@/lib/site";
 
 export const metadata: Metadata = {
-  title: "Team - NexEagle | Healthcare IT & Product Engineers",
-  description: "Meet the NexEaglians—our founding team of clinicians, software developers, and research advisors building the next generation of healthcare platforms (1HMS, 1Rad, 1Lab, 1Pharma).",
-  keywords: [
-    "software development company",
-    "custom software development",
-    "healthcare software",
-    "hospital management system",
-    "medical software developers",
-    "NexEagle team"
-  ],
+  title: { absolute: "NexEagle Team: Doctors and Engineers Building Hospital Software" },
+  description: "Meet the NexEagle team: a urologist (MCh, SSKM) checking every clinical workflow, engineers from NIT Warangal and IIT Bombay, and the deployment team that sets up 1HMS and 1Rad in hospitals.",
+  alternates: { canonical: "/team" },
 };
 
-const structuredData = {
+const jsonLd = {
   "@context": "https://schema.org",
   "@type": "AboutPage",
-  "mainEntity": {
+  url: `${SITE_URL}/team`,
+  mainEntity: {
+    "@id": `${SITE_URL}/#organization`,
     "@type": "Organization",
-    "name": "NexEagle",
-    "url": "https://nexeagle.com",
-    "description": "Meet the NexEaglians. A dedicated group of clinicians, engineers, and product builders designing the future of healthcare software.",
-    "founder": [
-      {
-        "@type": "Person",
-        "name": "Md Tasquil Noori",
-        "jobTitle": "Tech Lead"
-      },
-      {
-        "@type": "Person",
-        "name": "Dr Md Taquedis Noori",
-        "jobTitle": "Medical Advisor"
-      },
-      {
-        "@type": "Person",
-        "name": "Md Aquib",
-        "jobTitle": "Product Manager"
-      }
-    ],
-    "address": {
-      "@type": "PostalAddress",
-      "addressLocality": "Kolkata",
-      "addressCountry": "IN"
-    }
-  }
+    name: "NexEagle",
+    member: TEAM.map((m) => ({ "@type": "Person", name: m.name, jobTitle: m.role, ...(m.linkedin ? { sameAs: [m.linkedin] } : {}) })),
+  },
 };
 
-export default function TeamPage() {
+export default function Page() {
   return (
-    <main>
-      <script
-        type="application/ld+json"
-        dangerouslySetInnerHTML={{ __html: JSON.stringify(structuredData) }}
-      />
-      <AnalyticsTracker title="Team - NexEagle | Healthcare IT & Product Engineers" />
-      <AboutHero />
-      <CompanyStory />
-      <MissionVision />
-      <TeamSection />
-      <AboutCTA />
-    </main>
+    <>
+      <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }} />
+      <TeamPage />
+    </>
   );
 }

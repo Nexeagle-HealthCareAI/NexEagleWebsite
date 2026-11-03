@@ -18,7 +18,7 @@ export default function robots(): MetadataRoute.Robots {
       // wildcard rule above in effect, but states the intent plainly rather
       // than relying on bots correctly falling back to '*'.
       {
-        userAgent: ['ChatGPT-User', 'OAI-SearchBot', 'anthropic-ai', 'ClaudeBot', 'PerplexityBot'],
+        userAgent: ['ChatGPT-User', 'OAI-SearchBot', 'GPTBot', 'anthropic-ai', 'ClaudeBot', 'Claude-User', 'Claude-SearchBot', 'PerplexityBot', 'Perplexity-User', 'Google-Extended', 'Applebot', 'Applebot-Extended', 'Meta-ExternalAgent', 'DuckAssistBot'],
         allow: '/',
       },
       // Explicit Bingbot allow — ChatGPT's live-search feature is powered by

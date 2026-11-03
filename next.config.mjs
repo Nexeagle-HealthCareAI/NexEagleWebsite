@@ -47,6 +47,9 @@ const nextConfig = {
   },
   images: {
     minimumCacheTTL: 86400, // 24 hours caching
+    formats: ['image/avif', 'image/webp'],
+    // Homepage photography is served from Unsplash's CDN (see src/components/home-v2/Photo.tsx).
+    remotePatterns: [{ protocol: 'https', hostname: 'images.unsplash.com' }],
   },
   async headers() {
     return [

@@ -1,30 +1,22 @@
 "use client";
 
-import { useEffect } from "react";
+import Image from "next/image";
 import Link from "next/link";
-import { usePathname } from "next/navigation";
 import AnalyticsTracker from "@/components/AnalyticsTracker";
 
 export default function NotFound() {
-  const pathname = usePathname();
-
-  useEffect(() => {
-    console.error(
-      "404 Error: User attempted to access non-existent route:",
-      pathname
-    );
-  }, [pathname]);
-
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gray-100">
+    <main className="grid min-h-[80vh] place-items-center px-5 py-16">
       <AnalyticsTracker title="Page Not Found - NexEagle" />
-      <div className="text-center">
-        <h1 className="text-4xl font-bold mb-4">404</h1>
-        <p className="text-xl text-gray-600 mb-4">Oops! Page not found</p>
-        <Link href="/" className="text-blue-500 hover:text-blue-700 underline">
-          Return to Home
-        </Link>
+      <div className="max-w-md text-center">
+        <Image src="/assets/vita/vita-sleep.webp" alt="Vita asleep" width={641} height={640} priority className="mx-auto h-auto w-[220px]" />
+        <h1 className="mt-6 font-display text-4xl font-semibold tracking-[-0.03em] text-[#0e2343]">This page doesn&apos;t exist</h1>
+        <p className="mt-3 text-lg text-slate-600">The link may be old or mistyped. Vita is taking a nap here, but everything else is wide awake.</p>
+        <div className="mt-8 flex flex-col justify-center gap-3 sm:flex-row">
+          <Link href="/" className="inline-flex h-12 items-center justify-center rounded-full bg-[#0e2343] px-6 font-semibold text-white hover:bg-[#13305c]">Go to the homepage</Link>
+          <Link href="/contact" className="inline-flex h-12 items-center justify-center rounded-full border border-slate-300 px-6 font-semibold text-[#0e2343] hover:border-[#0e2343]">Contact us</Link>
+        </div>
       </div>
-    </div>
+    </main>
   );
 }
