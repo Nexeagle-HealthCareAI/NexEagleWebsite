@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import { shareMeta } from "@/lib/seo";
 import Link from "next/link";
 import { Bot, Check, Compass, Layers, PenTool, RefreshCw, Server } from "lucide-react";
 import PageHero, { btnPrimary, btnSecondary, WHATSAPP } from "@/components/site/PageHero";
@@ -8,8 +9,8 @@ import { ClosingCTA } from "@/components/home-v2/Sections";
 import AnalyticsTracker from "@/components/AnalyticsTracker";
 
 export const metadata: Metadata = {
-  title: { absolute: "Healthcare Software & AI Product Engineering Services in India | NexEagle" },
-  description: "Product engineering from the team that builds 1HMS, 1Rad, 1Lab and 1Pharma: product strategy, UI/UX design, full-stack web and mobile development, AI integration and cloud architecture for healthcare and other ambitious products.",
+  title: { absolute: "Healthcare Software Engineering Services | NexEagle" },
+  description: "Product engineering from the team behind 1HMS and 1Rad: strategy, UI/UX, web and mobile development, AI integration and cloud for healthcare products.",
   alternates: { canonical: "/services" },
   keywords: [
     "product engineering services",
@@ -23,6 +24,7 @@ export const metadata: Metadata = {
     "system architecture",
     "technology consulting"
   ],
+  ...shareMeta("/services", "Healthcare Software Engineering Services | NexEagle", "Product engineering from the team behind 1HMS and 1Rad: strategy, UI/UX, web and mobile development, AI integration and cloud for healthcare products."),
 };
 
 const structuredData = {

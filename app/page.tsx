@@ -11,9 +11,9 @@ import { ENTITY_SUMMARY, FAQ } from "@/lib/homeContent";
 
 // Server component: every section is in the initial HTML for search engines and AI crawlers;
 // interactive parts (3D hero, tabs, AI demo) hydrate on the client.
-const TITLE = "AI Hospital Management Software & AI Radiology Reporting in India | NexEagle";
+const TITLE = "AI Hospital Management Software in India | NexEagle";
 const DESCRIPTION =
-  "NexEagle Vita AI agents: hospital management software (HMS & EMR) for Indian hospitals and clinics, cloud PACS with AI radiology reporting, LIS and pharmacy. Live in Kishanganj and Purnea, Bihar.";
+  "Vita AI agents run OPD, IPD, billing and radiology reports for Indian hospitals: HMS, EMR, cloud PACS, LIS and pharmacy. Live in Kishanganj and Purnea.";
 
 export const metadata: Metadata = {
   title: { absolute: TITLE },

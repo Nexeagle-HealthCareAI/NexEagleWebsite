@@ -5,9 +5,9 @@ import ProductPage, { type ProductConfig } from "@/components/site/ProductPage";
 import { STEPS } from "@/lib/journeySteps";
 import { ScribeDemo } from "@/components/site/ProductDemos";
 
-const TITLE = "Hospital Management Software (HMS) & EMR for Indian Hospitals | 1HMS by NexEagle";
+const TITLE = "Hospital Management Software & EMR | 1HMS by NexEagle";
 const DESCRIPTION =
-  "1HMS is hospital management software and EMR for hospitals, nursing homes and clinics in India: OPD, IPD, e-prescriptions, AI voice scribe, lab and radiology orders, pharmacy and billing. English and Hindi, set up on site.";
+  "1HMS is hospital software and EMR for Indian hospitals and clinics: OPD, IPD, e-prescriptions, AI scribe, pharmacy and billing. English and Hindi.";
 
 export const metadata: Metadata = {
   title: { absolute: TITLE },
@@ -15,6 +15,7 @@ export const metadata: Metadata = {
   keywords: ["hospital management software", "hospital management system India", "HMS for small hospitals", "HMIS", "EMR software India", "OPD management software", "IPD management", "hospital billing software", "AI voice scribe", "e-prescription software", "nursing home software", "hospital software Bihar"],
   alternates: { canonical: "/solutions/1hms" },
   openGraph: { title: TITLE, description: DESCRIPTION, url: "/solutions/1hms", images: [{ url: "/og/home.png", width: 1200, height: 630 }] },
+  twitter: { card: "summary_large_image", title: TITLE, description: DESCRIPTION, images: ["/og/home.png"] },
 };
 
 const c: ProductConfig = {

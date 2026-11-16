@@ -16,10 +16,11 @@ export function generateMetadata({ params }: { params: { slug: string } }): Meta
   const g = GUIDES.find((x) => x.slug === params.slug);
   if (!g) return {};
   return {
-    title: { absolute: `${g.title} | NexEagle` },
+    title: { absolute: `${g.seoTitle} | NexEagle` },
     description: g.description,
     alternates: { canonical: `/guides/${g.slug}` },
-    openGraph: { type: "article", title: g.title, description: g.description, url: `/guides/${g.slug}`, images: [{ url: "/og/home.png", width: 1200, height: 630 }] },
+    openGraph: { type: "article", title: g.seoTitle, description: g.description, url: `/guides/${g.slug}`, images: [{ url: "/og/home.png", width: 1200, height: 630 }] },
+    twitter: { card: "summary_large_image", title: g.seoTitle, description: g.description, images: ["/og/home.png"] },
   };
 }
 

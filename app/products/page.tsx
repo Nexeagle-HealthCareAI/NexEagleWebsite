@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import { shareMeta } from "@/lib/seo";
 import Image from "next/image";
 import Link from "next/link";
 import { ArrowUpRight, ChevronRight } from "lucide-react";
@@ -10,9 +11,10 @@ import AnalyticsTracker from "@/components/AnalyticsTracker";
 import { DOCTORDEKHO_URL, HMS_APP_URL, RAD_APP_URL } from "@/lib/site";
 
 export const metadata: Metadata = {
-  title: { absolute: "NexEagle Products: 1HMS, 1Rad, 1Lab, 1Pharma and Vita AI Agents" },
-  description: "NexEagle's healthcare software for India: 1HMS hospital management software and EMR, 1Rad cloud PACS with AI radiology reporting, 1Lab LIS, 1Pharma pharmacy software and Doctor Dekho, all run by Vita AI agents on one patient record.",
+  title: { absolute: "Products: 1HMS, 1Rad, 1Lab, 1Pharma and Vita | NexEagle" },
+  description: "NexEagle's healthcare software for India: 1HMS hospital software and EMR, 1Rad cloud PACS, 1Lab LIS and 1Pharma, run by Vita AI on one patient record.",
   alternates: { canonical: "/products" },
+  ...shareMeta("/products", "Products: 1HMS, 1Rad, 1Lab, 1Pharma and Vita | NexEagle", "NexEagle's healthcare software for India: 1HMS hospital software and EMR, 1Rad cloud PACS, 1Lab LIS and 1Pharma, run by Vita AI on one patient record."),
 };
 
 const PRODUCTS = [

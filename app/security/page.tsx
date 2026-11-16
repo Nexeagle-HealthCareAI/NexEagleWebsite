@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import { shareMeta } from "@/lib/seo";
 import AnalyticsTracker from "@/components/AnalyticsTracker";
 import PageHero from "@/components/site/PageHero";
 import LegalPage from "@/components/site/LegalPage";
@@ -6,7 +7,7 @@ import LegalCards from "@/components/site/LegalCards";
 import { CERTS, SECURITY } from "@/lib/legal/security";
 
 export const metadata: Metadata = {
-  title: "Security & Compliance - DPDP, ABDM, NABH",
+  title: "Security and Compliance: DPDP, ABDM, NABH",
   description: "How NexEagle protects healthcare data: encryption, access controls, India-hosted data, and alignment with the DPDP Act 2023, ABDM and NABH documentation needs.",
   keywords: [
     "DPDP Act 2023",
@@ -20,6 +21,8 @@ export const metadata: Metadata = {
     "India data residency",
     "hospital data security"
   ],
+  alternates: { canonical: "/security" },
+  ...shareMeta("/security", "Security and Compliance: DPDP, ABDM, NABH | NexEagle", "How NexEagle protects healthcare data: encryption, access controls, India-hosted data, and alignment with the DPDP Act 2023, ABDM and NABH documentation needs."),
 };
 
 const structuredData = {

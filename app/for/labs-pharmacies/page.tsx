@@ -2,9 +2,9 @@ import type { Metadata } from "next";
 import AudiencePage, { type AudienceConfig } from "@/components/site/AudiencePage";
 import { LabDemo } from "@/components/site/ProductDemos";
 
-const TITLE = "Lab & Pharmacy Software in India: LIS, Barcoded Samples, Stock & Expiry | NexEagle";
+const TITLE = "Lab and Pharmacy Software in India | NexEagle";
 const DESCRIPTION =
-  "For pathology labs and hospital pharmacies in India: 1Lab tracks barcoded samples to pathologist-approved results, and 1Pharma receives prescriptions from the doctor and warns you before stock expires.";
+  "For pathology labs and hospital pharmacies in India: barcoded samples to approved results in 1Lab, and prescriptions plus expiry alerts in 1Pharma.";
 
 export const metadata: Metadata = {
   title: { absolute: TITLE },
@@ -12,6 +12,7 @@ export const metadata: Metadata = {
   keywords: ["lab information system India", "LIS software", "pathology lab software", "pharmacy software India", "hospital pharmacy software", "medicine expiry alerts", "barcode sample tracking"],
   alternates: { canonical: "/for/labs-pharmacies" },
   openGraph: { title: TITLE, description: DESCRIPTION, url: "/for/labs-pharmacies", images: [{ url: "/og/home.png", width: 1200, height: 630 }] },
+  twitter: { card: "summary_large_image", title: TITLE, description: DESCRIPTION, images: ["/og/home.png"] },
 };
 
 const c: AudienceConfig = {

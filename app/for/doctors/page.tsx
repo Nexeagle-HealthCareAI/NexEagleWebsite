@@ -3,9 +3,9 @@ import AudiencePage, { type AudienceConfig } from "@/components/site/AudiencePag
 import { ScribeDemo } from "@/components/site/ProductDemos";
 import { DOCTORDEKHO_URL } from "@/lib/site";
 
-const TITLE = "Clinic Software for Doctors in India: AI Prescriptions, OPD & Online Booking | NexEagle";
+const TITLE = "Clinic Software for Doctors in India | NexEagle";
 const DESCRIPTION =
-  "For doctors in private practice and small clinics in India: Vita drafts notes and e-prescriptions for you to check and sign, patients book you on Doctor Dekho, and follow-up reminders go out automatically. English and Hindi.";
+  "For doctors and small clinics in India: Vita drafts notes and e-prescriptions for you to sign, patients book you online, and follow-ups go out by themselves.";
 
 export const metadata: Metadata = {
   title: { absolute: TITLE },
@@ -13,6 +13,7 @@ export const metadata: Metadata = {
   keywords: ["clinic management software India", "software for doctors", "e-prescription software", "AI prescription writing", "OPD software for clinics", "doctor appointment booking software", "clinic software Hindi"],
   alternates: { canonical: "/for/doctors" },
   openGraph: { title: TITLE, description: DESCRIPTION, url: "/for/doctors", images: [{ url: "/og/home.png", width: 1200, height: 630 }] },
+  twitter: { card: "summary_large_image", title: TITLE, description: DESCRIPTION, images: ["/og/home.png"] },
 };
 
 const c: AudienceConfig = {

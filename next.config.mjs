@@ -75,6 +75,10 @@ const nextConfig = {
         destination: `${DOCTORDEKHO_URL}/${prefix}/:path*`,
         permanent: true,
       })),
+      // Thin team sub-pages were folded into /team (SEO audit, Nov 2026).
+      { source: '/team/:section(leadership|engineering|healthcare|product-design)', destination: '/team', permanent: true },
+      // Product pages live under /solutions/*; the bare parent has no page of its own.
+      { source: '/solutions', destination: '/products', permanent: true },
       { source: '/login', destination: `${DOCTORDEKHO_URL}/login`, permanent: true },
       // Previously-generated social-share images referenced the OG image route on this origin.
       { source: '/api/og', destination: `${DOCTORDEKHO_URL}/api/og`, permanent: true },

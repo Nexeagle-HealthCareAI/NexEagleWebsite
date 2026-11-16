@@ -9,15 +9,16 @@ import AnalyticsTracker from "@/components/AnalyticsTracker";
 import { CUSTOMERS } from "@/lib/customers";
 import { SITE_URL } from "@/lib/site";
 
-const TITLE = "NexEagle Customers: Hospitals and Diagnostic Centres Using NexEagle | NexEagle";
+const TITLE = "Customers: Hospitals and Diagnostic Centres | NexEagle";
 const DESCRIPTION =
-  "Hospitals and diagnostic centres running NexEagle every day, including Sparsh Hospital in Kishanganj and Glisan Super Speciality Hospital in Purnea, Bihar. Ask to speak with a customer team before you decide.";
+  "Running daily at Sparsh Hospital, Kishanganj, Glisan Super Speciality Hospital, Purnea and AG Smart Scan. Ask to speak with a customer team first.";
 
 export const metadata: Metadata = {
   title: { absolute: TITLE },
   description: DESCRIPTION,
   alternates: { canonical: "/customers" },
   openGraph: { title: TITLE, description: DESCRIPTION, url: "/customers", images: [{ url: "/og/home.png", width: 1200, height: 630 }] },
+  twitter: { card: "summary_large_image", title: TITLE, description: DESCRIPTION, images: ["/og/home.png"] },
 };
 
 const CHECKS = [

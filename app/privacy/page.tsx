@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import { shareMeta } from "@/lib/seo";
 import AnalyticsTracker from "@/components/AnalyticsTracker";
 import PageHero from "@/components/site/PageHero";
 import LegalPage from "@/components/site/LegalPage";
@@ -6,7 +7,7 @@ import LegalCards from "@/components/site/LegalCards";
 import { PRIVACY, PRIVACY_UPDATED, RIGHTS } from "@/lib/legal/privacy";
 
 export const metadata: Metadata = {
-  title: "Privacy Policy - NexEagle",
+  title: "Privacy Policy",
   description: "NexEagle Privacy Policy. Learn how we collect, use, and protect your information in line with India's Digital Personal Data Protection Act, 2023.",
   keywords: [
     "privacy policy",
@@ -17,6 +18,8 @@ export const metadata: Metadata = {
     "healthcare data security",
     "personal information protection"
   ],
+  alternates: { canonical: "/privacy" },
+  ...shareMeta("/privacy", "Privacy Policy | NexEagle", "NexEagle Privacy Policy. Learn how we collect, use, and protect your information in line with India's Digital Personal Data Protection Act, 2023."),
 };
 
 const structuredData = {

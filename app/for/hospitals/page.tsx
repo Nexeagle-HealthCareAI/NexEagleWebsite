@@ -2,9 +2,9 @@ import type { Metadata } from "next";
 import AudiencePage, { type AudienceConfig } from "@/components/site/AudiencePage";
 import { LogList } from "@/components/home-v2/AgentsSection";
 
-const TITLE = "Hospital Management Software for Small & Mid-Sized Hospitals in India | NexEagle";
+const TITLE = "Software for Small and Mid-Sized Hospitals | NexEagle";
 const DESCRIPTION =
-  "For hospitals and nursing homes in India: registration, OPD, wards, lab, radiology, pharmacy and billing on one patient record, with Vita AI agents doing the paperwork. Set up and trained on site by our team, in English or Hindi.";
+  "For hospitals and nursing homes in India: OPD, wards, lab, radiology, pharmacy and billing on one record. Set up and trained on site, in English or Hindi.";
 
 export const metadata: Metadata = {
   title: { absolute: TITLE },
@@ -12,6 +12,7 @@ export const metadata: Metadata = {
   keywords: ["hospital management software India", "HMS for small hospitals", "nursing home software", "hospital billing software", "IPD software", "hospital software Bihar", "NABH documentation software"],
   alternates: { canonical: "/for/hospitals" },
   openGraph: { title: TITLE, description: DESCRIPTION, url: "/for/hospitals", images: [{ url: "/og/home.png", width: 1200, height: 630 }] },
+  twitter: { card: "summary_large_image", title: TITLE, description: DESCRIPTION, images: ["/og/home.png"] },
 };
 
 const LOG = [

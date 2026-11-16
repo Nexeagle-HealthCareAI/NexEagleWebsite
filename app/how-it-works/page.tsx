@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import { shareMeta } from "@/lib/seo";
 import Link from "next/link";
 import { Check } from "lucide-react";
 import PageHero, { btnPrimary, btnSecondary } from "@/components/site/PageHero";
@@ -9,9 +10,10 @@ import AnalyticsTracker from "@/components/AnalyticsTracker";
 import { SITE_URL } from "@/lib/site";
 
 export const metadata: Metadata = {
-  title: { absolute: "How NexEagle Goes Live in Your Hospital: Setup, Data Migration & Training" },
-  description: "How NexEagle hospital software goes live: we map your workflow, configure 1HMS, 1Rad, 1Lab and 1Pharma, bring in your data, train every role on site in English or Hindi, and support you after go-live.",
+  title: { absolute: "How NexEagle Goes Live in Your Hospital | NexEagle" },
+  description: "How NexEagle goes live: we map your workflow, set up 1HMS and 1Rad, move your data, train every role on site in English or Hindi, and stay after go-live.",
   alternates: { canonical: "/how-it-works" },
+  ...shareMeta("/how-it-works", "How NexEagle Goes Live in Your Hospital | NexEagle", "How NexEagle goes live: we map your workflow, set up 1HMS and 1Rad, move your data, train every role on site in English or Hindi, and stay after go-live."),
 };
 
 const STEPS = [

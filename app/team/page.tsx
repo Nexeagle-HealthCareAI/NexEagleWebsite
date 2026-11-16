@@ -1,12 +1,14 @@
 import type { Metadata } from "next";
+import { shareMeta } from "@/lib/seo";
 import TeamPage from "@/components/site/TeamPage";
 import { TEAM } from "@/lib/team";
 import { SITE_URL } from "@/lib/site";
 
 export const metadata: Metadata = {
-  title: { absolute: "NexEagle Team: Doctors and Engineers Building Hospital Software" },
-  description: "Meet the NexEagle team: a urologist (MCh, SSKM) checking every clinical workflow, engineers from NIT Warangal and IIT Bombay, and the deployment team that sets up 1HMS and 1Rad in hospitals.",
+  title: { absolute: "NexEagle Team: Doctors and Engineers | NexEagle" },
+  description: "A urologist (MCh, SSKM) checking every clinical workflow, engineers from NIT Warangal and IIT Bombay, and the team that sets up 1HMS and 1Rad on site.",
   alternates: { canonical: "/team" },
+  ...shareMeta("/team", "NexEagle Team: Doctors and Engineers | NexEagle", "A urologist (MCh, SSKM) checking every clinical workflow, engineers from NIT Warangal and IIT Bombay, and the team that sets up 1HMS and 1Rad on site."),
 };
 
 const jsonLd = {

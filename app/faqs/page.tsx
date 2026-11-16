@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import { shareMeta } from "@/lib/seo";
 import PageHero from "@/components/site/PageHero";
 import HomeFAQ from "@/components/home-v2/HomeFAQ";
 import { ClosingCTA } from "@/components/home-v2/Sections";
@@ -7,9 +8,10 @@ import { FAQ } from "@/lib/homeContent";
 import { SITE_URL } from "@/lib/site";
 
 export const metadata: Metadata = {
-  title: { absolute: "FAQs: NexEagle Hospital Software, 1Rad AI Reporting, Vita AI Agents" },
-  description: "Answers about NexEagle: 1HMS hospital management software, 1Rad cloud PACS and AI radiology reports, 1Lab, 1Pharma, Vita AI agents, pricing, setup, Hindi support and patient data security in India.",
+  title: { absolute: "FAQs: Hospital Software, AI Reporting and Vita | NexEagle" },
+  description: "Answers on 1HMS, 1Rad AI radiology reports, 1Lab, 1Pharma and Vita AI agents: pricing, setup, Hindi support and patient data security in India.",
   alternates: { canonical: "/faqs" },
+  ...shareMeta("/faqs", "FAQs: Hospital Software, AI Reporting and Vita | NexEagle", "Answers on 1HMS, 1Rad AI radiology reports, 1Lab, 1Pharma and Vita AI agents: pricing, setup, Hindi support and patient data security in India."),
 };
 
 const GROUPS: { title: string; intro: string; items: { q: string; a: string }[] }[] = [

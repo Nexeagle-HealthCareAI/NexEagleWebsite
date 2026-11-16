@@ -5,9 +5,9 @@ import ProductPage, { type ProductConfig } from "@/components/site/ProductPage";
 import { STEPS, type Step } from "@/lib/journeySteps";
 import { LabDemo } from "@/components/site/ProductDemos";
 
-const TITLE = "Laboratory Information System (LIS) for Pathology Labs | 1Lab by NexEagle";
+const TITLE = "Lab Information System (LIS) for Labs | 1Lab by NexEagle";
 const DESCRIPTION =
-  "1Lab is a cloud laboratory information system for pathology labs and hospital labs in India: barcode sample tracking, analyser integration, abnormal value flags, pathologist approval and PDF reports for patients.";
+  "1Lab is a cloud LIS for pathology and hospital labs in India: barcoded samples, analyser links, abnormal flags, pathologist approval and PDF reports.";
 
 export const metadata: Metadata = {
   title: { absolute: TITLE },
@@ -15,6 +15,7 @@ export const metadata: Metadata = {
   keywords: ["laboratory information system", "LIS software India", "pathology lab software", "lab management software", "diagnostic lab software", "barcode sample tracking", "lab analyser integration", "lab report software"],
   alternates: { canonical: "/solutions/1lab" },
   openGraph: { title: TITLE, description: DESCRIPTION, url: "/solutions/1lab", images: [{ url: "/og/home.png", width: 1200, height: 630 }] },
+  twitter: { card: "summary_large_image", title: TITLE, description: DESCRIPTION, images: ["/og/home.png"] },
 };
 
 const WALK_IN: Step = {
