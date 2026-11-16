@@ -58,8 +58,9 @@ export const GUIDES: Guide[] = [
       "Can you show me the certificate or the NHA approval?",
     ],
     sources: [
-      { title: "ABDM integration milestones explained (Nirmitee)", url: "https://nirmitee.io/blog/abdm-integration-milestones-m1-m2-m3-m4-multi-software-guide" },
-      { title: "ABDM milestone-certified hospital software (MocDoc)", url: "https://mocdoc.com/blog/abdm-milestone-certified-hospital-software" },
+      { title: "ABDM wrapper: what Milestones 1, 2 and 3 cover (NHA-ABDM on GitHub)", url: "https://github.com/NHA-ABDM/ABDM-wrapper" },
+      { title: "ABDM developer forum: can M1 alone get a production licence?", url: "https://devforum.abdm.gov.in/t/will-m1-alone-get-prod-license/7004" },
+      { title: "Certification steps as described by an integrator (Nirmitee)", url: "https://nirmitee.io/blog/abdm-integration-milestones-m1-m2-m3-m4-multi-software-guide" },
     ],
   },
   {
@@ -153,9 +154,9 @@ export const GUIDES: Guide[] = [
       "Who claims the incentive, and how is it shared?",
     ],
     sources: [
+      { title: "DHIS financial incentive policy (NHA)", url: "https://abdm.gov.in:8081/uploads/Financial_Incentive_Policy_DHIS_e96a62fd28.pdf" },
       { title: "Incentive scheme announced (ThePrint, Dec 2022)", url: "https://theprint.in/india/incentive-scheme-announced-to-boost-digital-health-transactions-under-ayushman-bharat/1277541/" },
       { title: "NHA extends the scheme (Lokmat Times)", url: "https://www.lokmattimes.com/politics/national-health-authority-extends-incentive-scheme-under-ayushman-bharat-digital-mission" },
-      { title: "DHIS financial incentive policy (NHA)", url: "https://abdm.gov.in:8081/uploads/Financial_Incentive_Policy_DHIS_e96a62fd28.pdf" },
     ],
   },
 ];
