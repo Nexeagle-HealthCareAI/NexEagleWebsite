@@ -5,9 +5,9 @@ import ProductPage, { type ProductConfig } from "@/components/site/ProductPage";
 import { STEPS, type Step } from "@/lib/journeySteps";
 import { StockDemo } from "@/components/site/ProductDemos";
 
-const TITLE = "Pharmacy Management & Inventory Software for Hospitals | 1Pharma by NexEagle";
+const TITLE = "Pharmacy Management Software | 1Pharma by NexEagle";
 const DESCRIPTION =
-  "1Pharma is pharmacy management and inventory software for hospital and retail pharmacies in India: e-prescriptions from doctors, barcode dispensing, batch and expiry alerts, purchase and stock, and billing.";
+  "1Pharma is pharmacy and inventory software for Indian hospitals: e-prescriptions from doctors, barcode dispensing, expiry alerts, stock and billing.";
 
 export const metadata: Metadata = {
   title: { absolute: TITLE },
@@ -15,6 +15,7 @@ export const metadata: Metadata = {
   keywords: ["pharmacy management software", "hospital pharmacy software India", "pharmacy inventory software", "medical store software", "expiry alert software", "barcode dispensing", "pharmacy billing software"],
   alternates: { canonical: "/solutions/1pharma" },
   openGraph: { title: TITLE, description: DESCRIPTION, url: "/solutions/1pharma", images: [{ url: "/og/home.png", width: 1200, height: 630 }] },
+  twitter: { card: "summary_large_image", title: TITLE, description: DESCRIPTION, images: ["/og/home.png"] },
 };
 
 const RESTOCK: Step = {

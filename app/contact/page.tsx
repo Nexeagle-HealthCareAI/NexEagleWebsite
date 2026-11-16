@@ -1,11 +1,12 @@
 import type { Metadata } from "next";
+import { shareMeta } from "@/lib/seo";
 import ContactClient from "./contact-client";
 import PageHero from "@/components/site/PageHero";
 import AnalyticsTracker from "@/components/AnalyticsTracker";
 
 export const metadata: Metadata = {
-  title: { absolute: "Book a Demo of NexEagle Hospital Software | Contact NexEagle" },
-  description: "Book a demo of NexEagle 1HMS hospital management software, 1Rad cloud PACS with AI radiology reporting, 1Lab or 1Pharma. Call or WhatsApp +91 80749 06808, or email info@nexeagle.com.",
+  title: { absolute: "Book a Demo of NexEagle Hospital Software | NexEagle" },
+  description: "Book a demo of 1HMS hospital software, 1Rad cloud PACS, 1Lab or 1Pharma. Call or WhatsApp +91 80749 06808, or email info@nexeagle.com.",
   alternates: { canonical: "/contact" },
   keywords: [
     "contact healthcare software company",
@@ -14,6 +15,7 @@ export const metadata: Metadata = {
     "NexEagle contact",
     "healthcare technology support"
   ],
+  ...shareMeta("/contact", "Book a Demo of NexEagle Hospital Software | NexEagle", "Book a demo of 1HMS hospital software, 1Rad cloud PACS, 1Lab or 1Pharma. Call or WhatsApp +91 80749 06808, or email info@nexeagle.com."),
 };
 
 const structuredData = {

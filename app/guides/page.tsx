@@ -8,15 +8,16 @@ import AnalyticsTracker from "@/components/AnalyticsTracker";
 import { GUIDES } from "@/lib/guides";
 import { SITE_URL } from "@/lib/site";
 
-const TITLE = "Guides for Hospital Owners: ABDM, NABH Digital Health and DHIS Explained | NexEagle";
+const TITLE = "ABDM, NABH and DHIS Guides for Hospitals | NexEagle";
 const DESCRIPTION =
-  "Plain-language, dated guides for hospital and diagnostic centre owners in India: ABDM milestones M1–M3, NABH Digital Health Standards and the Digital Health Incentive Scheme, with what to ask your software vendor.";
+  "Dated, plain-language guides for hospital owners in India: ABDM milestones M1 to M3, NABH Digital Health Standards and the DHIS incentive scheme.";
 
 export const metadata: Metadata = {
   title: { absolute: TITLE },
   description: DESCRIPTION,
   alternates: { canonical: "/guides" },
   openGraph: { title: TITLE, description: DESCRIPTION, url: "/guides", images: [{ url: "/og/home.png", width: 1200, height: 630 }] },
+  twitter: { card: "summary_large_image", title: TITLE, description: DESCRIPTION, images: ["/og/home.png"] },
 };
 
 const fmt = (d: string) => new Date(d + "T00:00:00Z").toLocaleDateString("en-IN", { day: "numeric", month: "long", year: "numeric", timeZone: "UTC" });

@@ -1,10 +1,11 @@
 import type { Metadata } from "next";
+import { shareMeta } from "@/lib/seo";
 import CareersClient from "./careers-client";
 import PageHero from "@/components/site/PageHero";
 import AnalyticsTracker from "@/components/AnalyticsTracker";
 
 export const metadata: Metadata = {
-  title: { absolute: "Careers at NexEagle: AI Engineer & Marketing Jobs in Kolkata / Remote" },
+  title: { absolute: "Careers at NexEagle: AI and Marketing Jobs | NexEagle" },
   description: "Build the clinical operating systems of tomorrow. Explore open positions for AI Engineers and Digital Marketing Specialists at NexEagle.",
   keywords: [
     "careers at nexeagle",
@@ -14,6 +15,8 @@ export const metadata: Metadata = {
     "work at nexeagle",
     "medical software developer jobs"
   ],
+  alternates: { canonical: "/careers" },
+  ...shareMeta("/careers", "Careers at NexEagle: AI and Marketing Jobs | NexEagle", "Build the clinical operating systems of tomorrow. Explore open positions for AI Engineers and Digital Marketing Specialists at NexEagle."),
 };
 
 const structuredData = {

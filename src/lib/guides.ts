@@ -4,6 +4,7 @@
 export type Guide = {
   slug: string;
   title: string;
+  seoTitle: string; // search-result title, kept under 60 characters with the brand
   short: string;
   description: string;
   checked: string; // ISO date the facts were last checked
@@ -17,9 +18,9 @@ export const GUIDES: Guide[] = [
   {
     slug: "abdm-milestones",
     title: "ABDM milestones M1, M2 and M3: what they mean for your hospital",
+    seoTitle: "ABDM Milestones M1, M2 and M3 Explained",
     short: "ABDM milestones",
-    description:
-      "A plain-language guide to Ayushman Bharat Digital Mission (ABDM) integration milestones M1, M2 and M3 for hospital software in India, and what to ask your software vendor.",
+    description: "What ABDM integration milestones M1, M2 and M3 mean for hospital software in India, and the questions to ask your software vendor before you buy.",
     checked: "2026-10-29",
     answer:
       "ABDM milestones show how far your hospital software is connected to India's national digital health network. M1 lets you create and verify a patient's ABHA health ID. M2 lets you share your records with other providers when the patient consents. M3 lets you fetch a patient's records from other providers with their consent.",
@@ -64,9 +65,9 @@ export const GUIDES: Guide[] = [
   {
     slug: "nabh-digital-health",
     title: "NABH Digital Health Standards: certification for hospital software and hospitals",
+    seoTitle: "NABH Digital Health Standards Explained",
     short: "NABH Digital Health",
-    description:
-      "What NABH's Digital Health Standards mean for hospitals in India: certification of HIS and EMR software (Basic and Advanced), digital health accreditation for hospitals, eligibility, validity and fees.",
+    description: "What NABH Digital Health Standards mean for Indian hospitals: HIS and EMR software certification, hospital accreditation, eligibility, validity and fees.",
     checked: "2026-10-29",
     answer:
       "NABH now assesses digital health in two ways. It certifies hospital software (HIS and EMR systems) at Basic or Advanced level, and it separately accredits or certifies hospitals on their digital maturity. Both are valid for two years.",
@@ -115,9 +116,9 @@ export const GUIDES: Guide[] = [
   {
     slug: "dhis-incentive",
     title: "Digital Health Incentive Scheme (DHIS): who qualifies and how it works",
+    seoTitle: "Digital Health Incentive Scheme (DHIS) Guide",
     short: "DHIS incentives",
-    description:
-      "A plain-language guide to the National Health Authority's Digital Health Incentive Scheme (DHIS) for hospitals, diagnostic centres and software companies in India, and why to check current rates before planning on it.",
+    description: "How the NHA's Digital Health Incentive Scheme works for hospitals, diagnostic centres and software firms in India, and why to check current rates first.",
     checked: "2026-10-29",
     answer:
       "The Digital Health Incentive Scheme pays hospitals, diagnostic centres and their software companies for digital health records they create and link to patients' ABHA health IDs. Facilities need 10 or more beds and registration in ABDM's Health Facility Registry. Rates and terms have been revised and extended several times, so check the current terms before counting on it.",

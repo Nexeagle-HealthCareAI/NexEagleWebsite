@@ -2,9 +2,9 @@ import type { Metadata } from "next";
 import AudiencePage, { type AudienceConfig } from "@/components/site/AudiencePage";
 import { RadDemo } from "@/components/home-v2/AgentsSection";
 
-const TITLE = "Software for Diagnostic & Imaging Centres in India: Cloud PACS & AI Reporting | NexEagle";
+const TITLE = "Diagnostic Centre Software and Cloud PACS | NexEagle";
 const DESCRIPTION =
-  "For diagnostic and imaging centres in India: 1Rad cloud PACS, a browser DICOM viewer, AI-drafted reports your radiologist reviews and signs, referral tracking and imaging billing. Add 1Lab for pathology.";
+  "For diagnostic and imaging centres in India: 1Rad cloud PACS, a browser DICOM viewer, AI-drafted reports your radiologist signs, and referral tracking.";
 
 export const metadata: Metadata = {
   title: { absolute: TITLE },
@@ -12,6 +12,7 @@ export const metadata: Metadata = {
   keywords: ["diagnostic centre software India", "imaging centre software", "cloud PACS India", "AI radiology reporting", "radiology report drafting", "referral tracking software", "teleradiology software"],
   alternates: { canonical: "/for/diagnostic-centres" },
   openGraph: { title: TITLE, description: DESCRIPTION, url: "/for/diagnostic-centres", images: [{ url: "/og/home.png", width: 1200, height: 630 }] },
+  twitter: { card: "summary_large_image", title: TITLE, description: DESCRIPTION, images: ["/og/home.png"] },
 };
 
 const c: AudienceConfig = {

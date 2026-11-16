@@ -31,6 +31,7 @@ const COLS = [
       { name: "Why NexEagle", href: "/why" },
       { name: "How it works", href: "/how-it-works" },
       { name: "Team", href: "/team" },
+      { name: "Engineering services", href: "/services" },
       { name: "Careers", href: "/careers" },
       { name: "Guides", href: "/guides" },
       { name: "FAQs", href: "/faqs" },

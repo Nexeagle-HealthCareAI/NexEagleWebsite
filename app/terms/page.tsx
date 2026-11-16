@@ -1,11 +1,12 @@
 import type { Metadata } from "next";
+import { shareMeta } from "@/lib/seo";
 import AnalyticsTracker from "@/components/AnalyticsTracker";
 import PageHero from "@/components/site/PageHero";
 import LegalPage from "@/components/site/LegalPage";
 import { TERMS, TERMS_INTRO, TERMS_UPDATED } from "@/lib/legal/terms";
 
 export const metadata: Metadata = {
-  title: "Terms of Service - NexEagle",
+  title: "Terms of Service",
   description: "NexEagle Terms of Service. Legal terms and conditions for using our healthcare products (1HMS, 1Rad PACS) and product engineering services.",
   keywords: [
     "terms of service",
@@ -15,6 +16,8 @@ export const metadata: Metadata = {
     "user agreement",
     "healthcare software terms"
   ],
+  alternates: { canonical: "/terms" },
+  ...shareMeta("/terms", "Terms of Service | NexEagle", "NexEagle Terms of Service. Legal terms and conditions for using our healthcare products (1HMS, 1Rad PACS) and product engineering services."),
 };
 
 const structuredData = {

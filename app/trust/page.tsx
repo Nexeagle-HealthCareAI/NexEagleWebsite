@@ -9,15 +9,16 @@ import AnalyticsTracker from "@/components/AnalyticsTracker";
 import { CERTS } from "@/lib/legal/security";
 import { SITE_URL } from "@/lib/site";
 
-const TITLE = "Trust at NexEagle: Patient Data, Security, AI Oversight & Compliance | NexEagle";
+const TITLE = "Trust: Patient Data, Security and AI Oversight | NexEagle";
 const DESCRIPTION =
-  "How NexEagle looks after hospital and patient data: hosted in India, role-based access and audit trails, AI that drafts while clinicians decide, and handling in line with the DPDP Act 2023. Security documentation for your IT team on request.";
+  "How NexEagle protects hospital and patient data: hosted in India, role-based access, audit trails, clinician sign-off on AI, and the DPDP Act 2023.";
 
 export const metadata: Metadata = {
   title: { absolute: TITLE },
   description: DESCRIPTION,
   alternates: { canonical: "/trust" },
   openGraph: { title: TITLE, description: DESCRIPTION, url: "/trust", images: [{ url: "/og/home.png", width: 1200, height: 630 }] },
+  twitter: { card: "summary_large_image", title: TITLE, description: DESCRIPTION, images: ["/og/home.png"] },
 };
 
 const PILLARS = [

@@ -5,9 +5,9 @@ import ProductPage, { type ProductConfig } from "@/components/site/ProductPage";
 import { STEPS, type Step } from "@/lib/journeySteps";
 import { RadDemo } from "@/components/home-v2/AgentsSection";
 
-const TITLE = "Cloud PACS & AI Radiology Reporting Software in India | 1Rad by NexEagle";
+const TITLE = "Cloud PACS & AI Radiology Reporting | 1Rad by NexEagle";
 const DESCRIPTION =
-  "1Rad is a cloud PACS and RIS for diagnostic centres and hospitals in India: browser DICOM viewer, AI vision analysis, AI-drafted radiology reports, teleradiology, referral tracking and imaging billing.";
+  "1Rad is cloud PACS and RIS for Indian diagnostic centres: browser DICOM viewer, AI-drafted reports your radiologist signs, teleradiology and billing.";
 
 export const metadata: Metadata = {
   title: { absolute: TITLE },
@@ -15,6 +15,7 @@ export const metadata: Metadata = {
   keywords: ["cloud PACS India", "PACS software", "RIS PACS", "AI radiology reporting", "radiology reporting software", "AI radiology India", "teleradiology software", "DICOM viewer", "diagnostic centre software", "radiology referral management", "imaging centre billing software"],
   alternates: { canonical: "/solutions/1rad" },
   openGraph: { title: TITLE, description: DESCRIPTION, url: "/solutions/1rad", images: [{ url: "/og/home.png", width: 1200, height: 630 }] },
+  twitter: { card: "summary_large_image", title: TITLE, description: DESCRIPTION, images: ["/og/home.png"] },
 };
 
 const CENTRE_DAY: Step = {

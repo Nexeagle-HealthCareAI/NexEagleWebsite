@@ -10,9 +10,9 @@ import { Reveal, Float } from "@/components/site/Motion";
 import { FlyingVita } from "@/components/home-v2/FlyingVita";
 import { SITE_URL } from "@/lib/site";
 
-const TITLE = "Vita AI Agents for Hospitals in India: AI Scribe, AI Radiology Reports | NexEagle AI";
+const TITLE = "Vita AI Agents for Hospitals and Clinics | NexEagle";
 const DESCRIPTION =
-  "Vita is NexEagle's family of healthcare AI agents: symptom-based doctor matching and booking for patients, an AI scribe and workflow automation in 1HMS, and AI vision analysis with drafted radiology reports in 1Rad. A clinician always signs.";
+  "Vita is NexEagle's healthcare AI: doctor matching for patients, an AI scribe in 1HMS and AI-drafted radiology reports in 1Rad. A clinician always signs.";
 
 export const metadata: Metadata = {
   title: { absolute: TITLE },
@@ -20,6 +20,7 @@ export const metadata: Metadata = {
   keywords: ["AI agents for hospitals", "healthcare AI India", "AI medical scribe", "AI voice scribe for doctors", "AI radiology report", "AI in hospital management", "symptom checker doctor booking", "Vita AI agent"],
   alternates: { canonical: "/ai" },
   openGraph: { title: TITLE, description: DESCRIPTION, url: "/ai", images: [{ url: "/og/home.png", width: 1200, height: 630 }] },
+  twitter: { card: "summary_large_image", title: TITLE, description: DESCRIPTION, images: ["/og/home.png"] },
 };
 
 const RULES = [

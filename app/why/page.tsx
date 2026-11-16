@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import { shareMeta } from "@/lib/seo";
 import Link from "next/link";
 import { Bot, Building2, HeartHandshake, Languages, Layers, MapPin, ShieldCheck, Stethoscope } from "lucide-react";
 import PageHero, { btnPrimary, btnSecondary } from "@/components/site/PageHero";
@@ -8,9 +9,10 @@ import { ClientsStrip, ClosingCTA } from "@/components/home-v2/Sections";
 import AnalyticsTracker from "@/components/AnalyticsTracker";
 
 export const metadata: Metadata = {
-  title: { absolute: "Why NexEagle: Hospital Software Built for Indian Hospitals | NexEagle" },
-  description: "Why hospitals and diagnostic centres choose NexEagle: one patient record across OPD, IPD, radiology, lab and pharmacy, Vita AI agents that do the paperwork, Hindi support, on-site setup and data hosted in India.",
+  title: { absolute: "Why NexEagle: Software for Indian Hospitals | NexEagle" },
+  description: "One patient record across OPD, IPD, radiology, lab and pharmacy, Vita AI doing the paperwork, Hindi support, on-site setup and data hosted in India.",
   alternates: { canonical: "/why" },
+  ...shareMeta("/why", "Why NexEagle: Software for Indian Hospitals | NexEagle", "One patient record across OPD, IPD, radiology, lab and pharmacy, Vita AI doing the paperwork, Hindi support, on-site setup and data hosted in India."),
 };
 
 const REASONS = [
