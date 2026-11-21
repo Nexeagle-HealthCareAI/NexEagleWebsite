@@ -12,6 +12,8 @@ import { ArrowUp, MessageCircle, Phone, X } from "lucide-react";
 import { STARTERS, TOPICS, matchTopic, type Topic } from "@/lib/vitaKnowledge";
 
 const LiveChat = lazy(() => import("./LiveChat"));
+// Same name as KEY_CHAT_ACTIVE in LiveChat.tsx. Not imported, so the chat code stays out of the first load.
+const KEY_CHAT_ACTIVE = "nex_eagle_chat_active";
 
 type Msg = { id: number; from: "vita" | "me"; text: string; topic?: Topic; handoff?: boolean };
 
@@ -23,6 +25,12 @@ export default function VitaSupport() {
   const [open, setOpen] = useState(false);
   const [team, setTeam] = useState(false); // team chat visible
   const [teamMounted, setTeamMounted] = useState(false);
+  const [teamUnread, setTeamUnread] = useState(0); // team replies that arrived while their chat was not on screen
+
+  // A team chat is still open from an earlier visit: load it now, so a reply shows on the launcher.
+  useEffect(() => {
+    try { if (localStorage.getItem(KEY_CHAT_ACTIVE) === "1") setTeamMounted(true); } catch { /* ignore */ }
+  }, []);
   const [msgs, setMsgs] = useState<Msg[]>([]);
   const [typing, setTyping] = useState(false);
   const [draft, setDraft] = useState("");
@@ -93,7 +101,7 @@ export default function VitaSupport() {
       {/* Team live chat, kept mounted once opened so the conversation survives switching back to Vita */}
       {teamMounted && (
         <Suspense fallback={null}>
-          <LiveChat embedded visible={open && team} onBack={() => setTeam(false)} />
+          <LiveChat embedded visible={open && team} onBack={() => setTeam(false)} onUnread={setTeamUnread} />
         </Suspense>
       )}
 
@@ -115,15 +123,18 @@ export default function VitaSupport() {
               )}
             </AnimatePresence>
             <button
-              onClick={() => { setNudge(false); setOpen(true); }}
-              aria-label="Vita Customer Support: ask a question"
+              onClick={() => { setNudge(false); if (teamUnread > 0) setTeam(true); setOpen(true); }}
+              aria-label={teamUnread > 0 ? `Our team replied: ${teamUnread} new message${teamUnread === 1 ? "" : "s"}. Open the chat` : "Vita Customer Support: ask a question"}
               className="group flex h-16 items-center gap-2.5 rounded-full bg-[#0e2343] p-1.5 text-white sm:pr-5 shadow-[0_16px_40px_-12px_rgba(14,35,67,0.7)] transition-transform hover:-translate-y-0.5 focus:outline-none focus-visible:ring-4 focus-visible:ring-[#1ea99b]/50"
             >
               <motion.span animate={reduce ? undefined : { rotate: [0, -8, 8, -4, 0] }} transition={{ duration: 1.6, repeat: Infinity, repeatDelay: 5 }} className="relative block">
                 <Image src="/assets/vita/avatar-present.webp" alt="" width={52} height={52} className="h-[52px] w-[52px] rounded-full ring-2 ring-white/30" />
                 <span className="absolute bottom-0.5 right-0.5 h-3 w-3 rounded-full border-2 border-[#0e2343] bg-emerald-400" />
               </motion.span>
-              <span className="hidden leading-tight sm:block"><span className="block text-[11px] font-medium text-white/70">Vita Customer Support</span><span className="block font-semibold text-white">Ask Vita</span></span>
+              <span className="hidden leading-tight sm:block"><span className="block text-[11px] font-medium text-white/70">{teamUnread > 0 ? "NexEagle team" : "Vita Customer Support"}</span><span className="block font-semibold text-white">{teamUnread > 0 ? "New reply" : "Ask Vita"}</span></span>
+              {teamUnread > 0 && (
+                <span className="absolute -right-1 -top-1 flex h-6 min-w-[24px] items-center justify-center rounded-full border-2 border-white bg-red-500 px-1 text-xs font-bold text-white" aria-hidden="true">{teamUnread > 9 ? "9+" : teamUnread}</span>
+              )}
             </button>
           </motion.div>
         )}
@@ -157,6 +168,13 @@ export default function VitaSupport() {
                 </button>
               </div>
             </div>
+
+            {teamUnread > 0 && (
+              <button onClick={() => setTeam(true)} className="flex items-center justify-between gap-3 bg-[#1ea99b]/15 px-4 py-2.5 text-left text-sm font-semibold text-[#0e2343] hover:bg-[#1ea99b]/25">
+                <span className="text-[#0e2343]">Our team replied ({teamUnread > 9 ? "9+" : teamUnread} new)</span>
+                <span className="inline-flex items-center gap-1.5 text-[#12857a]"><MessageCircle className="h-4 w-4" />Open chat</span>
+              </button>
+            )}
 
             {/* Conversation */}
             <div ref={scrollRef} className="flex-1 space-y-3 overflow-y-auto bg-slate-50 px-4 py-4" aria-live="polite">
