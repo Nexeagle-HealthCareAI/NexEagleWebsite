@@ -16,6 +16,20 @@ const DOCTORDEKHO_PATH_PREFIXES = [
   "profile",
 ];
 
+// Live chat (src/components/LiveChat.tsx). When the CMS API's origin is plain http -- the dev API
+// has no certificate, and a local API -- a browser on an https site may not call it, so the widget
+// calls this site's own /chathub and the rewrite below forwards it (http, server-sent events and
+// WebSocket). With an https API origin (production) the widget connects to the API directly.
+// Keep the same default and trimming as LiveChat.tsx.
+const CHAT_API_ORIGIN = (process.env.NEXT_PUBLIC_API_URL || "https://cms-api.nexeagle.com").replace(/\/api\/v1\/?$/, "").replace(/\/+$/, "");
+const CHAT_NEEDS_PROXY = CHAT_API_ORIGIN.startsWith("http:");
+// 'self' covers https on this origin; the WebSocket to this origin is listed too, because older
+// Safari does not count wss: as 'self'.
+const SITE_HOST = (process.env.NEXT_PUBLIC_SITE_URL || "https://nexeagle.com").replace(/^https?:\/\//, "").replace(/\/.*$/, "");
+const CHAT_CONNECT_SRC = CHAT_NEEDS_PROXY
+  ? `wss://${SITE_HOST} ws://${SITE_HOST}`
+  : `${CHAT_API_ORIGIN} ${CHAT_API_ORIGIN.replace(/^https:/, "wss:")}`;
+
 const securityHeaders = [
   { key: 'X-DNS-Prefetch-Control', value: 'on' },
   { key: 'Strict-Transport-Security', value: 'max-age=63072000; includeSubDomains; preload' },
@@ -23,14 +37,16 @@ const securityHeaders = [
   { key: 'X-Content-Type-Options', value: 'nosniff' },
   { key: 'Referrer-Policy', value: 'origin-when-cross-origin' },
   // connect-src is exactly the set of hosts the browser talks to directly:
-  //  - cms-api.nexeagle.com, https: AND wss: -- LiveChat.tsx's SignalR connection (CHAT_HUB_URL)
+  //  - the CMS API, https: AND wss: (CHAT_CONNECT_SRC above) -- LiveChat.tsx's SignalR connection
   //    negotiates over https: first, then upgrades to a WebSocket, and CSP enforces connect-src
-  //    per-scheme (an https: entry alone does not also permit the wss: upgrade).
+  //    per-scheme (an https: entry alone does not also permit the wss: upgrade). In production
+  //    that is cms-api.nexeagle.com; where the chat goes through this site instead, it is this
+  //    site's own wss: address.
   //  - formsubmit.co -- the contact form (contact-client.tsx) POSTs straight to it from the
   //    browser. It was missing from this list before the split, so CSP was blocking the request.
   // The map / geocoding / object-store hosts that used to be here served the patient portal and
   // moved with it to the Doctor Dekho app.
-  { key: 'Content-Security-Policy', value: "default-src 'self'; script-src 'self' 'unsafe-eval' 'unsafe-inline'; style-src 'self' 'unsafe-inline'; img-src 'self' data:; connect-src 'self' https://formsubmit.co https://cms-api.nexeagle.com wss://cms-api.nexeagle.com;" }
+  { key: 'Content-Security-Policy', value: "default-src 'self'; script-src 'self' 'unsafe-eval' 'unsafe-inline'; style-src 'self' 'unsafe-inline'; img-src 'self' data:; connect-src 'self' https://formsubmit.co " + CHAT_CONNECT_SRC + ";" }
 ];
 
 /** @type {import('next').NextConfig} */
@@ -64,6 +80,13 @@ const nextConfig = {
   // still point at nexeagle.com/doctors/... . `permanent: true` is an HTTP 308 (method- and
   // query-preserving), which search engines treat like a 301 for ranking transfer. Query strings
   // are carried over automatically.
+  async rewrites() {
+    if (!CHAT_NEEDS_PROXY) return [];
+    return [
+      { source: '/chathub', destination: `${CHAT_API_ORIGIN}/chathub` },
+      { source: '/chathub/:path*', destination: `${CHAT_API_ORIGIN}/chathub/:path*` },
+    ];
+  },
   async redirects() {
     return [
       // The patient search box used to be the site root; Google's SearchAction pointed at /?q=...

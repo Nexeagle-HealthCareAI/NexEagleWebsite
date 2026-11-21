@@ -14,23 +14,32 @@ import { v4 as uuidv4 } from "uuid";
 //    reply that arrives with the panel closed shows as an unread badge instead of being missed.
 //  * The header says honestly whether someone is online. Offline messages are kept and answered later.
 //  * After an agent ends a chat, the visitor can start a new one.
+//  * A visitor who comes back later with a chat still open is reconnected quietly, so a reply sent
+//    while they were away shows as a badge without them opening anything.
 //
-// NEXT_PUBLIC_API_URL is inlined at build time (Dockerfile build-arg). It must be an https:// origin
-// on an https:// page: browsers block plain http/ws from secure pages, and the widget says so.
+// NEXT_PUBLIC_API_URL is inlined at build time (Dockerfile build-arg). Browsers block plain http/ws
+// from an https page, so when the API origin is http (the dev API has no certificate, and a local
+// API) the widget talks to this site's own /chathub instead, which next.config.mjs forwards to the
+// API. With an https API origin (production) it connects to the API directly.
 const API_ORIGIN =
   process.env.NEXT_PUBLIC_API_URL?.replace(/\/api\/v1\/?$/, "").replace(/\/$/, "") ||
-  "http://151.185.45.77:5002";
-const CHAT_HUB_URL = `${API_ORIGIN}/chathub`;
+  "https://cms-api.nexeagle.com";
+const CHAT_HUB_URL = API_ORIGIN.startsWith("http:") ? "/chathub" : `${API_ORIGIN}/chathub`;
 const SUPPORT_EMAIL = "info@nexeagle.com";
 const SUPPORT_WHATSAPP = `https://wa.me/918074906808?text=${encodeURIComponent("Hi NexEagle, I tried the live chat on your website and would like to talk to the team.")}`;
 
 const KEY_GUEST_ID = "nex_eagle_guest_id";
 const KEY_NAME = "nex_eagle_guest_name";
 const KEY_EMAIL = "nex_eagle_guest_email";
+// "1" while this browser has a chat with messages that no agent has ended. Other parts of the site
+// (VitaSupport) read it to decide whether to load the chat at all, so keep the name in sync.
+export const KEY_CHAT_ACTIVE = "nex_eagle_chat_active";
 
 const MAX_LENGTH = 2000;            // same limit as ChatHub.MaxMessageLength
 const TYPING_SEND_EVERY_MS = 2500;
 const TYPING_SHOW_FOR_MS = 4000;
+const SEND_TIMEOUT_MS = 12000;      // a message with no answer from the server by then is "not sent"
+const RETRY_EVERY_MS = 30000;       // after the automatic reconnect gives up
 
 type ServerMessage = {
   messageId?: string;
@@ -45,7 +54,7 @@ type ChatMessage = ServerMessage & {
   status?: "sending" | "failed";
 };
 
-type ConnState = "idle" | "connecting" | "connected" | "reconnecting" | "failed" | "blocked";
+type ConnState = "idle" | "connecting" | "connected" | "reconnecting" | "failed";
 
 const QUICK_REPLIES = ["Book a demo", "Pricing for my hospital", "I need technical help"];
 
@@ -71,7 +80,9 @@ function timeLabel(iso: string) {
 
 // `embedded`: opened from the Vita support assistant; Vita owns the launcher and decides when the
 // team chat is visible, and closing returns the visitor to Vita (the connection stays alive).
-export default function LiveChat({ embedded = false, visible = false, onBack }: { embedded?: boolean; visible?: boolean; onBack?: () => void } = {}) {
+// `onUnread`: told how many team replies arrived while the panel was closed, so the owner of the
+// launcher can show a badge.
+export default function LiveChat({ embedded = false, visible = false, onBack, onUnread }: { embedded?: boolean; visible?: boolean; onBack?: () => void; onUnread?: (count: number) => void } = {}) {
   const [isOpen, setIsOpen] = useState(embedded && visible);
   const [hasOpened, setHasOpened] = useState(embedded && visible);
   useEffect(() => {
@@ -108,12 +119,18 @@ export default function LiveChat({ embedded = false, visible = false, onBack }: 
     if (isOpen) setUnread(0);
   }, [isOpen]);
 
+  const onUnreadRef = useRef(onUnread);
+  useEffect(() => { onUnreadRef.current = onUnread; }, [onUnread]);
+  useEffect(() => { onUnreadRef.current?.(unread); }, [unread]);
+
   // Restore a returning visitor's details (client only: localStorage does not exist during SSR).
   useEffect(() => {
     const savedName = readStorage(KEY_NAME);
     setName(savedName);
     setEmail(readStorage(KEY_EMAIL));
     setRegistered(!!savedName);
+    // A chat is still open from an earlier visit: reconnect without waiting for the panel to open.
+    if (savedName && readStorage(KEY_CHAT_ACTIVE) === "1") setHasOpened(true);
   }, []);
 
   // Keep the newest message in view.
@@ -125,12 +142,6 @@ export default function LiveChat({ embedded = false, visible = false, onBack }: 
   // ── Connection: built once the visitor has opened the chat and given a name; kept for the page ──
   useEffect(() => {
     if (!hasOpened || !registered) return;
-
-    if (window.location.protocol === "https:" && CHAT_HUB_URL.startsWith("http:")) {
-      console.error(`[LiveChat] ${CHAT_HUB_URL} is not https, so the browser blocks it on this https page. Set NEXT_PUBLIC_API_URL to the CMS API's https origin.`);
-      setConnState("blocked");
-      return;
-    }
 
     let guestId = readStorage(KEY_GUEST_ID);
     if (!guestId) {
@@ -159,6 +170,8 @@ export default function LiveChat({ embedded = false, visible = false, onBack }: 
       // Server history is the truth; keep only this tab's messages that never reached the server.
       setMessages((prev) => [...history, ...prev.filter((m) => m.status)]);
       setHistoryLoaded(true);
+      // Nothing here means the earlier chat was ended while the visitor was away.
+      writeStorage(KEY_CHAT_ACTIVE, history.length > 0 ? "1" : "");
     });
 
     connection.on("ReceiveMessage", (msg: ServerMessage) => {
@@ -189,9 +202,15 @@ export default function LiveChat({ embedded = false, visible = false, onBack }: 
       setSessionEnded(true);
       setSessionId(null);
       setAgentTyping(false);
+      writeStorage(KEY_CHAT_ACTIVE, "");
     });
 
-    connection.onreconnecting(() => setConnState("reconnecting"));
+    // A reconnect is a new server connection that is in no chat until it joins again, so nothing
+    // can be sent until SessionJoined comes back.
+    connection.onreconnecting(() => {
+      setConnState("reconnecting");
+      setSessionId(null);
+    });
     connection.onreconnected(() => {
       setConnState("connected");
       void join();
@@ -256,15 +275,26 @@ export default function LiveChat({ embedded = false, visible = false, onBack }: 
     setRegistered(true);
   };
 
+  const markFailed = (localId?: string) =>
+    setMessages((prev) => prev.map((m) => (m.localId === localId && m.status === "sending" ? { ...m, status: "failed" } : m)));
+
   const deliver = async (msg: ChatMessage) => {
-    if (!conn || !sessionId) return;
+    if (!conn || !sessionId) { markFailed(msg.localId); return; }
+    // The server echoes every stored message back, which replaces the "Sending…" copy. If neither
+    // the echo nor an error arrives, say so instead of leaving "Sending…" up for ever.
+    const timer = setTimeout(() => markFailed(msg.localId), SEND_TIMEOUT_MS);
     try {
       // senderType/senderId are decided by the server from the connection.
       await conn.invoke("SendMessage", sessionId, msg.messageText);
+      writeStorage(KEY_CHAT_ACTIVE, "1");
     } catch (e) {
+      clearTimeout(timer);
       console.error("[LiveChat] Send failed:", e);
-      if (String(e).includes("ended")) setSessionEnded(true);
-      setMessages((prev) => prev.map((m) => (m.localId === msg.localId ? { ...m, status: "failed" } : m)));
+      if (String(e).includes("ended")) {
+        setSessionEnded(true);
+        writeStorage(KEY_CHAT_ACTIVE, "");
+      }
+      markFailed(msg.localId);
     }
   };
 
@@ -284,9 +314,25 @@ export default function LiveChat({ embedded = false, visible = false, onBack }: 
   };
 
   const retry = (msg: ChatMessage) => {
+    if (!canSend) return;   // still reconnecting: the button stays, the visitor can tap again
     setMessages((prev) => prev.map((m) => (m.localId === msg.localId ? { ...m, status: "sending" } : m)));
     void deliver(msg);
   };
+
+  // The automatic reconnect gives up after about a minute. Keep trying quietly after that: when the
+  // network comes back, when the visitor returns to the tab, and every half minute meanwhile.
+  useEffect(() => {
+    if (connState !== "failed") return;
+    const again = () => { if (!document.hidden && navigator.onLine !== false) setRetryToken((t) => t + 1); };
+    const timer = setInterval(again, RETRY_EVERY_MS);
+    window.addEventListener("online", again);
+    document.addEventListener("visibilitychange", again);
+    return () => {
+      clearInterval(timer);
+      window.removeEventListener("online", again);
+      document.removeEventListener("visibilitychange", again);
+    };
+  }, [connState]);
 
   const onDraftChange = (value: string) => {
     setDraft(value.slice(0, MAX_LENGTH));
@@ -337,7 +383,7 @@ export default function LiveChat({ embedded = false, visible = false, onBack }: 
 
   // ── Panel ─────────────────────────────────────────────────────────────────────────────────────
   const statusText =
-    connState === "blocked" || connState === "failed"
+    connState === "failed"
       ? "Chat unavailable"
       : agentOnline === null
       ? "Connecting…"
@@ -429,7 +475,7 @@ export default function LiveChat({ embedded = false, visible = false, onBack }: 
           {connState !== "connected" && connState !== "idle" && (
             <div
               className={`flex items-center gap-2 px-4 py-2 text-xs ${
-                connState === "failed" || connState === "blocked" ? "bg-red-50 text-red-700" : "bg-amber-50 text-amber-800"
+                connState === "failed" ? "bg-red-50 text-red-700" : "bg-amber-50 text-amber-800"
               }`}
               role="status"
             >
@@ -442,11 +488,7 @@ export default function LiveChat({ embedded = false, visible = false, onBack }: 
                 {connState === "connecting" && "Connecting…"}
                 {connState === "reconnecting" && "Connection lost. Reconnecting…"}
                 {connState === "failed" && (
-                  <>We couldn&apos;t connect. Try again, or message us on{" "}
-                    <a className="font-semibold underline" href={SUPPORT_WHATSAPP} target="_blank" rel="noopener noreferrer">WhatsApp</a>.</>
-                )}
-                {connState === "blocked" && (
-                  <>Live chat isn&apos;t connected on this page yet. Reach the team on{" "}
+                  <>We couldn&apos;t connect and will keep trying. You can also reach the team on{" "}
                     <a className="font-semibold underline" href={SUPPORT_WHATSAPP} target="_blank" rel="noopener noreferrer">WhatsApp</a>{" "}
                     or email <a className="font-semibold underline" href={`mailto:${SUPPORT_EMAIL}`}>{SUPPORT_EMAIL}</a>.</>
                 )}
@@ -467,7 +509,7 @@ export default function LiveChat({ embedded = false, visible = false, onBack }: 
                 <p className="mt-1">
                   {agentOnline
                     ? "How can we help? Ask anything about NexEagle and our team will reply here."
-                    : "Our team is away right now. Leave a message and we'll reply here" + (email ? " and by email." : ".")}
+                    : "Our team is away right now. Leave a message and we'll reply here when we're back." + (email ? "" : " Add your email in the message if you'd like the answer there too.")}
                 </p>
                 <div className="mt-3 flex flex-wrap gap-2">
                   {QUICK_REPLIES.map((q) => (
@@ -553,7 +595,7 @@ export default function LiveChat({ embedded = false, visible = false, onBack }: 
                       send(draft);
                     }
                   }}
-                  placeholder={canSend ? "Write a message…" : "Connecting…"}
+                  placeholder={canSend ? "Write a message…" : connState === "failed" ? "Chat is not connected" : "Connecting…"}
                   disabled={!canSend}
                   aria-label="Message"
                   className="max-h-[120px] min-h-[44px] flex-1 resize-none rounded-xl border border-slate-300 px-3 py-2.5 text-base text-slate-900 outline-none focus:border-[#1ea99b] focus:ring-2 focus:ring-[#1ea99b]/15 disabled:bg-slate-50 sm:text-sm"
